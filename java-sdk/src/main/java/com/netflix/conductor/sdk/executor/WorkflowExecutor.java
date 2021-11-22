@@ -85,12 +85,6 @@ public class WorkflowExecutor {
         return instance;
     }
 
-    public void startServerAndPolling(String basePackages) {
-        startLocalServer();
-        initWorkers(basePackages);
-        waitForWorkflowCompletion();
-    }
-
     private WorkflowExecutor(String serverURL) {
         String conductorServerApiBase = serverURL + "api/";
 
@@ -106,17 +100,35 @@ public class WorkflowExecutor {
         healthCheck = new HealthCheckClient(serverURL + "health");
     }
 
+    /**
+     * Starts the local server and workers and waits for any running workflows to be completed.
+     * @param basePackages list of packages - comma separated - to scan for annotated worker implementation
+     */
+    public void startServerAndPolling(String basePackages) {
+        startLocalServer();
+        initWorkers(basePackages);
+    }
+
+    /**
+     * Starts the local server. Downloads the latest conductor build from the maven repo
+     * If you want to start the server from a specific download location, set `repositoryURL` system property with the
+     * link to the actual downloadable server boot jar file.
+     *
+     * <b>System Properties that can be set</b>
+     * conductorVersion: when specified, uses this version of conductor to run tests (and downloads from maven repo)
+     * repositoryURL: full url where the server boot jar can be downloaded from. This can be a public repo or internal
+     * repository, allowing full control over the location and version of the conductor server
+     */
     public void startLocalServer() {
         try {
-
-            String repositoryURL = Optional
-                    .ofNullable(System.getProperty("repositoryURL"))
-                    .orElse("https://repo1.maven.org/maven2/com/netflix/conductor/conductor-server/");
 
             String conductorVersion = Optional
                     .ofNullable(System.getProperty("conductorVersion"))
                     .orElse("3.3.4");
-            repositoryURL = repositoryURL + conductorVersion + "/conductor-server-" + conductorVersion + "-boot.jar";
+
+            String repositoryURL = Optional
+                    .ofNullable(System.getProperty("repositoryURL"))
+                    .orElse("https://repo1.maven.org/maven2/com/netflix/conductor/conductor-server/" + conductorVersion + "/conductor-server-" + conductorVersion + "-boot.jar");
 
             Runtime.getRuntime().addShutdownHook(new Thread(()->shutdown()));
             installAndStartServer(repositoryURL);
@@ -139,29 +151,33 @@ public class WorkflowExecutor {
             }
             healthCheckExecutor.shutdownNow();
 
+            ses.scheduleAtFixedRate(()->{
+
+                runningWorkflows.entrySet().forEach(e -> {
+                    String workflowId = e.getKey();
+                    CountDownLatch latch = e.getValue();
+                    Workflow workflow = workflowClient.getWorkflow(workflowId, false);
+                    if(workflow.getStatus().isTerminal()) {
+                        latch.countDown();
+                    }
+                });
+            }, 100, 100, TimeUnit.MILLISECONDS);
+
         } catch (IOException e) {
             throw new Error(e);
         }
     }
 
+    /**
+     * Finds any worker implementation and starts polling for tasks
+     * @param basePackage list of packages - comma separated - to scan for annotated worker implementation
+     */
     public void initWorkers(String basePackage) {
         scanWorkers(basePackage);
         startPolling();
     }
 
-    public void waitForWorkflowCompletion() {
-        ses.scheduleAtFixedRate(()->{
 
-            runningWorkflows.entrySet().forEach(e -> {
-                String workflowId = e.getKey();
-                CountDownLatch latch = e.getValue();
-                Workflow workflow = workflowClient.getWorkflow(workflowId, false);
-                if(workflow.getStatus().isTerminal()) {
-                    latch.countDown();
-                }
-            });
-        }, 100, 100, TimeUnit.MILLISECONDS);
-    }
 
     private void startPolling() {
 
