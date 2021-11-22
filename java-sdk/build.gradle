@@ -1,0 +1,9 @@
+
+dependencies {
+
+    implementation project(':conductor-common')
+    implementation project(':conductor-client')
+
+    implementation "com.fasterxml.jackson.core:jackson-databind"
+    implementation "com.google.guava:guava:${revGuava}"
+}
