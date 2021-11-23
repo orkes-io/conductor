@@ -52,21 +52,6 @@ public class KitchenSinkTest {
     }
 
     @Test
-    public void testKitchenSink() throws Exception {
-
-        Map<String, Object> input = new HashMap<>();
-        input.put("task2Name", "task_2");
-        input.put("mod", "1");
-        input.put("oddEven", "12");
-
-        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
-        assertNotNull(workflow);
-        assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
-        assertNotNull(workflow.getOutput());
-        assertEquals("b", workflow.getOutput().get("a"));      //task10's output
-    }
-
-    @Test
     public void testDynamicTaskExecuted() throws Exception {
 
         Map<String, Object> input = new HashMap<>();
@@ -75,24 +60,33 @@ public class KitchenSinkTest {
         input.put("oddEven", "12");
         input.put("number", 0);
 
+        //Start the workflow and wait for it to complete
         Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
+
         assertNotNull(workflow);
         assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
         assertNotNull(workflow.getOutput());
         assertTrue(workflow.getTasks().stream().anyMatch(task -> task.getTaskDefName().equals("task_6")));
-        //2 executions of task_2
+
+        //task_2's implementation fails at the first try, so we should have to instances of task_2 execution
+        //2 executions of task_2 should be present
         assertEquals(2, workflow.getTasks().stream().filter(task -> task.getTaskDefName().equals("task_2")).count());
         List<Task> task2Executions = workflow.getTasks()
                 .stream().filter(task -> task.getTaskDefName().equals("task_2")).collect(Collectors.toList());
         assertNotNull(task2Executions);
         assertEquals(2, task2Executions.size());
+
+        //First instance would have failed and second succeeded.
         assertEquals(Task.Status.FAILED, task2Executions.get(0).getStatus());
         assertEquals(Task.Status.COMPLETED, task2Executions.get(1).getStatus());
-        assertEquals(100, workflow.getOutput().get("c"));      //task10's output
+
+        //task10's output
+        assertEquals(100, workflow.getOutput().get("c"));
+
     }
 
     @Test
-    public void testFailure() throws Exception {
+    public void testWorkflowFailure() throws Exception {
 
         Map<String, Object> input = new HashMap<>();
         //task2Name is missing which will cause workflow to fail
@@ -100,6 +94,8 @@ public class KitchenSinkTest {
         input.put("oddEven", "12");
         input.put("number", 0);
 
+        //we are missing task2Name parameter which is required to wire up dynamictask
+        //The workflow should fail as we are not passing it as input
         Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
         assertNotNull(workflow);
         assertEquals(Workflow.WorkflowStatus.FAILED, workflow.getStatus());
