@@ -356,7 +356,6 @@ public class WorkflowExecutor {
                 continue;
             }
             String name = annotation.value();
-            String qualifier = annotation.qualifier();
             workerExecutors.put(name, method);
             workerClassObjs.put(name, obj);
         }
