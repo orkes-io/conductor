@@ -259,12 +259,18 @@ public class WorkflowExecutor {
         ses.shutdown();
     }
 
-    public Workflow executeWorkflow(String name, int version, Map<String, Object> input, String qualifier) {
+    /**
+     * Starts a workflow execution and waits till
+     * @param name
+     * @param version
+     * @param input
+     * @return
+     */
+    public Workflow executeWorkflow(String name, int version, Map<String, Object> input) {
         StartWorkflowRequest request = new StartWorkflowRequest();
         request.setInput(input);
         request.setName(name);
         request.setVersion(version);
-        request.setCorrelationId(qualifier);
 
         String workflowId = workflowClient.startWorkflow(request);
         CountDownLatch latch = new CountDownLatch(1);

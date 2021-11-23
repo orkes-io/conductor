@@ -31,6 +31,24 @@
             "loopOver": []
           },
           {
+            "name": "dyntask",
+            "taskReferenceName": "task_2",
+            "inputParameters": {
+              "taskToExecute":"${workflow.input.task2Name}"
+            },
+            "type": "DYNAMIC",
+            "dynamicTaskNameParam":"taskToExecute",
+            "decisionCases": {},
+            "defaultCase": [],
+            "forkTasks": [],
+            "startDelay": 0,
+            "joinOn": [],
+            "optional": false,
+            "defaultExclusiveJoinTask": [],
+            "asyncComplete": false,
+            "loopOver": []
+          },
+          {
             "name": "task_6",
             "taskReferenceName": "task_6",
             "inputParameters": {},

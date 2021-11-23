@@ -18,28 +18,30 @@ package com.netflix.conductor.testing.workflows;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.sdk.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.task.IpParam;
 import com.netflix.conductor.sdk.task.OpParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
-import com.netflix.conductor.sdk.executor.WorkflowExecutor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class KitchenSinkTest {
     private static WorkflowExecutor executor;
 
     @BeforeClass
-    public static void init() {
+    public static void init() throws IOException {
         executor = WorkflowExecutor.getInstance();
         executor.startServerAndPolling("com.netflix.conductor");
+        executor.loadTaskDefs("/tasks.json");
+        executor.loadWorkflow("/simple_workflow.json");
     }
 
     @AfterClass
@@ -50,35 +52,48 @@ public class KitchenSinkTest {
     @Test
     public void testKitchenSink() throws Exception {
 
-
-
-        executor.loadTaskDefs("/tasks.json");
-        executor.loadWorkflow("/simple_workflow.json");
-
         Map<String, Object> input = new HashMap<>();
         input.put("task2Name", "task_2");
         input.put("mod", "1");
         input.put("oddEven", "12");
 
-        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input, "test");
+        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
         assertNotNull(workflow);
+        assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
         assertNotNull(workflow.getOutput());
         assertEquals("b", workflow.getOutput().get("a"));      //task10's output
     }
 
     @Test
-    public void testKitchenSink2() throws Exception {
+    public void testDynamicTaskExecuted() throws Exception {
 
         Map<String, Object> input = new HashMap<>();
         input.put("task2Name", "task_2");
         input.put("mod", "1");
         input.put("oddEven", "12");
+        input.put("number", 0);
 
-        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input, "test");
+        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
         assertNotNull(workflow);
+        assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
         assertNotNull(workflow.getOutput());
+        assertTrue(workflow.getTasks().stream().anyMatch(task -> task.getTaskDefName().equals("task_6")));
         assertEquals(100, workflow.getOutput().get("c"));      //task10's output
+    }
 
+    @Test
+    public void testFailure() throws Exception {
+
+        Map<String, Object> input = new HashMap<>();
+        //task2Name is missing which will cause workflow to fail
+        input.put("mod", "1");
+        input.put("oddEven", "12");
+        input.put("number", 0);
+
+        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
+        assertNotNull(workflow);
+        assertEquals(Workflow.WorkflowStatus.FAILED, workflow.getStatus());
+        assertNotNull(workflow.getReasonForIncompletion());
     }
 
     @WorkflowTask("task_1")
@@ -90,6 +105,12 @@ public class KitchenSinkTest {
 
     @WorkflowTask("task_2")
     public TaskResult task2(Task task) {
+        task.setStatus(Task.Status.COMPLETED);
+        return new TaskResult(task);
+    }
+
+    @WorkflowTask("task_6")
+    public TaskResult task6(Task task) {
         task.setStatus(Task.Status.COMPLETED);
         return new TaskResult(task);
     }
