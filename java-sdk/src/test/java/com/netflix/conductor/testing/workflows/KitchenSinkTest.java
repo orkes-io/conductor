@@ -29,7 +29,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -78,6 +80,14 @@ public class KitchenSinkTest {
         assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
         assertNotNull(workflow.getOutput());
         assertTrue(workflow.getTasks().stream().anyMatch(task -> task.getTaskDefName().equals("task_6")));
+        //2 executions of task_2
+        assertEquals(2, workflow.getTasks().stream().filter(task -> task.getTaskDefName().equals("task_2")).count());
+        List<Task> task2Executions = workflow.getTasks()
+                .stream().filter(task -> task.getTaskDefName().equals("task_2")).collect(Collectors.toList());
+        assertNotNull(task2Executions);
+        assertEquals(2, task2Executions.size());
+        assertEquals(Task.Status.FAILED, task2Executions.get(0).getStatus());
+        assertEquals(Task.Status.COMPLETED, task2Executions.get(1).getStatus());
         assertEquals(100, workflow.getOutput().get("c"));      //task10's output
     }
 
@@ -105,6 +115,12 @@ public class KitchenSinkTest {
 
     @WorkflowTask("task_2")
     public TaskResult task2(Task task) {
+        if(task.getRetryCount() < 1) {
+            task.setStatus(Task.Status.FAILED);
+            task.setReasonForIncompletion("try again");
+            return new TaskResult(task);
+        }
+
         task.setStatus(Task.Status.COMPLETED);
         return new TaskResult(task);
     }
