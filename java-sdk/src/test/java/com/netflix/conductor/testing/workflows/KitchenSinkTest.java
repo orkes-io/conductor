@@ -43,7 +43,7 @@ public class KitchenSinkTest {
         executor = WorkflowExecutor.getInstance();
         executor.startServerAndPolling("com.netflix.conductor");
         executor.loadTaskDefs("/tasks.json");
-        executor.loadWorkflow("/simple_workflow.json");
+        executor.loadWorkflowDefs("/simple_workflow.json");
     }
 
     @AfterClass

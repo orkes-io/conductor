@@ -62,6 +62,8 @@ public class WorkflowExecutor {
 
     private Map<String, CountDownLatch> runningWorkflows = new ConcurrentHashMap<>();
 
+    private String localServerPort;
+
     private Process serverProcess;
 
     private final ScheduledExecutorService ses = Executors.newSingleThreadScheduledExecutor();
@@ -75,17 +77,21 @@ public class WorkflowExecutor {
     private static final WorkflowExecutor instance;
 
     static {
+        String localServerPort = Optional
+                .ofNullable(System.getProperty("conductorServerPort"))
+                .orElse("8080");
         String serverURL = Optional
                 .ofNullable(System.getProperty("conductorServerURL"))
-                .orElse("http://localhost:8080/");
-        instance = new WorkflowExecutor(serverURL);
+                .orElse("http://localhost:" + localServerPort + "/");
+        instance = new WorkflowExecutor(serverURL, localServerPort);
     }
 
     public static final WorkflowExecutor getInstance() {
         return instance;
     }
 
-    private WorkflowExecutor(String serverURL) {
+    private WorkflowExecutor(String serverURL, String localServerPort) {
+        this.localServerPort = localServerPort;
         String conductorServerApiBase = serverURL + "api/";
 
         taskClient = new TaskClient();
@@ -131,7 +137,7 @@ public class WorkflowExecutor {
                     .orElse("https://repo1.maven.org/maven2/com/netflix/conductor/conductor-server/" + conductorVersion + "/conductor-server-" + conductorVersion + "-boot.jar");
 
             Runtime.getRuntime().addShutdownHook(new Thread(()->shutdown()));
-            installAndStartServer(repositoryURL);
+            installAndStartServer(repositoryURL, localServerPort);
             healthCheckExecutor.scheduleAtFixedRate(()->{
                 try {
                     if(serverProcessLatch.getCount() > 0) {
@@ -201,7 +207,7 @@ public class WorkflowExecutor {
 
 
 
-    private synchronized void installAndStartServer(String serverURL) throws IOException {
+    private synchronized void installAndStartServer(String repositoryURL, String localServerPort) throws IOException {
 
         if(serverProcess != null) {
             return;
@@ -211,9 +217,9 @@ public class WorkflowExecutor {
         String tempDir = System.getProperty("java.io.tmpdir");
         Path serverFile = Paths.get(tempDir, "conductor-server.jar");
         if(!Files.exists(serverFile)) {
-            Files.copy(new URL(serverURL).openStream(), serverFile);
+            Files.copy(new URL(repositoryURL).openStream(), serverFile);
         }
-        serverProcess = Runtime.getRuntime().exec("java -Dserver.port=8080 -DCONDUCTOR_CONFIG_FILE=" + configFile + " -jar " + serverFile.toString());
+        serverProcess = Runtime.getRuntime().exec("java -Dserver.port=" + localServerPort + " -DCONDUCTOR_CONFIG_FILE=" + configFile + " -jar " + serverFile.toString());
         InputStream in = serverProcess.getInputStream();
         InputStream err = serverProcess.getErrorStream();
         BufferedReader error = new BufferedReader(new InputStreamReader(serverProcess.getErrorStream()));
@@ -292,7 +298,7 @@ public class WorkflowExecutor {
         }
     }
 
-    public void loadWorkflow(String resourcePath) throws IOException {
+    public void loadWorkflowDefs(String resourcePath) throws IOException {
         InputStream resource = WorkflowExecutor.class.getResourceAsStream(resourcePath);
         if(resource != null) {
             WorkflowDef workflowDef = om.readValue(resource, WorkflowDef.class);
