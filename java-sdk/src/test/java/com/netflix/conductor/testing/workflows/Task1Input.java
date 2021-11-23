@@ -46,11 +46,4 @@ public class Task1Input {
                 ", oddEven=" + oddEven +
                 '}';
     }
-
-    public static void main(String[] args) {
-        System.setProperty("conductorServerURL", "http://conductor.com");
-        String a = Optional.ofNullable(System.getProperty("conductorServerURL")).orElse("http://localhost:8080/");
-        System.out.printf("a: " + a);
-    }
-
 }
