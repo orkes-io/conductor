@@ -1,0 +1,48 @@
+syntax = "proto3";
+package conductor.grpc.events;
+
+import "model/eventhandler.proto";
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+service EventService {
+    // POST /
+    rpc AddEventHandler(AddEventHandlerRequest) returns (AddEventHandlerResponse);
+
+    // PUT /
+    rpc UpdateEventHandler(UpdateEventHandlerRequest) returns (UpdateEventHandlerResponse);
+
+    // DELETE /{name}
+    rpc RemoveEventHandler(RemoveEventHandlerRequest) returns (RemoveEventHandlerResponse);
+
+    // GET /
+    rpc GetEventHandlers(GetEventHandlersRequest) returns (stream conductor.proto.EventHandler);
+
+    // GET /{name}
+    rpc GetEventHandlersForEvent(GetEventHandlersForEventRequest) returns (stream conductor.proto.EventHandler);
+}
+
+message AddEventHandlerRequest {
+    conductor.proto.EventHandler handler = 1;
+}
+
+message AddEventHandlerResponse {}
+
+message UpdateEventHandlerRequest {
+    conductor.proto.EventHandler handler = 1;
+}
+
+message UpdateEventHandlerResponse {}
+
+message RemoveEventHandlerRequest {
+    string name = 1;
+}
+
+message RemoveEventHandlerResponse {}
+
+message GetEventHandlersRequest {}
+
+message GetEventHandlersForEventRequest {
+    string event = 1;
+    bool active_only = 2;
+}

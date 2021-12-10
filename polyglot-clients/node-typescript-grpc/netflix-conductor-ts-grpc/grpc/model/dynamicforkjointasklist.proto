@@ -1,0 +1,10 @@
+syntax = "proto3";
+package conductor.proto;
+
+import "model/dynamicforkjointask.proto";
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message DynamicForkJoinTaskList {
+    repeated DynamicForkJoinTask dynamic_tasks = 1;
+}

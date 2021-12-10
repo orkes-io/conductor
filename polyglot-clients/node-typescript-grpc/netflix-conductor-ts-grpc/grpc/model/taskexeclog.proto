@@ -1,0 +1,11 @@
+syntax = "proto3";
+package conductor.proto;
+
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message TaskExecLog {
+    string log = 1;
+    string task_id = 2;
+    int64 created_time = 3;
+}

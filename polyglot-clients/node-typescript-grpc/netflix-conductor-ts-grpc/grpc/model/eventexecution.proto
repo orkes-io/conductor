@@ -1,0 +1,24 @@
+syntax = "proto3";
+package conductor.proto;
+
+import "model/eventhandler.proto";
+import "google/protobuf/struct.proto";
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message EventExecution {
+    enum Status {
+        IN_PROGRESS = 0;
+        COMPLETED = 1;
+        FAILED = 2;
+        SKIPPED = 3;
+    }
+    string id = 1;
+    string message_id = 2;
+    string name = 3;
+    string event = 4;
+    int64 created = 5;
+    EventExecution.Status status = 6;
+    EventHandler.Action.Type action = 7;
+    map<string, google.protobuf.Value> output = 8;
+}

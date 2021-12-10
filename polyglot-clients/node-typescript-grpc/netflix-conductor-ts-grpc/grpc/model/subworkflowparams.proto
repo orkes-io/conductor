@@ -1,0 +1,13 @@
+syntax = "proto3";
+package conductor.proto;
+
+import "google/protobuf/struct.proto";
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message SubWorkflowParams {
+    string name = 1;
+    int32 version = 2;
+    map<string, string> task_to_domain = 3;
+    google.protobuf.Value workflow_definition = 4;
+}

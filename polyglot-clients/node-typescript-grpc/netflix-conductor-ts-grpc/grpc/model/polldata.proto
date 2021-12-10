@@ -1,0 +1,12 @@
+syntax = "proto3";
+package conductor.proto;
+
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message PollData {
+    string queue_name = 1;
+    string domain = 2;
+    string worker_id = 3;
+    int64 last_poll_time = 4;
+}

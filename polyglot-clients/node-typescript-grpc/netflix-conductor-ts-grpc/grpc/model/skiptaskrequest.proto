@@ -1,0 +1,14 @@
+syntax = "proto3";
+package conductor.proto;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+
+//option node_js_grpc_package = "netflix-conductor-node-js-grpc";
+
+message SkipTaskRequest {
+    map<string, google.protobuf.Value> task_input = 1;
+    map<string, google.protobuf.Value> task_output = 2;
+    google.protobuf.Any task_input_message = 3;
+    google.protobuf.Any task_output_message = 4;
+}
