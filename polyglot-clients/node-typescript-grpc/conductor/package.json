@@ -1,5 +1,5 @@
 {
-  "name": "netflix-conductor-ts-grpc",
+  "name": "conductor",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
