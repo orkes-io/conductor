@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.netflix.conductor.sdk.executor.healthcheck;
+package com.netflix.conductor.sdk.healthcheck;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +32,6 @@ public class HealthCheckClient {
         this.healthCheckURL = healthCheckURL;
         this.om = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
-
 
     public boolean isServerRunning() {
         try {

@@ -18,10 +18,11 @@ package com.netflix.conductor.testing.workflows;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.task.IpParam;
 import com.netflix.conductor.sdk.task.OpParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
+import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
+import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,19 +37,25 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class KitchenSinkTest {
+
+    private static WorkflowTestRunner testRunner;
+
     private static WorkflowExecutor executor;
 
     @BeforeClass
     public static void init() throws IOException {
-        executor = WorkflowExecutor.getInstance();
-        executor.startServerAndPolling("com.netflix.conductor");
+        testRunner = new WorkflowTestRunner(8096, "3.4.1");
+        testRunner.init("com.netflix.conductor");
+        System.out.println("Ready...");
+
+        executor = testRunner.getWorkflowExecutor();
         executor.loadTaskDefs("/tasks.json");
         executor.loadWorkflowDefs("/simple_workflow.json");
     }
 
     @AfterClass
     public static void cleanUp() {
-        WorkflowExecutor.getInstance().shutdown();
+        testRunner.shutdown();
     }
 
     @Test
@@ -61,11 +68,13 @@ public class KitchenSinkTest {
         input.put("number", 0);
 
         //Start the workflow and wait for it to complete
-        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
+        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input).get();
 
         assertNotNull(workflow);
         assertEquals(Workflow.WorkflowStatus.COMPLETED, workflow.getStatus());
         assertNotNull(workflow.getOutput());
+        assertNotNull(workflow.getTasks());
+        assertFalse(workflow.getTasks().isEmpty());
         assertTrue(workflow.getTasks().stream().anyMatch(task -> task.getTaskDefName().equals("task_6")));
 
         //task_2's implementation fails at the first try, so we should have to instances of task_2 execution
@@ -96,7 +105,7 @@ public class KitchenSinkTest {
 
         //we are missing task2Name parameter which is required to wire up dynamictask
         //The workflow should fail as we are not passing it as input
-        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input);
+        Workflow workflow = executor.executeWorkflow("Decision_TaskExample", 1, input).get();
         assertNotNull(workflow);
         assertEquals(Workflow.WorkflowStatus.FAILED, workflow.getStatus());
         assertNotNull(workflow.getReasonForIncompletion());
