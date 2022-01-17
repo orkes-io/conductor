@@ -1,7 +1,6 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 public class DynamicFork extends BaseWorkflowTask {
 
@@ -17,5 +16,7 @@ public class DynamicFork extends BaseWorkflowTask {
         super(taskReferenceName, TaskType.FORK_JOIN_DYNAMIC);
         this.join = new Join(taskReferenceName + "_join");
     }
+
+
 
 }

@@ -1,10 +1,7 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.google.common.base.Joiner;
-import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.common.run.Workflow;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,6 +98,7 @@ public class Fork extends BaseWorkflowTask {
             joinWorkflowTasks = new WorkflowTask();
             joinWorkflowTasks.setWorkflowTaskType(TaskType.JOIN);
             joinWorkflowTasks.setTaskReferenceName(getTaskReferenceName() + "_join");
+            joinWorkflowTasks.setName(joinWorkflowTasks.getTaskReferenceName());
             joinWorkflowTasks.setJoinOn(joinOnTaskRefNames);
         }
 

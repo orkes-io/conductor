@@ -2,19 +2,14 @@ package com.netflix.conductor.sdk.workflow.def;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
-import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 
 /**
  * Conductor workflow

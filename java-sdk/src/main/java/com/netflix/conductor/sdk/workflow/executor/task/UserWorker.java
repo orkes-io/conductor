@@ -1,13 +1,11 @@
 package com.netflix.conductor.sdk.workflow.executor.task;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
+import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +36,16 @@ class UserWorker implements Worker {
 
             Object output = execFunction.apply(task);
             try {
+
+                if(output instanceof TaskResult) {
+                    TaskResult result = (TaskResult) output;
+                    if(result.getStatus() == null) {
+                        result.setStatus(TaskResult.Status.COMPLETED);
+                    }
+                    result.setTaskId(task.getTaskId());
+                    return result;
+                }
+
                 Map<String, Object> taskOutput = objectMapper.convertValue(output, Map.class);
                 task.getOutputData().putAll(taskOutput);
             }catch (RuntimeException notConvertible) {
@@ -59,5 +67,10 @@ class UserWorker implements Worker {
     @Override
     public String toString() {
         return "UserWorker:" + workerTask.getName();
+    }
+
+    @Override
+    public int getPollingInterval() {
+        return 10;
     }
 }
