@@ -79,8 +79,9 @@ public class ConductorWorkflow {
         def.setName(name);
         def.setDescription(name);
         def.setFailureWorkflow(failureWorkflow);
+        def.setOutputParameters(output);
         for(BaseWorkflowTask task : tasks) {
-            def.getTasks().addAll(task.toWorkflowTask());
+            def.getTasks().addAll(task.getWorkflowDefTasks());
         }
         return def;
     }

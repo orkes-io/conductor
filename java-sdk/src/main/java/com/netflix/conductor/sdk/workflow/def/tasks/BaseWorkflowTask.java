@@ -7,10 +7,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstraction of a Workflow Task
@@ -143,13 +140,15 @@ public abstract class BaseWorkflowTask {
         return type;
     }
 
-
-    public List<WorkflowTask> updateWorkflowTask(WorkflowTask workflowTask) {
-        return Arrays.asList(workflowTask);
+    public List<WorkerTask> getWorkerExecutedTasks() {
+        return new ArrayList();
     }
 
-    public final List<WorkflowTask> toWorkflowTask() {
+    public List<WorkflowTask> getWorkflowDefTasks() {
+        return Arrays.asList(toWorkflowTask());
+    }
 
+    protected WorkflowTask toWorkflowTask() {
         WorkflowTask workflowTask = new WorkflowTask();
         workflowTask.setName(name);
         workflowTask.setTaskReferenceName(taskReferenceName);
@@ -160,7 +159,8 @@ public abstract class BaseWorkflowTask {
         TaskDef taskDef = new TaskDef();
         taskDef.setName(name);
         workflowTask.setTaskDefinition(taskDef);
-        return updateWorkflowTask(workflowTask);
-    }
 
+        return workflowTask;
+
+    }
 }

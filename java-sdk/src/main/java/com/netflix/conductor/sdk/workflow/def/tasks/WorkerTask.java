@@ -1,8 +1,11 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 /**
@@ -24,4 +27,11 @@ public class WorkerTask extends BaseWorkflowTask {
     public Function<Object, Object> getTaskExecutor() {
         return taskExecutor;
     }
+
+    @Override
+    public List<WorkerTask> getWorkerExecutedTasks() {
+        return Arrays.asList(this);
+    }
+
+
 }

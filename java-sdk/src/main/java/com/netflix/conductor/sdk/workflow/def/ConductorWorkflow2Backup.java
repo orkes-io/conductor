@@ -91,7 +91,7 @@ public class ConductorWorkflow2Backup {
         def.setDescription(name);
         def.setFailureWorkflow(failureWorkflow);
         for(BaseWorkflowTask task : tasks) {
-            def.getTasks().addAll(task.toWorkflowTask());
+            def.getTasks().addAll(task.getWorkflowDefTasks());
         }
 
         return def;
