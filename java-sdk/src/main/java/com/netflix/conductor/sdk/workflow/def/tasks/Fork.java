@@ -19,24 +19,24 @@ public class Fork extends BaseWorkflowTask {
 
     private List<List<WorkerTask>> forkedTaskWorkers;
 
-    public Fork(String taskRefrenceName, BaseWorkflowTask[]... forkedTasks) {
-        super(taskRefrenceName, TaskType.FORK_JOIN);
+    public Fork(String taskReferenceName, BaseWorkflowTask[]... forkedTasks) {
+        super(taskReferenceName, TaskType.FORK_JOIN);
         this.forkedTasks = forkedTasks;
     }
 
-    public Fork(String taskRefrenceName, Function<Object, Object>... forkedTaskFunctions) {
-        super(taskRefrenceName, TaskType.FORK_JOIN);
+    public Fork(String taskReferenceName, Function<Object, Object>... forkedTaskFunctions) {
+        super(taskReferenceName, TaskType.FORK_JOIN);
     }
 
-    public Fork(String taskRefrenceName, Function<Object, Object>[]... forkedTaskFunctions) {
-        super(taskRefrenceName, TaskType.FORK_JOIN);
+    public Fork(String taskReferenceName, Function<Object, Object>[]... forkedTaskFunctions) {
+        super(taskReferenceName, TaskType.FORK_JOIN);
         int i = 0;
         forkedTaskWorkers = new ArrayList<>();
 
         for (Function<Object, Object>[] forkedTaskFunctionList : forkedTaskFunctions) {
             List<WorkerTask> forkedTasks = new ArrayList<>();
             for (Function<Object, Object> forkedTaskFunction : forkedTaskFunctionList) {
-                WorkerTask task = new WorkerTask("forked_task_" + i++, forkedTaskFunction);
+                WorkerTask task = new WorkerTask("_forked_task_" + i++, forkedTaskFunction);
                 forkedTasks.add(task);
             }
             forkedTaskWorkers.add(forkedTasks);
@@ -67,7 +67,6 @@ public class Fork extends BaseWorkflowTask {
 
     @Override
     public List<WorkflowTask> getWorkflowDefTasks() {
-        int i = 0;
         WorkflowTask fork = toWorkflowTask();
         List<String> joinOnTaskRefNames = new ArrayList<>();
         List<List<WorkflowTask>> forkTasks = new ArrayList<>();
@@ -81,8 +80,8 @@ public class Fork extends BaseWorkflowTask {
                 joinOnTaskRefNames.add(forkedWorkflowTasks.get(forkedWorkflowTasks.size()-1).getTaskReferenceName());
             }
         } else if(forkedTaskWorkers != null) {
-            List<WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
             for (List<WorkerTask> forkedTaskWorkerList : forkedTaskWorkers) {
+                List<WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
                 for (WorkerTask workerTask : forkedTaskWorkerList) {
                     forkedWorkflowTasks.addAll(workerTask.getWorkflowDefTasks());
                 }

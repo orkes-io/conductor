@@ -32,12 +32,12 @@ public class TestWorkflowExecutions {
         WorkflowExecutor executor = new WorkflowExecutor(url);
         executor.initWorkers(TestWorkflowExecutions.class.getPackageName());
 
-        Switch sw1 = new Switch("aa", input -> {
+        Switch sw1 = new Switch("switch_task", input -> {
             if(input.equals("a")) {
                 return "path_a";
             }
             return "path_b";
-        }).switchCase("path_q", "task_2");
+        }).switchCase("path_b", "task_2");
 
         WorkflowBuilder builder = new WorkflowBuilder(executor);
         ConductorWorkflow conductorWorkflow = builder
@@ -47,7 +47,10 @@ public class TestWorkflowExecutions {
                 .add("taskx", o -> {
                     return "Hello World";
                 })
-                .add(new Fork("fork_0", new Function[]{input->1}, new Function[]{input -> 100}))
+                .add(new Fork("my_fork_with_2_branches",
+                        new Function[]{input->1, input2 -> 2, input2 -> 3},
+                        new Function[]{input -> 100}))
+                .add(sw1)
                 .build();
 
         conductorWorkflow.toWorkflowDef();
