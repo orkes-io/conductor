@@ -15,10 +15,6 @@ public class WorkerTask extends BaseWorkflowTask {
 
     private Function<Object, Object> taskExecutor;
 
-    public WorkerTask(String taskReferenceName) {
-        super(taskReferenceName, TaskType.SIMPLE);
-    }
-
     public WorkerTask(String taskReferenceName, Function<Object, Object> taskExecutor) {
         super(taskReferenceName, TaskType.SIMPLE);
         this.taskExecutor = taskExecutor;

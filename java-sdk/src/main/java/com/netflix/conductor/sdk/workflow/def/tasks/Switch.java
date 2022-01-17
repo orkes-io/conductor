@@ -2,7 +2,6 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.executor.task.WorkerExecutor;
 
 import java.util.*;
 import java.util.function.Function;
@@ -55,7 +54,7 @@ public class Switch extends BaseWorkflowTask {
 
     public Switch defaultCase(String... workerTasks) {
         for(String workerTask : workerTasks) {
-            this.defaultTasks.add(new WorkerTask(workerTask));
+            this.defaultTasks.add(new SimpleTask(workerTask));
         }
         return this;
     }
@@ -69,7 +68,7 @@ public class Switch extends BaseWorkflowTask {
     public Switch switchCase(String caseValue, String... workerTasks) {
         List<BaseWorkflowTask> tasks = new ArrayList<>(workerTasks.length);
         for(String workerTask : workerTasks) {
-            tasks.add(new WorkerTask(workerTask));
+            tasks.add(new SimpleTask(workerTask));
         }
         branches.put(caseValue, tasks);
         return this;

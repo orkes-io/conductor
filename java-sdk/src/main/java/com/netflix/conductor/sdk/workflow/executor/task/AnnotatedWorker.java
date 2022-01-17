@@ -25,6 +25,7 @@ import com.netflix.conductor.sdk.task.OpParam;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 
 public class AnnotatedWorker implements Worker {
@@ -114,12 +115,23 @@ public class AnnotatedWorker implements Worker {
 
             return (TaskResult) invocationResult;
 
-        } else {
+        } else if(invocationResult instanceof Map){
 
+            //Map resultAsMap = om.convertValue(invocationResult, Map.class);
+            Map resultAsMap = (Map)invocationResult;
+            task.getOutputData().putAll(resultAsMap);
+            task.setStatus(Task.Status.COMPLETED);
+            return new TaskResult(task);
+        } else if(invocationResult instanceof String || invocationResult instanceof Number || invocationResult instanceof Boolean) {
+            task.getOutputData().put("result", invocationResult);
+            task.setStatus(Task.Status.COMPLETED);
+            return new TaskResult(task);
+        } else {
             Map resultAsMap = om.convertValue(invocationResult, Map.class);
             task.getOutputData().putAll(resultAsMap);
             task.setStatus(Task.Status.COMPLETED);
             return new TaskResult(task);
+
         }
     }
 }

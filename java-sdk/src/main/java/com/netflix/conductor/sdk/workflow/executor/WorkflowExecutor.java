@@ -27,6 +27,7 @@ import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
+import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorkerExecutor;
 import com.netflix.conductor.sdk.workflow.executor.task.WorkerExecutor;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
@@ -58,6 +59,8 @@ public class WorkflowExecutor {
 
     private final WorkerExecutor workerExecutor;
 
+    private final AnnotatedWorkerExecutor annotatedWorkerExecutor;
+
     private ScheduledExecutorService scheduledWorkflowMonitor = Executors.newSingleThreadScheduledExecutor();
 
     public WorkflowExecutor(String apiServerURL) {
@@ -73,7 +76,7 @@ public class WorkflowExecutor {
         metadataClient.setRootURI(conductorServerApiBase);
 
         workerExecutor = new WorkerExecutor(apiServerURL);
-
+        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient);
         scheduledWorkflowMonitor.scheduleAtFixedRate(() -> {
 
             for (Map.Entry<String, CompletableFuture<Workflow>> entry : runningWorkflowFutures.entrySet()) {
@@ -91,6 +94,10 @@ public class WorkflowExecutor {
 
         }, 100, 100, TimeUnit.MILLISECONDS);
 
+    }
+
+    public void initWorkers(String packagesToScan) {
+        annotatedWorkerExecutor.initWorkers(packagesToScan);
     }
 
     public void addWorker(ConductorWorkflow workflow, WorkerTask task) {
@@ -161,6 +168,7 @@ public class WorkflowExecutor {
 
     public void shutdown() {
         scheduledWorkflowMonitor.shutdown();
+        annotatedWorkerExecutor.shutdown();
     }
 
 
