@@ -1,5 +1,6 @@
 package com.netflix.conductor.sdk.workflow.def;
 
+import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
@@ -100,8 +101,6 @@ public class WorkflowBuilder {
         add(workerTask);
         return this;
     }
-
-
 
     public ConductorWorkflow build() {
         ConductorWorkflow workflow = new ConductorWorkflow(workflowExecutor);

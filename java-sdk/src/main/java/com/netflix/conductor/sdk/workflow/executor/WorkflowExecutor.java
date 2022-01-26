@@ -172,5 +172,13 @@ public class WorkflowExecutor {
     }
 
 
-
+    public boolean registerWorkflow(WorkflowDef workflowDef) {
+        try {
+            metadataClient.registerWorkflowDef(workflowDef);
+            return true;
+        } catch(Exception e) {
+          LOGGER.error(e.getMessage(), e);
+          return false;
+        }
+    }
 }

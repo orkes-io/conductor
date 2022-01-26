@@ -3,12 +3,12 @@ package com.netflix.conductor.sdk;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.task.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
 import java.util.*;
@@ -16,54 +16,21 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class TestWorkflowExecutions {
+public class TestTypedWorkflowTasks {
 
 
-    @WorkflowTask("task_2")
-    public Map<String, Object> task2(Map<String, Object> input) {
-        input.put("a", "b");
-        return input;
+    @WorkflowTask("get_credit_scores")
+    public CreditProcessingResult getCreditScores(CustomerInfo customerInfo) {
+        return new CreditProcessingResult(customerInfo);
     }
 
-    public TaskResult task21(Map<String, Object> input) {
-        TaskResult taskResult = new TaskResult();
-        taskResult.setStatus(TaskResult.Status.COMPLETED);
-        taskResult.getOutputData().put("key1", "value");
-        taskResult.getOutputData().put("key2",42);
-        return taskResult;
+    private static class TaskMapper<T> {
+        public static <T>T get() {
+            return null;
+        }
     }
 
-    @WorkflowTask("task_100")
-    public Map<String, Object> task101() {
-        return null;
-    }
 
-    @WorkflowTask("task_101")
-    public GlobalState someTask(MyWorkflowInput input) {
-        return null;
-    }
-
-    @WorkflowTask("task_100")
-    public Map<String, Object> task100(Map<String, Object> input) {
-        input.put("a", "b");
-        return input;
-    }
-
-    @WorkflowTask("fooBarTask")
-    public Map<String, Object> fooBarTask(Map<String, Object> input) {
-        List<WorkflowTask> forkedTasks = new ArrayList<>();
-        SimpleTask task1 = new SimpleTask("task_2", "task_2_1");
-        SimpleTask task2 = new SimpleTask("task_2", "task_100_1");
-        input.put("tasks", Arrays.asList(task1, task2));
-
-        Map<String, Map<String, Object>> taskInputs = new HashMap<>();
-        taskInputs.put("task_2_1", new HashMap<>());
-        taskInputs.put("task_100_1", new HashMap<>());
-
-        input.put("taskInputs", taskInputs);
-
-        return input;
-    }
 
     @Test
     public void testExecuteSimple() throws ExecutionException, InterruptedException, JsonProcessingException {
@@ -71,7 +38,7 @@ public class TestWorkflowExecutions {
         String url = "https://saastestapi.orkes.net/api/";
         //url = "http://localhost:8080/api/";
         WorkflowExecutor executor = new WorkflowExecutor(url);
-        executor.initWorkers(TestWorkflowExecutions.class.getPackageName());
+        executor.initWorkers(TestTypedWorkflowTasks.class.getPackageName());
 
         Switch sw1 = new Switch("switch_task",
                 input -> {
@@ -96,6 +63,13 @@ public class TestWorkflowExecutions {
 
         ConductorWorkflow conductorWorkflow = builder
                 .name("test_wf_as_code")
+                .add(
+                        new SimpleTask("get_credit_scores", "get_credit_scores")
+                                .mapper(workflow -> {
+                                    return new CustomerInfo();
+                                })
+                )
+                .add("process_customer_info", o -> getCreditScores(TaskMapper.get()))
                 .add(new SimpleTask("task_2", "task_2_0"))
                 .add("taskx", o -> "Hello World from taskx")
                 .add(new Fork("my_fork_with_2_branches",
@@ -106,8 +80,8 @@ public class TestWorkflowExecutions {
                 .add(dynamicFork)
                 .build();
 
-
-        ConductorWorkflow conductorWorkflow2 = builder
+         /*
+        ConductorWorkflow conductorWorkflow = builder
                 .name("name")
                 .version(1)
                 .failureWorkflow("failureWorkflow")
@@ -119,14 +93,12 @@ public class TestWorkflowExecutions {
                                         new SimpleTask("ab", "bcd"))
                                 .switchCase("sfo",
                                         new SimpleTask("a", "b"),
-                                        new SimpleTask("a", "bc"),
-                                        doWhile
+                                        new SimpleTask("a", "bc")
                                 )
                                 .defaultCase("")
                 )
-                .add(doWhile)
                 .build();
-
+*/
         //ConductorWorkflow conductorWorkflow2 = ConductorWorkflow.byNameAndVersion("abcd", 2);
         boolean success = conductorWorkflow.registerWorkflow();
 

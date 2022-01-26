@@ -54,7 +54,7 @@ public class Switch extends BaseWorkflowTask {
 
     public Switch defaultCase(String... workerTasks) {
         for(String workerTask : workerTasks) {
-            this.defaultTasks.add(new SimpleTask(workerTask));
+            this.defaultTasks.add(new SimpleTask(workerTask, workerTask));
         }
         return this;
     }
@@ -69,7 +69,7 @@ public class Switch extends BaseWorkflowTask {
         List<BaseWorkflowTask> tasks = new ArrayList<>(workerTasks.length);
         int i = 0;
         for(String workerTask : workerTasks) {
-            tasks.add(new SimpleTask(workerTask));
+            tasks.add(new SimpleTask(workerTask, workerTask));
         }
         branches.put(caseValue, tasks);
         return this;

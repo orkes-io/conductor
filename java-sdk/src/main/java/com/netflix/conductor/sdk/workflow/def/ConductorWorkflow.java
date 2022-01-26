@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Conductor workflow
  */
-public class ConductorWorkflow {
+public class ConductorWorkflow<T> {
 
     private String name;
 
@@ -69,12 +69,21 @@ public class ConductorWorkflow {
         return workflowExecutor.executeWorkflow(this, input);
     }
 
+    /**
+     *
+     * @return true if success, false if the workflow already exists with the given version number
+     */
+    public boolean registerWorkflow() {
+        return workflowExecutor.registerWorkflow(toWorkflowDef());
+    }
+
     public WorkflowDef toWorkflowDef() {
         WorkflowDef def = new WorkflowDef();
         def.setName(name);
         def.setDescription(name);
         def.setFailureWorkflow(failureWorkflow);
         def.setOutputParameters(output);
+        def.setOwnerEmail("hello@example.com");
         for(BaseWorkflowTask task : tasks) {
             def.getTasks().addAll(task.getWorkflowDefTasks());
         }
