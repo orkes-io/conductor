@@ -71,6 +71,6 @@ class UserWorker implements Worker {
 
     @Override
     public int getPollingInterval() {
-        return 10;
+        return 1;
     }
 }

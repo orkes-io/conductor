@@ -20,9 +20,19 @@ public class ConductorWorkflow<T> {
 
     private String description;
 
+    private int version;
+
     private String failureWorkflow;
 
-    private int version;
+    private String ownerEmail;
+
+    private WorkflowDef.TimeoutPolicy timeoutPolicy;
+
+    private long timeoutSeconds;
+
+    private boolean restartable = true;
+
+    private T defaultInput;
 
     private Map<String, Object> output = new HashMap<>();
 
@@ -60,36 +70,6 @@ public class ConductorWorkflow<T> {
         this.tasks.add(task);
     }
 
-    /**
-     *
-     * @param input Workflow Input - The input object is converted a JSON doc as an input to the workflow
-     * @return
-     */
-    public CompletableFuture<Workflow> execute(Object input) {
-        return workflowExecutor.executeWorkflow(this, input);
-    }
-
-    /**
-     *
-     * @return true if success, false if the workflow already exists with the given version number
-     */
-    public boolean registerWorkflow() {
-        return workflowExecutor.registerWorkflow(toWorkflowDef());
-    }
-
-    public WorkflowDef toWorkflowDef() {
-        WorkflowDef def = new WorkflowDef();
-        def.setName(name);
-        def.setDescription(name);
-        def.setFailureWorkflow(failureWorkflow);
-        def.setOutputParameters(output);
-        def.setOwnerEmail("hello@example.com");
-        for(BaseWorkflowTask task : tasks) {
-            def.getTasks().addAll(task.getWorkflowDefTasks());
-        }
-        return def;
-    }
-
     public String getName() {
         return name;
     }
@@ -102,6 +82,96 @@ public class ConductorWorkflow<T> {
         return version;
     }
 
+    public String getFailureWorkflow() {
+        return failureWorkflow;
+    }
+
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
+    public WorkflowDef.TimeoutPolicy getTimeoutPolicy() {
+        return timeoutPolicy;
+    }
+
+    public void setTimeoutPolicy(WorkflowDef.TimeoutPolicy timeoutPolicy) {
+        this.timeoutPolicy = timeoutPolicy;
+    }
+
+    public long getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(long timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
+    }
+
+    public boolean isRestartable() {
+        return restartable;
+    }
+
+    public void setRestartable(boolean restartable) {
+        this.restartable = restartable;
+    }
+
+    public T getDefaultInput() {
+        return defaultInput;
+    }
+
+    public void setDefaultInput(T defaultInput) {
+        this.defaultInput = defaultInput;
+    }
+
+    public static class Input {
+
+        public String get(String key) {
+            return "${workflow.input." + key + "}";
+        }
+    }
+
+    public static final Input input = new Input();
+
+    /**
+     *
+     * @param input Workflow Input - The input object is converted a JSON doc as an input to the workflow
+     * @return
+     */
+    public CompletableFuture<Workflow> execute(T input) {
+        return workflowExecutor.executeWorkflow(this, input);
+    }
+
+    /**
+     *
+     * @return true if success, false if the workflow already exists with the given version number
+     */
+    public boolean registerWorkflow() {
+        return workflowExecutor.registerWorkflow(toWorkflowDef());
+    }
+
+    public WorkflowDef toWorkflowDef() {
+
+        WorkflowDef def = new WorkflowDef();
+        def.setName(name);
+        def.setDescription(description);
+        def.setVersion(version);
+        def.setFailureWorkflow(failureWorkflow);
+        def.setOwnerEmail(ownerEmail);
+        def.setOutputParameters(output);
+        def.setTimeoutPolicy(timeoutPolicy);
+        def.setTimeoutSeconds(timeoutSeconds);
+        def.setRestartable(restartable);
+        def.setOutputParameters(output);
+        def.setInputTemplate(objectMapper.convertValue(defaultInput, Map.class));
+
+        for(BaseWorkflowTask task : tasks) {
+            def.getTasks().addAll(task.getWorkflowDefTasks());
+        }
+        return def;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,3 +1,4 @@
+apply plugin: 'groovy'
 
 dependencies {
 
@@ -6,4 +7,20 @@ dependencies {
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.google.guava:guava:${revGuava}"
+
+    testImplementation "org.springframework:spring-web"
+    testImplementation "org.spockframework:spock-core:${revSpock}"
+    testImplementation "org.spockframework:spock-spring:${revSpock}"
+
+
+    testImplementation "com.fasterxml.jackson.core:jackson-core"
+    testImplementation "org.apache.commons:commons-lang3"
+
+    testImplementation "org.codehaus.groovy:groovy-all:${revGroovy}"
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
 }

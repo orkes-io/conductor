@@ -93,7 +93,8 @@ public class Fork extends BaseWorkflowTask {
 
         WorkflowTask joinWorkflowTasks = null;
         if(this.join != null) {
-            joinWorkflowTasks = this.join.getWorkflowDefTasks().get(0);
+            List<WorkflowTask> joinTasks = this.join.getWorkflowDefTasks();
+            joinWorkflowTasks = joinTasks.get(0);
         } else {
             joinWorkflowTasks = new WorkflowTask();
             joinWorkflowTasks.setWorkflowTaskType(TaskType.JOIN);

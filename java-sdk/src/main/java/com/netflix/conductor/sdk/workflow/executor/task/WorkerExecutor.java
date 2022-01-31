@@ -56,14 +56,14 @@ public class WorkerExecutor {
 
         if(taskRunner == null) {
             taskRunner = new TaskRunnerConfigurer.Builder(taskClient, taskWorkers)
-                    .withThreadCount(taskWorkers.size())
+                    .withThreadCount(taskWorkers.size() * 2)
                     .withWorkerNamePrefix(workflow.getName())
                     .build();
             taskRunners.put(workflow, taskRunner);
         }
         taskRunner.init();
         taskRunnerState.put(workflow, Boolean.TRUE);
-        System.out.println("Started polling for " + workflow.getName());
+        System.out.println("Started polling for " + workflow.getName() + ", workers: " + taskWorkers);
         LOGGER.info("Started polling workers for {}/{}", workflow.getName(), workflow.getVersion());
     }
 

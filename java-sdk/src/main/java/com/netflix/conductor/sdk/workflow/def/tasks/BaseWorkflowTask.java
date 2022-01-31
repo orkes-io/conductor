@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Abstraction of a Workflow Task
  */
-public abstract class BaseWorkflowTask {
+public abstract class BaseWorkflowTask<R> {
 
     private String name;
 
@@ -64,6 +64,20 @@ public abstract class BaseWorkflowTask {
         return this;
     }
 
+    public BaseWorkflowTask input(Object... keyValues) {
+        if(keyValues.length %2 == 1) {
+            throw new IllegalArgumentException("Not all keys have value specified");
+        }
+        for(int i = 0; i < keyValues.length;) {
+            String key = keyValues[i].toString();
+            Object value = keyValues[i+1];
+            input.put(key, value);
+
+            i += 2;
+        }
+        return this;
+    }
+
     public BaseWorkflowTask input(String key, String value) {
         input.put(key, value);
         return this;
@@ -86,6 +100,11 @@ public abstract class BaseWorkflowTask {
 
     public BaseWorkflowTask input(String key, Map<String, Object> value) {
         input.put(key, value);
+        return this;
+    }
+
+    public BaseWorkflowTask input(Map<String, Object> map) {
+        input.putAll(map);
         return this;
     }
 
@@ -163,4 +182,25 @@ public abstract class BaseWorkflowTask {
         return workflowTask;
 
     }
+
+    /*
+    public static class Output<R> {
+        private String refName;
+
+        public Output(String refName) {
+            this.refName = refName;
+        }
+
+        public String get(String key) {
+            return "${" + refName + ".output." + key + "}";
+        }
+
+        public Map<String, Object> get(Class<R> key) {
+            return null;
+        }
+    }
+
+    public final Output<R> taskOutput = new Output(taskReferenceName);
+
+     */
 }

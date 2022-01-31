@@ -2,34 +2,31 @@ package com.netflix.conductor.sdk;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.sdk.task.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
-import org.checkerframework.checker.units.qual.C;
 import org.junit.Test;
 
-import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+@SuppressWarnings("ALL")
 public class TestTypedWorkflowTasks {
 
 
     @WorkflowTask("get_credit_scores")
     public CreditProcessingResult getCreditScores(CustomerInfo customerInfo) {
+        CustomerInfo ci = null;
         return new CreditProcessingResult(customerInfo);
     }
 
-    private static class TaskMapper<T> {
-        public static <T>T get() {
-            return null;
-        }
+    @WorkflowTask("fooBarTask")
+    public CreditProcessingResult fooBar(String name, int creditScore, String zipCode) {
+        return new CreditProcessingResult(null);
     }
-
 
 
     @Test
@@ -59,27 +56,51 @@ public class TestTypedWorkflowTasks {
         DynamicFork dynamicFork = new DynamicFork("dynamic_fork",
                 "${fooBarTask.output.tasks}", "${fooBarTask.output.taskInputs}");
 
-        WorkflowBuilder builder = new WorkflowBuilder(executor);
+        SimpleTask<CreditProcessingResult> fooBar = new SimpleTask("fooBarTask", "fooBarTask");
+        fooBar.input(
+                "name", ConductorWorkflow.input.get("name"),
+                "creditScore", ConductorWorkflow.input.get("creditScore"),
+                "zipCode", ConductorWorkflow.input.get("creditScore"),
+                "amount", 23
+        );
 
-        ConductorWorkflow conductorWorkflow = builder
+        SimpleTask fooBar2 = new SimpleTask("fooBarTask", "fooBarTask");
+        fooBar2.input(
+                "name", ConductorWorkflow.input.get("name"),
+                "creditScore", ConductorWorkflow.input.get("creditScore"),
+                "zipCode", ConductorWorkflow.input.get("creditScore"),
+                "amount", 12
+        );
+
+        SimpleTask fooBar3 = new SimpleTask("fooBarTask", "fooBarTask");
+        //fooBar3.input(fooBar.taskOutput.get(CreditProcessingResult.class));
+
+
+
+        WorkflowBuilder<MyWorkflowInput> builder = new WorkflowBuilder<>(executor);
+        builder
                 .name("test_wf_as_code")
+                .add(fooBar)
                 .add(
-                        new SimpleTask("get_credit_scores", "get_credit_scores")
-                                .mapper(workflow -> {
-                                    return new CustomerInfo();
-                                })
+                        new SimpleTask("get_credit_scores","get_credit_scores")
                 )
-                .add("process_customer_info", o -> getCreditScores(TaskMapper.get()))
+                .build();
+
+        SimpleTask getCreditScores =
+                new SimpleTask("get_credit_scores", "get_credit_scores");
+
+        ConductorWorkflow<MyWorkflowInput> conductorWorkflow = new WorkflowBuilder(executor)
+                .name("test_wf_as_code")
+                .add(fooBar)
+                .add(getCreditScores)
                 .add(new SimpleTask("task_2", "task_2_0"))
                 .add("taskx", o -> "Hello World from taskx")
                 .add(new Fork("my_fork_with_2_branches",
                         new Function[]{input -> 1, input2 -> 2, input2 -> 3},
                         new Function[]{input -> 100}))
                 .add(doWhile)
-                .add(new SimpleTask("fooBarTask", "fooBarTask"))
                 .add(dynamicFork)
                 .build();
-
          /*
         ConductorWorkflow conductorWorkflow = builder
                 .name("name")
@@ -101,7 +122,6 @@ public class TestTypedWorkflowTasks {
 */
         //ConductorWorkflow conductorWorkflow2 = ConductorWorkflow.byNameAndVersion("abcd", 2);
         boolean success = conductorWorkflow.registerWorkflow();
-
         conductorWorkflow.execute(new MyWorkflowInput()).thenAccept(workflow -> {
 
         });

@@ -93,7 +93,8 @@ public class Switch extends BaseWorkflowTask {
 
         if(decisionMakerTask != null) {
             useJavascript = false;
-            switchTasks.add(0, decisionMakerTask.getWorkflowDefTasks().get(0));
+            List<WorkflowTask> decisionMakerWorkflowDefs = decisionMakerTask.getWorkflowDefTasks();
+            switchTasks.add(0, decisionMakerWorkflowDefs.get(0));
         }
 
         if(useJavascript) {

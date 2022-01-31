@@ -1,40 +1,58 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
+import java.util.Map;
 
 /**
  * Workflow task executed by a worker
  */
-public class SimpleTask extends BaseWorkflowTask {
+public class SimpleTask<R> extends BaseWorkflowTask<R> {
 
-    private static AtomicInteger counter = new AtomicInteger(0);
+    private static final int ONE_HOUR = 60 * 60;
+
+    private final ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     private boolean useGlobalTaskDef;
+
+    private TaskDef taskDef;
+
+    private Map<String, Object> inputTemplate = new HashMap<>();
 
     public SimpleTask(String taskDefName, String taskReferenceName) {
         super(taskReferenceName, TaskType.SIMPLE);
         super.setName(taskDefName);
     }
 
-    private String toRefName(String taskDefName) {
-        String regex = "([a-z])([A-Z]+)";
-        String replacement = "$1_$2";
-        return taskDefName.replaceAll(regex, replacement).toLowerCase() + "_" + counter.getAndIncrement();
-    }
-
+    /**
+     * When set workflow will  use the  task definition registered in conductor.
+     * Workflow registration will fail if no task definitions are found in conductor server
+     * @return current instance
+     */
     public SimpleTask useGlobalTaskDef() {
         this.useGlobalTaskDef = true;
         return this;
     }
 
-    public SimpleTask mapper(Function<Workflow, Object> taskMaper) {
+    public SimpleTask useTaskDef(TaskDef taskDef) {
+        this.taskDef = taskDef;
+        this.useGlobalTaskDef = false;
         return this;
+    }
+
+    @Override
+    protected WorkflowTask toWorkflowTask() {
+        WorkflowTask task = super.toWorkflowTask();
+        if(this.taskDef != null) {
+            task.setTaskDefinition(taskDef);
+        }
+        return task;
     }
 
     @Override
@@ -44,5 +62,10 @@ public class SimpleTask extends BaseWorkflowTask {
             tasks.forEach(task -> task.setTaskDefinition(null));
         }
         return tasks;
+    }
+
+    @Override
+    public List<WorkerTask> getWorkerExecutedTasks() {
+        return super.getWorkerExecutedTasks();
     }
 }

@@ -1,6 +1,6 @@
 package com.netflix.conductor.sdk.workflow.def;
 
-import com.netflix.conductor.common.run.Workflow;
+import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
@@ -14,25 +14,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
- * Conductor workflow
+ * Conductor workflow Builder
  */
-public class WorkflowBuilder {
+public class WorkflowBuilder<T> {
 
     private String name;
 
     private String description;
 
-    private String failureWorkflow;
-
     private int version;
 
-    private String correlationId;
+    private String failureWorkflow;
+
+    private String ownerEmail;
+
+    private WorkflowDef.TimeoutPolicy timeoutPolicy;
+
+    private long timeoutSeconds;
+
+    private boolean restartable = true;
+
+    private T defaultInput;
 
     private Map<String, Object> output = new HashMap<>();
 
     private List<BaseWorkflowTask> tasks = new ArrayList<>();
-
-    private AtomicInteger taskId = new AtomicInteger(0);
 
     private WorkflowExecutor workflowExecutor;
 
@@ -57,6 +63,27 @@ public class WorkflowBuilder {
 
     public WorkflowBuilder failureWorkflow(String failureWorkflow) {
         this.failureWorkflow = failureWorkflow;
+        return this;
+    }
+
+    public WorkflowBuilder ownerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+        return this;
+    }
+
+    public WorkflowBuilder timeoutPolicy(WorkflowDef.TimeoutPolicy timeoutPolicy, long timeoutSeconds) {
+        this.timeoutPolicy = timeoutPolicy;
+        this.timeoutSeconds = timeoutSeconds;
+        return this;
+    }
+
+    public WorkflowBuilder defaultInput(T defaultInput) {
+        this.defaultInput = defaultInput;
+        return this;
+    }
+
+    public WorkflowBuilder restartable(boolean restartable) {
+        this.restartable = restartable;
         return this;
     }
 
@@ -90,31 +117,33 @@ public class WorkflowBuilder {
         return this;
     }
 
-    public WorkflowBuilder add(Function<Object, Object> task) {
-        String name = this.name + "_task_" + taskId.getAndIncrement();
-        add(name, task);
-        return this;
-    }
-
-    public WorkflowBuilder add(String name, Function<Object, Object> task) {
-        WorkerTask workerTask = new WorkerTask(name, task);
+    public WorkflowBuilder add(String taskReferenceName, Function<Object, Object> task) {
+        WorkerTask workerTask = new WorkerTask(taskReferenceName, task);
         add(workerTask);
         return this;
     }
 
-    public ConductorWorkflow build() {
+    public ConductorWorkflow<T> build() {
         ConductorWorkflow workflow = new ConductorWorkflow(workflowExecutor);
         if(description != null) {
             workflow.setDescription(description);
         }
-        workflow.setFailureWorkflow(failureWorkflow);
+
         workflow.setName(name);
         workflow.setVersion(version);
+        workflow.setDescription(description);
+        workflow.setFailureWorkflow(failureWorkflow);
+        workflow.setOwnerEmail(ownerEmail);
+        workflow.setTimeoutPolicy(timeoutPolicy);
+        workflow.setTimeoutSeconds(timeoutSeconds);
+        workflow.setRestartable(restartable);
+        workflow.setDefaultInput(defaultInput);
         workflow.setOutput(output);
+
         for (BaseWorkflowTask task : tasks) {
             workflow.add(task);
-            task.getWorkerExecutedTasks()
-                    .stream()
+            List<WorkerTask> workerExecutedTasks = task.getWorkerExecutedTasks();
+            workerExecutedTasks.stream()
                     .forEach(workerTask -> workflowExecutor.addWorker(workflow, workerTask));
         }
         return workflow;

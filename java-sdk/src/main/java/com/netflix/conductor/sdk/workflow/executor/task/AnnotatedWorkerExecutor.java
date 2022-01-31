@@ -110,6 +110,7 @@ public class AnnotatedWorkerExecutor {
             String name = annotation.value();
             workerExecutors.put(name, method);
             workerClassObjs.put(name, obj);
+            LOGGER.info("Adding worker for task {}, method {}", name, method);
         }
     }
 

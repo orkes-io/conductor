@@ -21,7 +21,13 @@ public class TestWorkflowExecutions {
 
     @WorkflowTask("task_2")
     public Map<String, Object> task2(Map<String, Object> input) {
-        input.put("a", "b");
+        input.put("a2", "b2");
+        return input;
+    }
+
+    @WorkflowTask("task_1")
+    public Map<String, Object> task1(Map<String, Object> input) {
+        input.put("a1", "b1");
         return input;
     }
 
