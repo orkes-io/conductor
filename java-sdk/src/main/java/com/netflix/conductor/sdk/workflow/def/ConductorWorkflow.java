@@ -6,6 +6,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import java.util.*;
@@ -15,6 +16,8 @@ import java.util.concurrent.CompletableFuture;
  * Conductor workflow
  */
 public class ConductorWorkflow<T> {
+
+    public static final InputOutputGetter input = new InputOutputGetter("workflow", InputOutputGetter.Field.input);
 
     private String name;
 
@@ -125,15 +128,6 @@ public class ConductorWorkflow<T> {
     public void setDefaultInput(T defaultInput) {
         this.defaultInput = defaultInput;
     }
-
-    public static class Input {
-
-        public String get(String key) {
-            return "${workflow.input." + key + "}";
-        }
-    }
-
-    public static final Input input = new Input();
 
     /**
      *

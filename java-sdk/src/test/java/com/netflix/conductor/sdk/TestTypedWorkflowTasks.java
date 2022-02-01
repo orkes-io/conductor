@@ -61,7 +61,7 @@ public class TestTypedWorkflowTasks {
                 "name", ConductorWorkflow.input.get("name"),
                 "creditScore", ConductorWorkflow.input.get("creditScore"),
                 "zipCode", ConductorWorkflow.input.get("creditScore"),
-                "amount", 23
+                "amount", doWhile.taskOutput.get("amount")
         );
 
         SimpleTask fooBar2 = new SimpleTask("fooBarTask", "fooBarTask");

@@ -22,6 +22,7 @@ import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.sdk.task.IpParam;
 import com.netflix.conductor.sdk.task.OpParam;
+import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -36,7 +37,7 @@ public class AnnotatedWorker implements Worker {
 
     private Object obj;
 
-    private ObjectMapper om = new ObjectMapper();
+    private ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
     public AnnotatedWorker(String name, Method workerMethod, Object obj) {
         this.name = name;

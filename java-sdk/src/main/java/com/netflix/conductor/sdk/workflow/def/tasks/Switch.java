@@ -29,12 +29,12 @@ public class Switch extends BaseWorkflowTask {
         this.caseExpression = caseExpression;
     }
 
-    public Switch(String taskReferenceName, Function<Object, String> decisionMaker) {
+    public <T> Switch(String taskReferenceName, Function<T, String> decisionMaker) {
         super(taskReferenceName, TaskType.SWITCH);
         this.decisionMakerTaskName = "_decide_" + taskReferenceName;
         this.caseExpression = "${" + decisionMakerTaskName + ".output.branch}";
 
-        decisionMakerTask = new WorkerTask("_decide_" + taskReferenceName, input -> {
+        decisionMakerTask = new WorkerTask<T>("_decide_" + taskReferenceName, input -> {
             String selected = decisionMaker.apply(input);
             Map<String, String> output = new HashMap<>();
             output.put("branch", selected);
@@ -131,7 +131,9 @@ public class Switch extends BaseWorkflowTask {
     @Override
     public List<WorkerTask> getWorkerExecutedTasks() {
         List<WorkerTask> workerExecutedTasks = new ArrayList<>();
-        workerExecutedTasks.add(decisionMakerTask);
+        if(decisionMakerTask != null) {
+            workerExecutedTasks.add(decisionMakerTask);
+        }
         branches.entrySet().forEach(entry -> {
             List<BaseWorkflowTask> decisionTasks = entry.getValue();
             for (BaseWorkflowTask decisionTask : decisionTasks) {

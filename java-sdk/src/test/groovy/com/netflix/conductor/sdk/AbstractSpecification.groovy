@@ -18,9 +18,9 @@ class AbstractSpecification extends Specification {
         if(executor != null) {
             return;
         }
-        //String url = "http://192.168.50.99:8080/api/";
-        WorkflowTestRunner testRunner = new WorkflowTestRunner(8097, "3.4.1");
-        //WorkflowTestRunner testRunner = new WorkflowTestRunner(url);
+        String url = "https://saastestapi.orkes.net/api/";
+        //WorkflowTestRunner testRunner = new WorkflowTestRunner(8097, "3.4.1");
+        WorkflowTestRunner testRunner = new WorkflowTestRunner(url);
         testRunner.init("com.netflix.conductor");
         executor = testRunner.getWorkflowExecutor();
     }

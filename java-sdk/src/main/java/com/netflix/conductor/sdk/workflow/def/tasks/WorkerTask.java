@@ -8,17 +8,18 @@ import java.util.function.Function;
 
 /**
  * Workflow task executed by a worker
+ * T: type of the input the worker task takes.
  */
-public class WorkerTask extends BaseWorkflowTask {
+public class WorkerTask<T> extends BaseWorkflowTask {
 
-    private Function<Object, Object> taskExecutor;
+    private Function<T, Object> taskExecutor;
 
-    public WorkerTask(String taskReferenceName, Function<Object, Object> taskExecutor) {
+    public WorkerTask(String taskReferenceName, Function<T, Object> taskExecutor) {
         super(taskReferenceName, TaskType.SIMPLE);
         this.taskExecutor = taskExecutor;
     }
 
-    public Function<Object, Object> getTaskExecutor() {
+    public Function<T, Object> getTaskExecutor() {
         return taskExecutor;
     }
 
@@ -26,6 +27,5 @@ public class WorkerTask extends BaseWorkflowTask {
     public List<WorkerTask> getWorkerExecutedTasks() {
         return Arrays.asList(this);
     }
-
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
@@ -32,10 +33,16 @@ public abstract class BaseWorkflowTask<R> {
 
     protected final ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
+    public final InputOutputGetter taskInput;
+
+    public final InputOutputGetter taskOutput;
+
     public BaseWorkflowTask(String taskReferenceName, TaskType type) {
         this.name = taskReferenceName;
         this.taskReferenceName = taskReferenceName;
         this.type = type;
+        this.taskInput = new InputOutputGetter(taskReferenceName, InputOutputGetter.Field.input);
+        this.taskOutput = new InputOutputGetter(taskReferenceName, InputOutputGetter.Field.output);
     }
 
     public BaseWorkflowTask name(String name) {
@@ -183,24 +190,4 @@ public abstract class BaseWorkflowTask<R> {
 
     }
 
-    /*
-    public static class Output<R> {
-        private String refName;
-
-        public Output(String refName) {
-            this.refName = refName;
-        }
-
-        public String get(String key) {
-            return "${" + refName + ".output." + key + "}";
-        }
-
-        public Map<String, Object> get(Class<R> key) {
-            return null;
-        }
-    }
-
-    public final Output<R> taskOutput = new Output(taskReferenceName);
-
-     */
 }

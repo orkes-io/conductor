@@ -10,9 +10,7 @@ public abstract class AbstractSDKTest {
 
     @BeforeAll
     public static void init() {
-        String url = "http://192.168.50.99:8080/api/";
-        //WorkflowTestRunner testRunner = new WorkflowTestRunner(8096, "3.4.1");
-        WorkflowTestRunner testRunner = new WorkflowTestRunner(url);
+        WorkflowTestRunner testRunner = new WorkflowTestRunner(8096, "3.4.1");
         testRunner.init("com.netflix.conductor");
         executor = testRunner.getWorkflowExecutor();
     }

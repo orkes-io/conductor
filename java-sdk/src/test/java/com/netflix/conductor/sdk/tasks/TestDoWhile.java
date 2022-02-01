@@ -6,8 +6,11 @@ import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
+import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 import org.junit.jupiter.api.Test;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -21,7 +24,9 @@ public class TestDoWhile extends AbstractSDKTest {
         SimpleTask task3 = new SimpleTask("task_2", "task_3");
 
         DoWhile doWhile = new DoWhile("execute_3_times", 3, task1, task2, task3);
-
+        Switch sw1 = new Switch("s1", (Map<String, Object> input) -> {
+            return null;
+        });
         ConductorWorkflow workflow = new WorkflowBuilder(executor)
                 .name("test_do_while_loop")
                 .ownerEmail("owner@example.com")
