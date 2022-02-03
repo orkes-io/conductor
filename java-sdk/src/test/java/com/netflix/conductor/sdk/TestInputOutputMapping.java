@@ -44,5 +44,11 @@ public class TestInputOutputMapping {
                 new SimpleTask<>("get_loan_amount", "get_loan_amount");
 
         getLoanAmount.input(CreditProcessingResult::getFicoScore);
+
+        ConductorWorkflow workflowDef = new WorkflowBuilder(null)
+                .name("chain_task_input_outputs")
+                .add(getCreditScores)
+                .add(getLoanAmount)
+                .build();
     }
 }
