@@ -4,6 +4,7 @@ import com.netflix.conductor.common.run.Workflow
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder
 import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask
+import com.netflix.conductor.testing.workflows.Task1Input
 
 class DoWhileSpec extends AbstractSpecification {
 
@@ -32,11 +33,16 @@ class DoWhileSpec extends AbstractSpecification {
         given: "Workflow with doWhile"
         def task1 = new SimpleTask("task_1", "task_1")
         def doWhile = new DoWhile("execute_3_times", 3, task1);
+        def doWhile2 = new DoWhile("execute_2_times", 2, { Task1Input input ->
+            return 42;
+        });
         def conductorWorkflow =
                 new WorkflowBuilder(executor)
                         .name("test_do_while")
                         .ownerEmail("owner@example.com")
-                        .add(doWhile).build();
+                        .add(doWhile)
+                        .add(doWhile2)
+                        .build();
 
         when: "Conductor workflow is executed"
         Workflow execution = conductorWorkflow.execute([:]).get();

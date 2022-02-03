@@ -10,7 +10,9 @@ public abstract class AbstractSDKTest {
 
     @BeforeAll
     public static void init() {
-        WorkflowTestRunner testRunner = new WorkflowTestRunner(8096, "3.4.1");
+        String url = "https://saastestapi.orkes.net/api/";
+        //WorkflowTestRunner testRunner = new WorkflowTestRunner(8096, "3.4.1");
+        WorkflowTestRunner testRunner = new WorkflowTestRunner(url);
         testRunner.init("com.netflix.conductor");
         executor = testRunner.getWorkflowExecutor();
     }

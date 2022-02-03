@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * Workflow task executed by a worker
  */
-public class SimpleTask<R> extends BaseWorkflowTask<R> {
+public class SimpleTask<I, O> extends BaseWorkflowTask<I, O> {
 
     private static final int ONE_HOUR = 60 * 60;
 

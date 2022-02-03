@@ -30,7 +30,7 @@ public class DoWhile extends BaseWorkflowTask {
 
     }
 
-    public DoWhile(String taskReferenceName, int loopCount, Function<Object, Object>... taskFunctions) {
+    public <T> DoWhile(String taskReferenceName, int loopCount, Function<T, Object>... taskFunctions) {
         super(taskReferenceName, TaskType.DO_WHILE);
         this.loopCondition = getForLoopCondition(loopCount);
         for(int i = 0; i < taskFunctions.length; i++) {

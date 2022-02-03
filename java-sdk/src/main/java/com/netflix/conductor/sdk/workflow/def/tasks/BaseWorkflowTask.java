@@ -9,11 +9,12 @@ import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Abstraction of a Workflow Task
  */
-public abstract class BaseWorkflowTask<R> {
+public abstract class BaseWorkflowTask<I,O> {
 
     private String name;
 
@@ -72,7 +73,7 @@ public abstract class BaseWorkflowTask<R> {
     }
 
     public BaseWorkflowTask input(Object... keyValues) {
-        if(keyValues.length %2 == 1) {
+        if(keyValues.length % 2 == 1) {
             throw new IllegalArgumentException("Not all keys have value specified");
         }
         for(int i = 0; i < keyValues.length;) {
@@ -128,6 +129,17 @@ public abstract class BaseWorkflowTask<R> {
     public BaseWorkflowTask output(MapBuilder builder) {
         output.putAll(builder.build());
         return this;
+    }
+
+    public <T> BaseWorkflowTask input(Function<T, I> fn) {
+        return this;
+    }
+    public O getOutput() {
+        return null;
+    }
+
+    public void setInput(I input) {
+
     }
 
     public String getName() {
@@ -187,6 +199,11 @@ public abstract class BaseWorkflowTask<R> {
         workflowTask.setTaskDefinition(taskDef);
 
         return workflowTask;
+
+    }
+
+    public static void main(String[] args) {
+        ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     }
 

@@ -7,8 +7,11 @@ import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
+import com.netflix.conductor.testing.workflows.Task1Input;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -48,23 +51,35 @@ public class TestTypedWorkflowTasks {
 
         AtomicInteger counter = new AtomicInteger(10);
 
-        DoWhile doWhile = new DoWhile("execute_3_times", 3,
+        DoWhile task2 = new DoWhile("execute_3_times", 3,
                 input -> counter.getAndIncrement())
                 .add(sw1)
                 .add(new SimpleTask("task_100", "task_100_0"));
 
+
+
         DynamicFork dynamicFork = new DynamicFork("dynamic_fork",
                 "${fooBarTask.output.tasks}", "${fooBarTask.output.taskInputs}");
 
-        SimpleTask<CreditProcessingResult> fooBar = new SimpleTask("fooBarTask", "fooBarTask");
+
+        SimpleTask<CustomerInfo, CreditProcessingResult> fooBar = new SimpleTask("fooBarTask", "fooBarTask");
         fooBar.input(
                 "name", ConductorWorkflow.input.get("name"),
                 "creditScore", ConductorWorkflow.input.get("creditScore"),
                 "zipCode", ConductorWorkflow.input.get("creditScore"),
-                "amount", doWhile.taskOutput.get("amount")
+                "amount", task2.taskOutput.get("amount"),
+                "userId", task2.taskOutput.getMap("nested").get("userId")
         );
 
-        SimpleTask fooBar2 = new SimpleTask("fooBarTask", "fooBarTask");
+
+        fooBar.input((Map input)->{
+
+            return null;
+        });
+
+
+        SimpleTask<CreditProcessingResult, String> fooBar2 = new SimpleTask("fooBarTask", "fooBarTask");
+
         fooBar2.input(
                 "name", ConductorWorkflow.input.get("name"),
                 "creditScore", ConductorWorkflow.input.get("creditScore"),
@@ -72,8 +87,8 @@ public class TestTypedWorkflowTasks {
                 "amount", 12
         );
 
-        SimpleTask fooBar3 = new SimpleTask("fooBarTask", "fooBarTask");
-        //fooBar3.input(fooBar.taskOutput.get(CreditProcessingResult.class));
+        SimpleTask<CreditProcessingResult, String> fooBar3 = new SimpleTask("fooBarTask", "fooBarTask");
+        fooBar3.setInput(fooBar.getOutput());
 
 
 
@@ -86,8 +101,8 @@ public class TestTypedWorkflowTasks {
                 )
                 .build();
 
-        SimpleTask getCreditScores =
-                new SimpleTask("get_credit_scores", "get_credit_scores");
+        BaseWorkflowTask getCreditScores = new SimpleTask("get_credit_scores", "get_credit_scores")
+                .input("a", 10);
 
         ConductorWorkflow<MyWorkflowInput> conductorWorkflow = new WorkflowBuilder(executor)
                 .name("test_wf_as_code")
@@ -98,7 +113,7 @@ public class TestTypedWorkflowTasks {
                 .add(new Fork("my_fork_with_2_branches",
                         new Function[]{input -> 1, input2 -> 2, input2 -> 3},
                         new Function[]{input -> 100}))
-                .add(doWhile)
+                .add(task2)
                 .add(dynamicFork)
                 .build();
          /*
