@@ -18,8 +18,8 @@ package com.netflix.conductor.testing.workflows;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.task.IpParam;
-import com.netflix.conductor.sdk.task.OpParam;
+import com.netflix.conductor.sdk.task.InputParam;
+import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
 import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
@@ -158,8 +158,8 @@ public class KitchenSinkTest {
     }
 
     @WorkflowTask("task_3")
-    public @OpParam("z1") String task3(
-            @IpParam("taskToExecute") String p1
+    public @OutputParam("z1") String task3(
+            @InputParam("taskToExecute") String p1
     ) {
         return "output of task3, p1=" + p1;
     }

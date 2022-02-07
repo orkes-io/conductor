@@ -1,15 +1,20 @@
 package com.netflix.conductor.sdk.workflow.def;
 
+import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
+import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
+import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -41,6 +46,8 @@ public class WorkflowBuilder<T> {
     private List<BaseWorkflowTask> tasks = new ArrayList<>();
 
     private WorkflowExecutor workflowExecutor;
+
+    public final InputOutputGetter input = new InputOutputGetter("workflow", InputOutputGetter.Field.input);
 
     public WorkflowBuilder(WorkflowExecutor workflowExecutor) {
         this.workflowExecutor = workflowExecutor;
@@ -117,9 +124,28 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder add(String taskReferenceName, Function<Object, Object> task) {
-        WorkerTask workerTask = new WorkerTask(taskReferenceName, task);
-        add(workerTask);
+    public WorkflowBuilder add(BaseWorkflowTask... tasks) {
+        for (BaseWorkflowTask task : tasks) {
+            this.tasks.add(task);
+        }
+        return this;
+    }
+
+    public WorkflowBuilder doWhile(String taskReferenceName, String condition, BaseWorkflowTask... tasks) {
+        DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
+        add(doWhile);
+        return this;
+    }
+
+    public WorkflowBuilder loop(String taskReferenceName, int loopCount, BaseWorkflowTask... tasks) {
+        DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
+        add(doWhile);
+        return this;
+    }
+
+    public <T>WorkflowBuilder doWhile(String taskReferenceName, int loopCount, Function<T, Object>... taskFunctions) {
+        DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, taskFunctions);
+        add(doWhile);
         return this;
     }
 

@@ -14,7 +14,7 @@ import java.util.function.Function;
 /**
  * Abstraction of a Workflow Task
  */
-public abstract class BaseWorkflowTask<I,O> {
+public abstract class BaseWorkflowTask {
 
     private String name;
 
@@ -131,17 +131,6 @@ public abstract class BaseWorkflowTask<I,O> {
         return this;
     }
 
-    public <T> BaseWorkflowTask input(Function<T, I> fn) {
-        return this;
-    }
-    public O getOutput() {
-        return null;
-    }
-
-    public void setInput(I input) {
-
-    }
-
     public String getName() {
         return name;
     }
@@ -196,6 +185,10 @@ public abstract class BaseWorkflowTask<I,O> {
 
         TaskDef taskDef = new TaskDef();
         taskDef.setName(name);
+        taskDef.setRetryCount(3);
+        taskDef.setRetryDelaySeconds(1);
+        taskDef.setRetryLogic(TaskDef.RetryLogic.FIXED);
+
         workflowTask.setTaskDefinition(taskDef);
 
         return workflowTask;

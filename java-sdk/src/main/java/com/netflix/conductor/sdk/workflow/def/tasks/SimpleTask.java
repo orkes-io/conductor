@@ -9,11 +9,13 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 /**
  * Workflow task executed by a worker
  */
-public class SimpleTask<I, O> extends BaseWorkflowTask<I, O> {
+public class SimpleTask<I> extends BaseWorkflowTask {
 
     private static final int ONE_HOUR = 60 * 60;
 
@@ -40,9 +42,14 @@ public class SimpleTask<I, O> extends BaseWorkflowTask<I, O> {
         return this;
     }
 
-    public SimpleTask useTaskDef(TaskDef taskDef) {
+    public SimpleTask useTaskDef() {
         this.taskDef = taskDef;
         this.useGlobalTaskDef = false;
+        return this;
+    }
+
+    public SimpleTask setInput(Function<I, I> fixer) {
+        fixer.apply(null);
         return this;
     }
 

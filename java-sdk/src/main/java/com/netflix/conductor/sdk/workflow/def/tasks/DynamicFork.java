@@ -66,6 +66,10 @@ public class DynamicFork extends BaseWorkflowTask {
         super.input("forkedTasksInputs", "${" + this.forkInputWorkerTask.getTaskReferenceName() + ".output.result}");
     }
 
+    public Join getJoin() {
+        return join;
+    }
+
     @Override
     public List<WorkerTask> getWorkerExecutedTasks() {
         List<WorkerTask> workerExecutedTasks = new ArrayList<>();

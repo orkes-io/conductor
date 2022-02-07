@@ -20,8 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import com.netflix.conductor.sdk.task.IpParam;
-import com.netflix.conductor.sdk.task.OpParam;
+import com.netflix.conductor.sdk.task.InputParam;
+import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import java.lang.annotation.Annotation;
@@ -82,8 +82,8 @@ public class AnnotatedWorker implements Worker {
             Annotation[] paramAnnotation = parameterAnnotations[i];
             if (paramAnnotation != null && paramAnnotation.length > 0) {
                 for (Annotation ann : paramAnnotation) {
-                    if (ann.annotationType().equals(IpParam.class)) {
-                        IpParam ip = (IpParam) ann;
+                    if (ann.annotationType().equals(InputParam.class)) {
+                        InputParam ip = (InputParam) ann;
                         String name = ip.value();
                         Object value = task.getInputData().get(name);
                         values[i] = value;
@@ -104,7 +104,7 @@ public class AnnotatedWorker implements Worker {
             return new TaskResult(task);
         }
 
-        OpParam opAnnotation = workerMethod.getAnnotatedReturnType().getAnnotation(OpParam.class);
+        OutputParam opAnnotation = workerMethod.getAnnotatedReturnType().getAnnotation(OutputParam.class);
         if (opAnnotation != null) {
 
             String name = opAnnotation.value();
