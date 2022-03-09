@@ -6,7 +6,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:5.0.3'
+        classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:7.0.0'
         // revElasticSearch7 in dependencies.gradle needs to be updated when spring is upgraded
         classpath 'org.springframework.boot:spring-boot-gradle-plugin:2.3.12.RELEASE'
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:5.+'
@@ -14,12 +14,12 @@ buildscript {
 }
 
 plugins {
-    id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
     id 'application'
     id 'jacoco'
-    id 'nebula.netflixoss' version '9.2.2'
-    id 'org.sonarqube' version '3.1.1'
+    id 'nebula.netflixoss' version '10.4.0'
+    id 'org.sonarqube' version '3.3'
 }
 
 /*
@@ -98,27 +98,27 @@ allprojects {
     dependencies {
         implementation('org.apache.logging.log4j:log4j-core') {
             version {
-                strictly '2.17.0'
+                strictly '2.17.1'
             }
         }
         implementation('org.apache.logging.log4j:log4j-api') {
             version {
-                strictly '2.17.0'
+                strictly '2.17.1'
             }
         }
         implementation('org.apache.logging.log4j:log4j-slf4j-impl') {
             version {
-                strictly '2.17.0'
+                strictly '2.17.1'
             }
         }
         implementation('org.apache.logging.log4j:log4j-jul') {
             version {
-                strictly '2.17.0'
+                strictly '2.17.1'
             }
         }
         implementation('org.apache.logging.log4j:log4j-web') {
             version {
-                strictly '2.17.0'
+                strictly '2.17.1'
             }
         }
         annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -181,6 +181,17 @@ configure(allprojects - project(':conductor-grpc')) {
             removeUnusedImports()
             importOrder('java', 'javax', 'org', 'com.netflix', '', '\\#com.netflix', '\\#')
             licenseHeaderFile("$rootDir/licenseheader.txt")
+        }
+    }
+}
+
+["cassandra-persistence", "core", "redis-concurrency-limit", "test-harness"].each {
+    configure(project(":conductor-$it")) {
+        spotless {
+            groovy {
+                importOrder('java', 'javax', 'org', 'com.netflix', '', '\\#com.netflix', '\\#')
+                licenseHeaderFile("$rootDir/licenseheader.txt")
+            }
         }
     }
 }
