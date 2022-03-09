@@ -1,10 +1,8 @@
 package com.netflix.conductor.sdk.workflow.def;
 
-import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
-import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
 import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
@@ -14,12 +12,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 /**
- * Conductor workflow Builder
+ *
+ * @param <T> Input type for the workflow
  */
 public class WorkflowBuilder<T> {
 
@@ -43,7 +40,7 @@ public class WorkflowBuilder<T> {
 
     private Map<String, Object> output = new HashMap<>();
 
-    private List<BaseWorkflowTask> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
 
     private WorkflowExecutor workflowExecutor;
 
@@ -53,7 +50,7 @@ public class WorkflowBuilder<T> {
         this.workflowExecutor = workflowExecutor;
     }
 
-    public WorkflowBuilder name(String name) {
+    public WorkflowBuilder<T> name(String name) {
         this.name = name;
         return this;
     }
@@ -119,25 +116,29 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder add(BaseWorkflowTask task) {
+    public WorkflowBuilder<T> add(Task task) {
         this.tasks.add(task);
         return this;
     }
 
-    public WorkflowBuilder add(BaseWorkflowTask... tasks) {
-        for (BaseWorkflowTask task : tasks) {
+    public WorkflowBuilder add(Task... tasks) {
+        for (Task task : tasks) {
             this.tasks.add(task);
         }
         return this;
     }
 
-    public WorkflowBuilder doWhile(String taskReferenceName, String condition, BaseWorkflowTask... tasks) {
+    public WorkflowBuilder call(T something) {
+        return this;
+    }
+
+    public WorkflowBuilder doWhile(String taskReferenceName, String condition, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
         add(doWhile);
         return this;
     }
 
-    public WorkflowBuilder loop(String taskReferenceName, int loopCount, BaseWorkflowTask... tasks) {
+    public WorkflowBuilder loop(String taskReferenceName, int loopCount, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
         add(doWhile);
         return this;
@@ -164,10 +165,11 @@ public class WorkflowBuilder<T> {
         workflow.setTimeoutSeconds(timeoutSeconds);
         workflow.setRestartable(restartable);
         workflow.setDefaultInput(defaultInput);
-        workflow.setOutput(output);
+        workflow.setWorkflowOutput(output);
 
-        for (BaseWorkflowTask task : tasks) {
+        for (Task task : tasks) {
             workflow.add(task);
+
             List<WorkerTask> workerExecutedTasks = task.getWorkerExecutedTasks();
             workerExecutedTasks.stream()
                     .forEach(workerTask -> workflowExecutor.addWorker(workflow, workerTask));

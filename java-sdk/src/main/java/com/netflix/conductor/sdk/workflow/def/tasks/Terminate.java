@@ -3,7 +3,7 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.run.Workflow;
 
-public class Terminate extends BaseWorkflowTask {
+public class Terminate extends Task {
 
     //TODO: Make this two variables public in the core Terminate.java
     private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";

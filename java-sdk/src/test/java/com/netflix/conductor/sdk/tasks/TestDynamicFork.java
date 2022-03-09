@@ -2,17 +2,12 @@ package com.netflix.conductor.sdk.tasks;
 
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.MyWorkflowInput;
-import com.netflix.conductor.sdk.task.WorkflowTask;
-import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
-import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
+import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.def.tasks.DynamicFork;
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
-import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.testing.workflows.Task1Input;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -24,16 +19,16 @@ import java.util.concurrent.ExecutionException;
 
 public class TestDynamicFork extends AbstractSDKTest {
 
-    @WorkflowTask("get_forks")
-    public List<BaseWorkflowTask> getForks(Object input) {
-        List<BaseWorkflowTask> tasks = new ArrayList<>();
+    @com.netflix.conductor.sdk.task.WorkflowTask("get_forks")
+    public List<Task> getForks(Object input) {
+        List<Task> tasks = new ArrayList<>();
         tasks.add(new SimpleTask("task_1", "task_1"));
         tasks.add(new SimpleTask("task_2", "task_2"));
         return tasks;
     }
 
 
-    @WorkflowTask("get_fork_inputs")
+    @com.netflix.conductor.sdk.task.WorkflowTask("get_fork_inputs")
     public Map<String, Object> getForkInputs(Object o) {
         Map<String, Object> inputs = new HashMap<>();
         inputs.put("task_1", new Task1Input());

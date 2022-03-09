@@ -65,19 +65,6 @@ public class TestTypedWorkflowTasks {
         }
     }
 
-    public void testCodeBaseFlow() {
-        String url = "https://saastestapi.orkes.net/api/";
-        WorkflowExecutor executor = new WorkflowExecutor(url);
-        SimpleTask task3 = new SimpleTask("task_3", "task3");
-        CompletableFuture<TaskResult> output = TaskBuilder.simpleTask("task_3", (Task task) -> task3(task));
-
-
-        ConductorWorkflow<MyWorkflowInput> conductorWorkflow = new WorkflowBuilder(executor)
-                .name("reproduce_join_issue")
-                .build();
-
-    }
-
     @Test
     public void testExecuteSimple() throws ExecutionException, InterruptedException, JsonProcessingException {
 
@@ -85,6 +72,8 @@ public class TestTypedWorkflowTasks {
         WorkflowExecutor executor = new WorkflowExecutor(url);
         executor.initWorkers(TestTypedWorkflowTasks.class.getPackageName());
         final int count = 3;
+
+        /*
         DynamicFork fork = new DynamicFork("dyn_fork", o -> {
             List<BaseWorkflowTask> tasks = new ArrayList<>();
             for(int i = 0; i < count; i++) {
@@ -105,17 +94,23 @@ public class TestTypedWorkflowTasks {
             inputs.put("task3", input);
             return inputs;
         });
+         */
+        SimpleTask task3 = new SimpleTask("task_3", "task3");
+        SimpleTask task2 = new SimpleTask("task_2xx", "task_2xx");
 
         ConductorWorkflow<MyWorkflowInput> conductorWorkflow = new WorkflowBuilder(executor)
                 .name("reproduce_join_issue")
-                .add(fork)
-                .add("aa", o -> fooBar(ConductorWorkflow.input.get("name"), 12, "9445"))
-                .loop("do_2_times", 2, fork)
-                .output("result", "${" + fork.getJoin().getTaskReferenceName() + ".output}")
+                .add(task3)
+                .loop("do_2_times", 2, task2)
+                //.output("result", "${" + fork.getJoin().getTaskReferenceName() + ".output}")
                 .build();
 
         Workflow execution = conductorWorkflow.execute(new MyWorkflowInput()).get();
         System.out.println(execution);
 
+    }
+
+    public static void main(String[] args) throws ExecutionException, InterruptedException, JsonProcessingException {
+        new TestTypedWorkflowTasks().testExecuteSimple();
     }
 }

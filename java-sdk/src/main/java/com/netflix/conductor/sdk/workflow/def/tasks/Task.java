@@ -9,12 +9,12 @@ import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import java.util.*;
-import java.util.function.Function;
 
 /**
- * Abstraction of a Workflow Task
+ *
+ * Workflow Task
  */
-public abstract class BaseWorkflowTask {
+public abstract class Task {
 
     private String name;
 
@@ -30,15 +30,13 @@ public abstract class BaseWorkflowTask {
 
     private Map<String, Object> input = new HashMap<>();
 
-    private Map<String, Object> output = new HashMap<>();
-
     protected final ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
     public final InputOutputGetter taskInput;
 
     public final InputOutputGetter taskOutput;
 
-    public BaseWorkflowTask(String taskReferenceName, TaskType type) {
+    public Task(String taskReferenceName, TaskType type) {
         this.name = taskReferenceName;
         this.taskReferenceName = taskReferenceName;
         this.type = type;
@@ -46,33 +44,73 @@ public abstract class BaseWorkflowTask {
         this.taskOutput = new InputOutputGetter(taskReferenceName, InputOutputGetter.Field.output);
     }
 
-    public BaseWorkflowTask name(String name) {
+    public Task name(String name) {
         this.name = name;
         return this;
     }
 
 
-    public BaseWorkflowTask description(String description) {
+    public Task description(String description) {
         this.description = description;
         return this;
     }
 
-    public BaseWorkflowTask input(String key, boolean value) {
+    public Task input(String key, boolean value) {
         input.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask input(String key, Object value) {
+    public Task input(String key, Object value) {
         input.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask output(String key, boolean value) {
-        output.put(key, value);
+    public Task input(String key, char value) {
+        input.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask input(Object... keyValues) {
+    public Task input(String key, InputOutputGetter value) {
+        input.put(key, value.getParent());
+        return this;
+    }
+
+    public Task input(InputOutputGetter value) {
+        return input("input", value);
+    }
+
+    public Task input(String key, String value) {
+        input.put(key, value);
+        return this;
+    }
+
+    public Task input(String key, Number value) {
+        input.put(key, value);
+        return this;
+    }
+
+    public Task input(String key, Map<String, Object> value) {
+        input.put(key, value);
+        return this;
+    }
+
+    public Task input(Map<String, Object> map) {
+        input.putAll(map);
+        return this;
+    }
+
+    public Task input(MapBuilder builder) {
+        input.putAll(builder.build());
+        return this;
+    }
+
+    public Task input(Object... keyValues) {
+        if(keyValues.length == 1) {
+            Object kv = keyValues[0];
+            Map objectMap = om.convertValue(kv, Map.class);
+            input.putAll(objectMap);
+            return this;
+        }
         if(keyValues.length % 2 == 1) {
             throw new IllegalArgumentException("Not all keys have value specified");
         }
@@ -80,56 +118,39 @@ public abstract class BaseWorkflowTask {
             String key = keyValues[i].toString();
             Object value = keyValues[i+1];
             input.put(key, value);
-
             i += 2;
         }
         return this;
     }
 
-    public BaseWorkflowTask input(String key, String value) {
-        input.put(key, value);
-        return this;
-    }
-
-    public BaseWorkflowTask output(String key, String value) {
+    /*
+    TODO: Delete this
+    public WorkflowTask output(String key, Number value) {
         output.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask input(String key, Number value) {
-        input.put(key, value);
-        return this;
-    }
-
-    public BaseWorkflowTask output(String key, Number value) {
+    public WorkflowTask output(String key, String value) {
         output.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask input(String key, Map<String, Object> value) {
-        input.put(key, value);
-        return this;
-    }
-
-    public BaseWorkflowTask input(Map<String, Object> map) {
-        input.putAll(map);
-        return this;
-    }
-
-    public BaseWorkflowTask output(String key, Map<String, Object> value) {
+    public WorkflowTask output(String key, Map<String, Object> value) {
         output.put(key, value);
         return this;
     }
 
-    public BaseWorkflowTask input(MapBuilder builder) {
-        input.putAll(builder.build());
-        return this;
-    }
-
-    public BaseWorkflowTask output(MapBuilder builder) {
+    public WorkflowTask output(MapBuilder builder) {
         output.putAll(builder.build());
         return this;
     }
+
+    public WorkflowTask output(String key, boolean value) {
+        output.put(key, value);
+        return this;
+    }
+
+     */
 
     public String getName() {
         return name;
@@ -171,7 +192,7 @@ public abstract class BaseWorkflowTask {
         return new ArrayList();
     }
 
-    public List<WorkflowTask> getWorkflowDefTasks() {
+    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
         return Arrays.asList(toWorkflowTask());
     }
 
@@ -192,11 +213,6 @@ public abstract class BaseWorkflowTask {
         workflowTask.setTaskDefinition(taskDef);
 
         return workflowTask;
-
-    }
-
-    public static void main(String[] args) {
-        ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     }
 

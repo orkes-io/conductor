@@ -2,7 +2,7 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 
-public class DynamicTask extends BaseWorkflowTask {
+public class DynamicTask extends Task {
 
     public static final String TYPE = "DYNAMIC";
 

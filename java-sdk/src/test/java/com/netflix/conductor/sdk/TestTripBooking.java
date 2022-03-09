@@ -2,6 +2,7 @@ package com.netflix.conductor.sdk;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.task.InputParam;
 import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
@@ -10,6 +11,7 @@ import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -58,13 +60,7 @@ public class TestTripBooking {
         input.setFrom("NYC");
         input.setTo("BOM");
 
-        SimpleTask<TripBookingInput> init = new SimpleTask<>("init_booking", "init_booking");
-        init.setInput(tripBookingInput -> {
-            tripBookingInput.setCarType(input.getCarType());
-            return tripBookingInput;
-        });
-
-
+        SimpleTask init = new SimpleTask("init_booking", "init_booking");
 
 
         SimpleTask bookFlight = new SimpleTask("book_flight", "book_flight");
@@ -72,8 +68,6 @@ public class TestTripBooking {
                 "from", ConductorWorkflow.input.get("from"),
                 "to", ConductorWorkflow.input.get("to"),
                 "days", ConductorWorkflow.input.get("days"));
-
-
 
         SimpleTask bookHotel = new SimpleTask("book_hotel", "book_hotel");
         bookHotel.input("flightBookingId", bookFlight.taskOutput.get("bookingId"));
@@ -90,24 +84,16 @@ public class TestTripBooking {
         System.out.println(executed);
     }
 
-    @FunctionalInterface
-    public static interface Function<T1, T2, R> {
-
-        public R apply(T1 t1, T2 t2);
-
-    }
-
-    public Function<String, String, Object> test() {
-        Function<String, String, Object> fn = (String from, String to) ->  bookFlight(from, to);
-        return fn;
-    }
     public static void main(String[] args) throws ExecutionException, InterruptedException, JsonProcessingException {
-        //Function<String, String, Object> fn = new TestTripBooking().test();
-        Function<String, String, String> fn = (String from, String to) ->  new TestTripBooking().bookFlight(from, to);
+        String url = "https://saastestapi.orkes.net/api/";
+        WorkflowExecutor executor = new WorkflowExecutor(url);
+        WorkflowBuilder<TripBookingInput> builder = new WorkflowBuilder<>(executor)
+                .name("airflowTest")
+                .version(1)
+                .add(new SimpleTask("task_airflow", "task_airflow"));
 
-        String result = fn.apply("a", "b");
-        System.out.println(result);
-
+        Workflow run = builder.build().execute(new TripBookingInput()).get();
+        System.out.println(run);
 
     }
 

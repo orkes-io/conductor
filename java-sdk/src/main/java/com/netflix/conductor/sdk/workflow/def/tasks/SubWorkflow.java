@@ -3,7 +3,7 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 
-public class SubWorkflow extends BaseWorkflowTask {
+public class SubWorkflow extends Task {
 
     public static final String TYPE = "SUB_WORKFLOW";
 

@@ -6,7 +6,10 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import java.util.*;
 import java.util.function.Function;
 
-public class Switch extends BaseWorkflowTask {
+/**
+ * Switch Task
+ */
+public class Switch extends Task {
 
     public static final String VALUE_PARAM_NAME = "value-param";
 
@@ -16,9 +19,9 @@ public class Switch extends BaseWorkflowTask {
 
     private boolean useJavascript;
 
-    private List<BaseWorkflowTask> defaultTasks = new ArrayList<>();
+    private List<Task> defaultTasks = new ArrayList<>();
     
-    private Map<String, List<BaseWorkflowTask>> branches = new HashMap<>();
+    private Map<String, List<Task>> branches = new HashMap<>();
 
     private WorkerTask decisionMakerTask;
 
@@ -47,7 +50,7 @@ public class Switch extends BaseWorkflowTask {
         return this;
     }
 
-    public Switch defaultCase(BaseWorkflowTask... tasks) {
+    public Switch defaultCase(Task... tasks) {
         defaultTasks = Arrays.asList(tasks);
         return this;
     }
@@ -59,14 +62,14 @@ public class Switch extends BaseWorkflowTask {
         return this;
     }
 
-    public Switch switchCase(String caseValue, BaseWorkflowTask... tasks) {
+    public Switch switchCase(String caseValue, Task... tasks) {
         branches.put(caseValue, Arrays.asList(tasks));
         return this;
     }
 
 
     public Switch switchCase(String caseValue, String... workerTasks) {
-        List<BaseWorkflowTask> tasks = new ArrayList<>(workerTasks.length);
+        List<Task> tasks = new ArrayList<>(workerTasks.length);
         int i = 0;
         for(String workerTask : workerTasks) {
             tasks.add(new SimpleTask(workerTask, workerTask));
@@ -75,11 +78,11 @@ public class Switch extends BaseWorkflowTask {
         return this;
     }
 
-    public List<BaseWorkflowTask> getDefaultTasks() {
+    public List<Task> getDefaultTasks() {
         return defaultTasks;
     }
 
-    public Map<String, List<BaseWorkflowTask>> getBranches() {
+    public Map<String, List<Task>> getBranches() {
         return branches;
     }
 
@@ -110,9 +113,9 @@ public class Switch extends BaseWorkflowTask {
         Map<String, List<WorkflowTask>> decisionCases = new HashMap<>();
         branches.entrySet().forEach(entry -> {
             String decisionCase = entry.getKey();
-            List<BaseWorkflowTask> decisionTasks = entry.getValue();
+            List<Task> decisionTasks = entry.getValue();
             List<WorkflowTask> decionTaskDefs = new ArrayList<>(decisionTasks.size());
-            for (BaseWorkflowTask decisionTask : decisionTasks) {
+            for (Task decisionTask : decisionTasks) {
                 decionTaskDefs.addAll(decisionTask.getWorkflowDefTasks());
             }
             decisionCases.put(decisionCase, decionTaskDefs);
@@ -120,7 +123,7 @@ public class Switch extends BaseWorkflowTask {
 
         switchTaskDef.setDecisionCases(decisionCases);
         List<WorkflowTask> defaultCaseTaskDefs = new ArrayList<>(defaultTasks.size());
-        for (BaseWorkflowTask defaultTask : defaultTasks) {
+        for (Task defaultTask : defaultTasks) {
             defaultCaseTaskDefs.addAll(defaultTask.getWorkflowDefTasks());
         }
         switchTaskDef.setDefaultCase(defaultCaseTaskDefs);
@@ -135,12 +138,12 @@ public class Switch extends BaseWorkflowTask {
             workerExecutedTasks.add(decisionMakerTask);
         }
         branches.entrySet().forEach(entry -> {
-            List<BaseWorkflowTask> decisionTasks = entry.getValue();
-            for (BaseWorkflowTask decisionTask : decisionTasks) {
+            List<Task> decisionTasks = entry.getValue();
+            for (Task decisionTask : decisionTasks) {
                 workerExecutedTasks.addAll(decisionTask.getWorkerExecutedTasks());
             }
         });
-        for (BaseWorkflowTask defaultTask : defaultTasks) {
+        for (Task defaultTask : defaultTasks) {
             workerExecutedTasks.addAll(defaultTask.getWorkerExecutedTasks());
         }
         return workerExecutedTasks;

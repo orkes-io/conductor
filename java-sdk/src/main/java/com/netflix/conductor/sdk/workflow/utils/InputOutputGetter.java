@@ -36,6 +36,10 @@ public class InputOutputGetter {
         return "${" + name + "." + field + "." + key + "}";
     }
 
+    public String getParent() {
+        return "${" + name + "." + field + "}";
+    }
+
     public Map getMap(String key) {
         return new Map("${" + name + "." + field + "." + key);
     }

@@ -10,7 +10,7 @@ import java.util.function.Function;
  * Workflow task executed by a worker
  * T: type of the input the worker task takes.
  */
-public class WorkerTask<T> extends BaseWorkflowTask {
+public class WorkerTask<T> extends Task {
 
     private Function<T, Object> taskExecutor;
 

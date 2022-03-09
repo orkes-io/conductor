@@ -7,6 +7,7 @@ dependencies {
 
     implementation "com.fasterxml.jackson.core:jackson-databind"
     implementation "com.google.guava:guava:${revGuava}"
+    implementation "cglib:cglib:3.2.4"
 
     testImplementation "org.springframework:spring-web"
     testImplementation "org.spockframework:spock-core:${revSpock}"

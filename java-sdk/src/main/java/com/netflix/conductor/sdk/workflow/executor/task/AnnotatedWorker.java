@@ -86,7 +86,7 @@ public class AnnotatedWorker implements Worker {
                         InputParam ip = (InputParam) ann;
                         String name = ip.value();
                         Object value = task.getInputData().get(name);
-                        values[i] = value;
+                        values[i] = om.convertValue(value, parameterTypes[0]);
                     }
                 }
             } else {

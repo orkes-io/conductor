@@ -1,22 +1,21 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-public class Fork extends BaseWorkflowTask {
+public class Fork extends Task {
 
     private Join join;
 
-    private BaseWorkflowTask[][] forkedTasks;
+    private Task[][] forkedTasks;
 
     private List<List<WorkerTask>> forkedTaskWorkers;
 
-    public Fork(String taskReferenceName, BaseWorkflowTask[]... forkedTasks) {
+    public Fork(String taskReferenceName, Task[]... forkedTasks) {
         super(taskReferenceName, TaskType.FORK_JOIN);
         this.forkedTasks = forkedTasks;
     }
@@ -49,8 +48,8 @@ public class Fork extends BaseWorkflowTask {
     public List<WorkerTask> getWorkerExecutedTasks() {
         List<WorkerTask> workerTasks = new ArrayList<>();
         if(forkedTasks != null) {
-            for (BaseWorkflowTask[] forkedTaskList : forkedTasks) {
-                for (BaseWorkflowTask baseWorkflowTask : forkedTaskList) {
+            for (Task[] forkedTaskList : forkedTasks) {
+                for (Task baseWorkflowTask : forkedTaskList) {
                     workerTasks.addAll(baseWorkflowTask.getWorkerExecutedTasks());
                 }
             }
@@ -63,14 +62,14 @@ public class Fork extends BaseWorkflowTask {
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        WorkflowTask fork = toWorkflowTask();
+    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
+        com.netflix.conductor.common.metadata.workflow.WorkflowTask fork = toWorkflowTask();
         List<String> joinOnTaskRefNames = new ArrayList<>();
-        List<List<WorkflowTask>> forkTasks = new ArrayList<>();
+        List<List<com.netflix.conductor.common.metadata.workflow.WorkflowTask>> forkTasks = new ArrayList<>();
         if(forkedTasks != null) {
-            for (BaseWorkflowTask[] forkedTaskList : forkedTasks) {
-                List<WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
-                for (BaseWorkflowTask baseWorkflowTask : forkedTaskList) {
+            for (Task[] forkedTaskList : forkedTasks) {
+                List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
+                for (Task baseWorkflowTask : forkedTaskList) {
                     forkedWorkflowTasks.addAll(baseWorkflowTask.getWorkflowDefTasks());
                 }
                 forkTasks.add(forkedWorkflowTasks);
@@ -78,7 +77,7 @@ public class Fork extends BaseWorkflowTask {
             }
         } else if(forkedTaskWorkers != null) {
             for (List<WorkerTask> forkedTaskWorkerList : forkedTaskWorkers) {
-                List<WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
+                List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
                 for (WorkerTask workerTask : forkedTaskWorkerList) {
                     forkedWorkflowTasks.addAll(workerTask.getWorkflowDefTasks());
                 }
@@ -91,12 +90,12 @@ public class Fork extends BaseWorkflowTask {
         }
         fork.setForkTasks(forkTasks);
 
-        WorkflowTask joinWorkflowTasks = null;
+        com.netflix.conductor.common.metadata.workflow.WorkflowTask joinWorkflowTasks = null;
         if(this.join != null) {
-            List<WorkflowTask> joinTasks = this.join.getWorkflowDefTasks();
+            List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> joinTasks = this.join.getWorkflowDefTasks();
             joinWorkflowTasks = joinTasks.get(0);
         } else {
-            joinWorkflowTasks = new WorkflowTask();
+            joinWorkflowTasks = new com.netflix.conductor.common.metadata.workflow.WorkflowTask();
             joinWorkflowTasks.setWorkflowTaskType(TaskType.JOIN);
             joinWorkflowTasks.setTaskReferenceName(getTaskReferenceName() + "_join");
             joinWorkflowTasks.setName(joinWorkflowTasks.getTaskReferenceName());

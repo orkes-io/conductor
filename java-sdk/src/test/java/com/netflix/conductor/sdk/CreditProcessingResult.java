@@ -11,6 +11,7 @@ public class CreditProcessingResult {
 
     private CustomerInfo customerInfo;
 
+    public CreditProcessingResult() {}
     public CreditProcessingResult(CustomerInfo customerInfo) {
         this.customerInfo = customerInfo;
     }

@@ -1,7 +1,6 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-public class DynamicFork extends BaseWorkflowTask {
+public class DynamicFork extends Task {
 
     public static final String TYPE = "FORK_JOIN_DYNAMIC";
 
@@ -33,7 +32,7 @@ public class DynamicFork extends BaseWorkflowTask {
     }
 
     public DynamicFork(String taskReferenceName,
-                       Function<Object, List<BaseWorkflowTask>> forkTasks,
+                       Function<Object, List<Task>> forkTasks,
                        Function<Object, Map<String, Object>> forkTasksInputs) {
 
         super(taskReferenceName, TaskType.FORK_JOIN_DYNAMIC);
@@ -44,11 +43,11 @@ public class DynamicFork extends BaseWorkflowTask {
         this.forkWorkerTask = new WorkerTask(
                 taskReferenceName + "_forkTaskFn",
                 input -> {
-                    List<WorkflowTask> defTasks = new ArrayList<>();
-                    List<BaseWorkflowTask> tasks = forkTasks.apply(input);
-                    for (BaseWorkflowTask task : tasks) {
-                        List<WorkflowTask> workflowDefTasks = task.getWorkflowDefTasks();
-                        for (WorkflowTask workflowDefTask : workflowDefTasks) {
+                    List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> defTasks = new ArrayList<>();
+                    List<Task> tasks = forkTasks.apply(input);
+                    for (Task task : tasks) {
+                        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> workflowDefTasks = task.getWorkflowDefTasks();
+                        for (com.netflix.conductor.common.metadata.workflow.WorkflowTask workflowDefTask : workflowDefTasks) {
                             defTasks.add(workflowDefTask);
                         }
                     }
@@ -83,16 +82,16 @@ public class DynamicFork extends BaseWorkflowTask {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask task = super.toWorkflowTask();
+    protected com.netflix.conductor.common.metadata.workflow.WorkflowTask toWorkflowTask() {
+        com.netflix.conductor.common.metadata.workflow.WorkflowTask task = super.toWorkflowTask();
         task.setDynamicForkTasksParam("forkedTasks");
         task.setDynamicForkTasksInputParamName("forkedTasksInputs");
         return task;
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        List<WorkflowTask> tasks = new ArrayList<>();
+    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
+        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> tasks = new ArrayList<>();
         if(forkWorkerTask != null && forkInputWorkerTask != null) {
             tasks.addAll(forkWorkerTask.getWorkflowDefTasks());
             tasks.addAll(forkInputWorkerTask.getWorkflowDefTasks());

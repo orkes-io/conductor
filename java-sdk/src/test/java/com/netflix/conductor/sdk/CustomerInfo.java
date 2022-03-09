@@ -8,6 +8,16 @@ public class CustomerInfo {
 
     String ssn;
 
+    char prefix;
+
+    public char getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(char prefix) {
+        this.prefix = prefix;
+    }
+
     public String getName() {
         return name;
     }

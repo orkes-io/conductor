@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.workflow.def.tasks.BaseWorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
@@ -13,11 +13,14 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Conductor workflow
+ *
+ * @param <T> Type of the workflow input
  */
 public class ConductorWorkflow<T> {
 
     public static final InputOutputGetter input = new InputOutputGetter("workflow", InputOutputGetter.Field.input);
+
+    public static final InputOutputGetter output = new InputOutputGetter("workflow", InputOutputGetter.Field.output);
 
     private String name;
 
@@ -31,22 +34,24 @@ public class ConductorWorkflow<T> {
 
     private WorkflowDef.TimeoutPolicy timeoutPolicy;
 
+    private Map<String, Object> workflowOutput;
+
     private long timeoutSeconds;
 
     private boolean restartable = true;
 
     private T defaultInput;
 
-    private Map<String, Object> output = new HashMap<>();
-
-    private List<BaseWorkflowTask> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
 
     private final ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     private final WorkflowExecutor workflowExecutor;
 
     ConductorWorkflow(WorkflowExecutor workflowExecutor) {
+        this.workflowOutput = new HashMap<>();
         this.workflowExecutor = workflowExecutor;
+        this.restartable = true;
     }
 
     public void setName(String name) {
@@ -65,11 +70,7 @@ public class ConductorWorkflow<T> {
         this.failureWorkflow = failureWorkflow;
     }
 
-    public void setOutput(Map<String, Object> output) {
-        this.output = output;
-    }
-
-    public void add(BaseWorkflowTask task) {
+    public void add(Task task) {
         this.tasks.add(task);
     }
 
@@ -129,6 +130,14 @@ public class ConductorWorkflow<T> {
         this.defaultInput = defaultInput;
     }
 
+    public Map<String, Object> getWorkflowOutput() {
+        return workflowOutput;
+    }
+
+    public void setWorkflowOutput(Map<String, Object> workflowOutput) {
+        this.workflowOutput = workflowOutput;
+    }
+
     /**
      *
      * @param input Workflow Input - The input object is converted a JSON doc as an input to the workflow
@@ -154,14 +163,13 @@ public class ConductorWorkflow<T> {
         def.setVersion(version);
         def.setFailureWorkflow(failureWorkflow);
         def.setOwnerEmail(ownerEmail);
-        def.setOutputParameters(output);
         def.setTimeoutPolicy(timeoutPolicy);
         def.setTimeoutSeconds(timeoutSeconds);
         def.setRestartable(restartable);
-        def.setOutputParameters(output);
+        def.setOutputParameters(workflowOutput);
         def.setInputTemplate(objectMapper.convertValue(defaultInput, Map.class));
 
-        for(BaseWorkflowTask task : tasks) {
+        for(Task task : tasks) {
             def.getTasks().addAll(task.getWorkflowDefTasks());
         }
         return def;

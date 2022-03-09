@@ -24,4 +24,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface InputParam {
     String value();
+    boolean required() default false;
 }

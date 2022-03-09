@@ -1,29 +1,28 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class DoWhile extends BaseWorkflowTask {
+public class DoWhile extends Task {
 
     private String loopCondition;
 
-    private List<BaseWorkflowTask> tasks = new ArrayList<>();
+    private List<Task> tasks = new ArrayList<>();
 
-    public DoWhile(String taskReferenceName, String condition, BaseWorkflowTask... tasks) {
+    public DoWhile(String taskReferenceName, String condition, Task... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
-        for (BaseWorkflowTask task : tasks) {
+        for (Task task : tasks) {
             this.tasks.add(task);
         }
         this.loopCondition = condition;
     }
 
-    public DoWhile(String taskReferenceName, int loopCount, BaseWorkflowTask... tasks) {
+    public DoWhile(String taskReferenceName, int loopCount, Task... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
-        for (BaseWorkflowTask task : tasks) {
+        for (Task task : tasks) {
             this.tasks.add(task);
         }
         this.loopCondition = getForLoopCondition(loopCount);
@@ -38,8 +37,8 @@ public class DoWhile extends BaseWorkflowTask {
         }
     }
 
-    public DoWhile add(BaseWorkflowTask... tasks) {
-        for (BaseWorkflowTask task : tasks) {
+    public DoWhile add(Task... tasks) {
+        for (Task task : tasks) {
             this.tasks.add(task);
         }
         return this;
@@ -50,13 +49,13 @@ public class DoWhile extends BaseWorkflowTask {
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        List<WorkflowTask> workflowTasks = super.getWorkflowDefTasks();
-        WorkflowTask loopTask = workflowTasks.get(0);
+    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
+        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> workflowTasks = super.getWorkflowDefTasks();
+        com.netflix.conductor.common.metadata.workflow.WorkflowTask loopTask = workflowTasks.get(0);
         loopTask.setLoopCondition(loopCondition);
 
-        List<WorkflowTask> loopTasks = new ArrayList<>();
-        for (BaseWorkflowTask task : tasks) {
+        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> loopTasks = new ArrayList<>();
+        for (Task task : tasks) {
             loopTasks.addAll(task.getWorkflowDefTasks());
         }
         loopTask.setLoopOver(loopTasks);
@@ -67,7 +66,7 @@ public class DoWhile extends BaseWorkflowTask {
     @Override
     public List<WorkerTask> getWorkerExecutedTasks() {
         List<WorkerTask> workerTasks = new ArrayList<>();
-        for (BaseWorkflowTask task : tasks) {
+        for (Task task : tasks) {
             workerTasks.addAll(task.getWorkerExecutedTasks());
         }
         return workerTasks;

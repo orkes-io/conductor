@@ -5,7 +5,7 @@ import com.netflix.conductor.common.metadata.tasks.TaskType;
 /**
  * Wait task
  */
-public class Wait extends BaseWorkflowTask {
+public class Wait extends Task {
 
     public Wait(String taskReferenceName) {
         super(taskReferenceName, TaskType.WAIT);

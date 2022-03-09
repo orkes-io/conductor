@@ -38,6 +38,8 @@ public class AnnotatedWorkerExecutor {
 
     private Map<String, Object> workerClassObjs = new HashMap<>();
 
+    private static Set<String> scannedPackages = new HashSet<>();
+
     public AnnotatedWorkerExecutor(TaskClient taskClient) {
         this.taskClient = taskClient;
     }
@@ -47,7 +49,7 @@ public class AnnotatedWorkerExecutor {
      *
      * @param basePackage list of packages - comma separated - to scan for annotated worker implementation
      */
-    public void initWorkers(String basePackage) {
+    public synchronized void initWorkers(String basePackage) {
         scanWorkers(basePackage);
         startPolling();
     }
@@ -63,11 +65,21 @@ public class AnnotatedWorkerExecutor {
 
     private void scanWorkers(String basePackage) {
         try {
+            if(scannedPackages.contains(basePackage)) {
+                //skip
+                LOGGER.info("Package {} already scanned and will skip", basePackage);
+                return;
+            }
+            //Add here so to avoid infinite recursion where a class in the package contains the code to init workers
+            scannedPackages.add(basePackage);
+            System.out.println("Scanning for workers " + basePackage);
             List<String> packagesToScan = new ArrayList<>();
             if (basePackage != null) {
                 String[] packages = basePackage.split(",");
                 Collections.addAll(packagesToScan, packages);
             }
+
+            LOGGER.info("packages to scan {}", packagesToScan);
 
             long s = System.currentTimeMillis();
             ClassPath.from(AnnotatedWorkerExecutor.class.getClassLoader()).getAllClasses().forEach(classMeta -> {

@@ -14,6 +14,8 @@ package com.netflix.conductor.client.http;
 
 import java.util.List;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.sun.jersey.api.client.GenericType;
 import org.apache.commons.lang.StringUtils;
 
 import com.netflix.conductor.client.config.ConductorClientConfiguration;
@@ -113,6 +115,11 @@ public class MetadataClient extends ClientBase {
                 new Object[] {"version", version},
                 WorkflowDef.class,
                 name);
+    }
+
+    public List<WorkflowDef> getWorkflowDefs() {
+        List<WorkflowDef> workflowDefs = getForEntity("metadata/workflow", new Object[0], new GenericType<List<WorkflowDef>>() {});
+        return workflowDefs;
     }
 
     /**

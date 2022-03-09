@@ -16,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+@SuppressWarnings("rawtypes")
 public class TestWorkflowExecutions {
 
 
@@ -103,7 +104,6 @@ public class TestWorkflowExecutions {
         ConductorWorkflow conductorWorkflow = builder
                 .name("test_wf_as_code")
                 .add(new SimpleTask("task_2", "task_2_0"))
-                .add("taskx", o -> "Hello World from taskx")
                 .add(new Fork("my_fork_with_2_branches",
                         new Function[]{input -> 1, input2 -> 2, input2 -> 3},
                         new Function[]{input -> 100}))
@@ -133,14 +133,7 @@ public class TestWorkflowExecutions {
                 .add(doWhile)
                 .build();
 
-        //ConductorWorkflow conductorWorkflow2 = ConductorWorkflow.byNameAndVersion("abcd", 2);
-        boolean success = conductorWorkflow.registerWorkflow();
-
-        conductorWorkflow.execute(new MyWorkflowInput()).thenAccept(workflow -> {
-
-        });
-
-        //Workflow executed = conductorWorkflow.execute(new HashMap<>()).get();
-        //System.out.println(executed);
+        Object executed = conductorWorkflow2.execute(new HashMap<>()).get();
+        System.out.println(executed);
     }
 }

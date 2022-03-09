@@ -2,7 +2,7 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 
-public class Join extends BaseWorkflowTask {
+public class Join extends Task {
 
     private String[] joinOn;
 
