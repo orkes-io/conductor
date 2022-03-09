@@ -1,3 +1,18 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.netflix.conductor.sdk
 
 import com.netflix.conductor.common.run.Workflow
@@ -6,8 +21,6 @@ import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder
 import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask
 import com.netflix.conductor.sdk.workflow.def.tasks.Switch
-import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask
-import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider
 import com.netflix.conductor.testing.workflows.Task1Input
 
 class WorkflowDefAsCodeSpec extends AbstractSpecification {

@@ -1,7 +1,20 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.netflix.conductor.sdk.workflow.def;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.Task;
@@ -9,18 +22,17 @@ import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- *
- * @param <T> Type of the workflow input
- */
+/** @param <T> Type of the workflow input */
 public class ConductorWorkflow<T> {
 
-    public static final InputOutputGetter input = new InputOutputGetter("workflow", InputOutputGetter.Field.input);
+    public static final InputOutputGetter input =
+            new InputOutputGetter("workflow", InputOutputGetter.Field.input);
 
-    public static final InputOutputGetter output = new InputOutputGetter("workflow", InputOutputGetter.Field.output);
+    public static final InputOutputGetter output =
+            new InputOutputGetter("workflow", InputOutputGetter.Field.output);
 
     private String name;
 
@@ -139,8 +151,8 @@ public class ConductorWorkflow<T> {
     }
 
     /**
-     *
-     * @param input Workflow Input - The input object is converted a JSON doc as an input to the workflow
+     * @param input Workflow Input - The input object is converted a JSON doc as an input to the
+     *     workflow
      * @return
      */
     public CompletableFuture<Workflow> execute(T input) {
@@ -148,7 +160,6 @@ public class ConductorWorkflow<T> {
     }
 
     /**
-     *
      * @return true if success, false if the workflow already exists with the given version number
      */
     public boolean registerWorkflow() {
@@ -169,7 +180,7 @@ public class ConductorWorkflow<T> {
         def.setOutputParameters(workflowOutput);
         def.setInputTemplate(objectMapper.convertValue(defaultInput, Map.class));
 
-        for(Task task : tasks) {
+        for (Task task : tasks) {
             def.getTasks().addAll(task.getWorkflowDefTasks());
         }
         return def;
@@ -196,5 +207,4 @@ public class ConductorWorkflow<T> {
             throw new RuntimeException(e);
         }
     }
-
 }

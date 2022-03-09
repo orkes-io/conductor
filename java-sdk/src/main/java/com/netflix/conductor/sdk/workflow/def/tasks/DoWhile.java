@@ -1,10 +1,22 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.netflix.conductor.sdk.workflow.def.tasks;
-
-import com.netflix.conductor.common.metadata.tasks.TaskType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
+
+import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 public class DoWhile extends Task {
 
@@ -26,15 +38,6 @@ public class DoWhile extends Task {
             this.tasks.add(task);
         }
         this.loopCondition = getForLoopCondition(loopCount);
-
-    }
-
-    public <T> DoWhile(String taskReferenceName, int loopCount, Function<T, Object>... taskFunctions) {
-        super(taskReferenceName, TaskType.DO_WHILE);
-        this.loopCondition = getForLoopCondition(loopCount);
-        for(int i = 0; i < taskFunctions.length; i++) {
-            this.tasks.add(new WorkerTask(getTaskReferenceName() + "_task" + i, taskFunctions[i]));
-        }
     }
 
     public DoWhile add(Task... tasks) {
@@ -45,30 +48,25 @@ public class DoWhile extends Task {
     }
 
     private String getForLoopCondition(int loopCount) {
-        return "if ( $." + getTaskReferenceName() + "['iteration'] < " + loopCount + ") { true; } else { false; }";
+        return "if ( $."
+                + getTaskReferenceName()
+                + "['iteration'] < "
+                + loopCount
+                + ") { true; } else { false; }";
     }
 
     @Override
-    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
-        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> workflowTasks = super.getWorkflowDefTasks();
-        com.netflix.conductor.common.metadata.workflow.WorkflowTask loopTask = workflowTasks.get(0);
+    public List<WorkflowTask> getWorkflowDefTasks() {
+        List<WorkflowTask> workflowTasks = super.getWorkflowDefTasks();
+        WorkflowTask loopTask = workflowTasks.get(0);
         loopTask.setLoopCondition(loopCondition);
 
-        List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> loopTasks = new ArrayList<>();
+        List<WorkflowTask> loopTasks = new ArrayList<>();
         for (Task task : tasks) {
             loopTasks.addAll(task.getWorkflowDefTasks());
         }
         loopTask.setLoopOver(loopTasks);
 
         return workflowTasks;
-    }
-
-    @Override
-    public List<WorkerTask> getWorkerExecutedTasks() {
-        List<WorkerTask> workerTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            workerTasks.addAll(task.getWorkerExecutedTasks());
-        }
-        return workerTasks;
     }
 }

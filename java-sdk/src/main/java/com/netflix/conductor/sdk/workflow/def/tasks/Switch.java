@@ -1,14 +1,23 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.netflix.conductor.sdk.workflow.def.tasks;
+
+import java.util.*;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
-import java.util.*;
-import java.util.function.Function;
-
-/**
- * Switch Task
- */
+/** Switch Task */
 public class Switch extends Task {
 
     public static final String VALUE_PARAM_NAME = "value-param";
@@ -20,34 +29,28 @@ public class Switch extends Task {
     private boolean useJavascript;
 
     private List<Task> defaultTasks = new ArrayList<>();
-    
+
     private Map<String, List<Task>> branches = new HashMap<>();
 
-    private WorkerTask decisionMakerTask;
+    /**
+     * @param taskReferenceName
+     * @param caseExpression
+     * @param useJavascript set to true if the caseExpression is a javascript fragment
+     */
+    public Switch(String taskReferenceName, String caseExpression, boolean useJavascript) {
+        super(taskReferenceName, TaskType.SWITCH);
+        this.caseExpression = caseExpression;
+        this.useJavascript = useJavascript;
+    }
 
-    private String decisionMakerTaskName;
-
+    /**
+     * @param taskReferenceName
+     * @param caseExpression
+     */
     public Switch(String taskReferenceName, String caseExpression) {
         super(taskReferenceName, TaskType.SWITCH);
         this.caseExpression = caseExpression;
-    }
-
-    public <T> Switch(String taskReferenceName, Function<T, String> decisionMaker) {
-        super(taskReferenceName, TaskType.SWITCH);
-        this.decisionMakerTaskName = "_decide_" + taskReferenceName;
-        this.caseExpression = "${" + decisionMakerTaskName + ".output.branch}";
-
-        decisionMakerTask = new WorkerTask<T>("_decide_" + taskReferenceName, input -> {
-            String selected = decisionMaker.apply(input);
-            Map<String, String> output = new HashMap<>();
-            output.put("branch", selected);
-            return output;
-        });
-    }
-
-    public Switch useJavascript() {
-        useJavascript = true;
-        return this;
+        this.useJavascript = false;
     }
 
     public Switch defaultCase(Task... tasks) {
@@ -56,7 +59,7 @@ public class Switch extends Task {
     }
 
     public Switch defaultCase(String... workerTasks) {
-        for(String workerTask : workerTasks) {
+        for (String workerTask : workerTasks) {
             this.defaultTasks.add(new SimpleTask(workerTask, workerTask));
         }
         return this;
@@ -67,11 +70,10 @@ public class Switch extends Task {
         return this;
     }
 
-
     public Switch switchCase(String caseValue, String... workerTasks) {
         List<Task> tasks = new ArrayList<>(workerTasks.length);
         int i = 0;
-        for(String workerTask : workerTasks) {
+        for (String workerTask : workerTasks) {
             tasks.add(new SimpleTask(workerTask, workerTask));
         }
         branches.put(caseValue, tasks);
@@ -94,13 +96,7 @@ public class Switch extends Task {
         List<WorkflowTask> switchTasks = new ArrayList<>();
         switchTasks.add(switchTaskDef);
 
-        if(decisionMakerTask != null) {
-            useJavascript = false;
-            List<WorkflowTask> decisionMakerWorkflowDefs = decisionMakerTask.getWorkflowDefTasks();
-            switchTasks.add(0, decisionMakerWorkflowDefs.get(0));
-        }
-
-        if(useJavascript) {
+        if (useJavascript) {
             switchTaskDef.setEvaluatorType(JAVASCRIPT_NAME);
             switchTaskDef.setExpression(caseExpression);
 
@@ -111,15 +107,18 @@ public class Switch extends Task {
         }
 
         Map<String, List<WorkflowTask>> decisionCases = new HashMap<>();
-        branches.entrySet().forEach(entry -> {
-            String decisionCase = entry.getKey();
-            List<Task> decisionTasks = entry.getValue();
-            List<WorkflowTask> decionTaskDefs = new ArrayList<>(decisionTasks.size());
-            for (Task decisionTask : decisionTasks) {
-                decionTaskDefs.addAll(decisionTask.getWorkflowDefTasks());
-            }
-            decisionCases.put(decisionCase, decionTaskDefs);
-        });
+        branches.entrySet()
+                .forEach(
+                        entry -> {
+                            String decisionCase = entry.getKey();
+                            List<Task> decisionTasks = entry.getValue();
+                            List<WorkflowTask> decionTaskDefs =
+                                    new ArrayList<>(decisionTasks.size());
+                            for (Task decisionTask : decisionTasks) {
+                                decionTaskDefs.addAll(decisionTask.getWorkflowDefTasks());
+                            }
+                            decisionCases.put(decisionCase, decionTaskDefs);
+                        });
 
         switchTaskDef.setDecisionCases(decisionCases);
         List<WorkflowTask> defaultCaseTaskDefs = new ArrayList<>(defaultTasks.size());
@@ -130,24 +129,4 @@ public class Switch extends Task {
 
         return switchTasks;
     }
-
-    @Override
-    public List<WorkerTask> getWorkerExecutedTasks() {
-        List<WorkerTask> workerExecutedTasks = new ArrayList<>();
-        if(decisionMakerTask != null) {
-            workerExecutedTasks.add(decisionMakerTask);
-        }
-        branches.entrySet().forEach(entry -> {
-            List<Task> decisionTasks = entry.getValue();
-            for (Task decisionTask : decisionTasks) {
-                workerExecutedTasks.addAll(decisionTask.getWorkerExecutedTasks());
-            }
-        });
-        for (Task defaultTask : defaultTasks) {
-            workerExecutedTasks.addAll(defaultTask.getWorkerExecutedTasks());
-        }
-        return workerExecutedTasks;
-    }
-
-
 }

@@ -1,23 +1,27 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.netflix.conductor.sdk.workflow.def;
 
+import java.util.*;
+
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
-import com.netflix.conductor.sdk.workflow.def.tasks.WorkerTask;
+import com.netflix.conductor.sdk.workflow.def.tasks.Task;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-/**
- *
- * @param <T> Input type for the workflow
- */
+/** @param <T> Input type for the workflow */
 public class WorkflowBuilder<T> {
 
     private String name;
@@ -44,7 +48,8 @@ public class WorkflowBuilder<T> {
 
     private WorkflowExecutor workflowExecutor;
 
-    public final InputOutputGetter input = new InputOutputGetter("workflow", InputOutputGetter.Field.input);
+    public final InputOutputGetter input =
+            new InputOutputGetter("workflow", InputOutputGetter.Field.input);
 
     public WorkflowBuilder(WorkflowExecutor workflowExecutor) {
         this.workflowExecutor = workflowExecutor;
@@ -55,63 +60,64 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder version(int version) {
+    public WorkflowBuilder<T> version(int version) {
         this.version = version;
         return this;
     }
 
-    public WorkflowBuilder description(String description) {
+    public WorkflowBuilder<T> description(String description) {
         this.description = description;
         return this;
     }
 
-    public WorkflowBuilder failureWorkflow(String failureWorkflow) {
+    public WorkflowBuilder<T> failureWorkflow(String failureWorkflow) {
         this.failureWorkflow = failureWorkflow;
         return this;
     }
 
-    public WorkflowBuilder ownerEmail(String ownerEmail) {
+    public WorkflowBuilder<T> ownerEmail(String ownerEmail) {
         this.ownerEmail = ownerEmail;
         return this;
     }
 
-    public WorkflowBuilder timeoutPolicy(WorkflowDef.TimeoutPolicy timeoutPolicy, long timeoutSeconds) {
+    public WorkflowBuilder<T> timeoutPolicy(
+            WorkflowDef.TimeoutPolicy timeoutPolicy, long timeoutSeconds) {
         this.timeoutPolicy = timeoutPolicy;
         this.timeoutSeconds = timeoutSeconds;
         return this;
     }
 
-    public WorkflowBuilder defaultInput(T defaultInput) {
+    public WorkflowBuilder<T> defaultInput(T defaultInput) {
         this.defaultInput = defaultInput;
         return this;
     }
 
-    public WorkflowBuilder restartable(boolean restartable) {
+    public WorkflowBuilder<T> restartable(boolean restartable) {
         this.restartable = restartable;
         return this;
     }
 
-    public WorkflowBuilder output(String key, boolean value) {
+    public WorkflowBuilder<T> output(String key, boolean value) {
         output.put(key, value);
         return this;
     }
 
-    public WorkflowBuilder output(String key, String value) {
+    public WorkflowBuilder<T> output(String key, String value) {
         output.put(key, value);
         return this;
     }
 
-    public WorkflowBuilder output(String key, Number value) {
+    public WorkflowBuilder<T> output(String key, Number value) {
         output.put(key, value);
         return this;
     }
 
-    public WorkflowBuilder output(String key, Object value) {
+    public WorkflowBuilder<T> output(String key, Object value) {
         output.put(key, value);
         return this;
     }
 
-    public WorkflowBuilder output(MapBuilder mapBuilder) {
+    public WorkflowBuilder<T> output(MapBuilder mapBuilder) {
         output.putAll(mapBuilder.build());
         return this;
     }
@@ -121,38 +127,26 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder add(Task... tasks) {
-        for (Task task : tasks) {
-            this.tasks.add(task);
-        }
+    public WorkflowBuilder<T> add(Task... tasks) {
+        Collections.addAll(this.tasks, tasks);
         return this;
     }
 
-    public WorkflowBuilder call(T something) {
-        return this;
-    }
-
-    public WorkflowBuilder doWhile(String taskReferenceName, String condition, Task... tasks) {
+    public WorkflowBuilder<T> doWhile(String taskReferenceName, String condition, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
         add(doWhile);
         return this;
     }
 
-    public WorkflowBuilder loop(String taskReferenceName, int loopCount, Task... tasks) {
+    public WorkflowBuilder<T> loop(String taskReferenceName, int loopCount, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
         add(doWhile);
         return this;
     }
 
-    public <T>WorkflowBuilder doWhile(String taskReferenceName, int loopCount, Function<T, Object>... taskFunctions) {
-        DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, taskFunctions);
-        add(doWhile);
-        return this;
-    }
-
     public ConductorWorkflow<T> build() {
-        ConductorWorkflow workflow = new ConductorWorkflow(workflowExecutor);
-        if(description != null) {
+        ConductorWorkflow<T> workflow = new ConductorWorkflow<T>(workflowExecutor);
+        if (description != null) {
             workflow.setDescription(description);
         }
 
@@ -169,12 +163,7 @@ public class WorkflowBuilder<T> {
 
         for (Task task : tasks) {
             workflow.add(task);
-
-            List<WorkerTask> workerExecutedTasks = task.getWorkerExecutedTasks();
-            workerExecutedTasks.stream()
-                    .forEach(workerTask -> workflowExecutor.addWorker(workflow, workerTask));
         }
         return workflow;
     }
-
 }

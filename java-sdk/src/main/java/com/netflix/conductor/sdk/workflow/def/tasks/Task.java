@@ -1,6 +1,19 @@
+/*
+ * Copyright 2022 Netflix, Inc.
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
+ * Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.*;
+
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -8,12 +21,9 @@ import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import java.util.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- *
- * Workflow Task
- */
+/** Workflow Task */
 public abstract class Task {
 
     private String name;
@@ -48,7 +58,6 @@ public abstract class Task {
         this.name = name;
         return this;
     }
-
 
     public Task description(String description) {
         this.description = description;
@@ -105,18 +114,18 @@ public abstract class Task {
     }
 
     public Task input(Object... keyValues) {
-        if(keyValues.length == 1) {
+        if (keyValues.length == 1) {
             Object kv = keyValues[0];
             Map objectMap = om.convertValue(kv, Map.class);
             input.putAll(objectMap);
             return this;
         }
-        if(keyValues.length % 2 == 1) {
+        if (keyValues.length % 2 == 1) {
             throw new IllegalArgumentException("Not all keys have value specified");
         }
-        for(int i = 0; i < keyValues.length;) {
+        for (int i = 0; i < keyValues.length; ) {
             String key = keyValues[i].toString();
-            Object value = keyValues[i+1];
+            Object value = keyValues[i + 1];
             input.put(key, value);
             i += 2;
         }
@@ -188,11 +197,7 @@ public abstract class Task {
         return type;
     }
 
-    public List<WorkerTask> getWorkerExecutedTasks() {
-        return new ArrayList();
-    }
-
-    public List<com.netflix.conductor.common.metadata.workflow.WorkflowTask> getWorkflowDefTasks() {
+    public List<WorkflowTask> getWorkflowDefTasks() {
         return Arrays.asList(toWorkflowTask());
     }
 
@@ -213,7 +218,5 @@ public abstract class Task {
         workflowTask.setTaskDefinition(taskDef);
 
         return workflowTask;
-
     }
-
 }

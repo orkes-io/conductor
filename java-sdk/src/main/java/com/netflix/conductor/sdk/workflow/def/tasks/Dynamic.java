@@ -12,12 +12,27 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 /** Wait task */
-public class Wait extends Task {
+public class Dynamic extends Task {
 
-    public Wait(String taskReferenceName) {
-        super(taskReferenceName, TaskType.WAIT);
+    private static final String TASK_NAME_INPUT_PARAM = "taskToExecute";
+
+    public Dynamic(String taskReferenceName, String dynamicTaskNameValue) {
+        super(taskReferenceName, TaskType.DYNAMIC);
+        super.input(TASK_NAME_INPUT_PARAM, dynamicTaskNameValue);
+    }
+
+    public List<WorkflowTask> getWorkflowDefTasks() {
+        List<WorkflowTask> workflowTasks = new ArrayList<>();
+        WorkflowTask task = toWorkflowTask();
+        task.setDynamicTaskNameParam(TASK_NAME_INPUT_PARAM);
+        workflowTasks.add(task);
+        return workflowTasks;
     }
 }
