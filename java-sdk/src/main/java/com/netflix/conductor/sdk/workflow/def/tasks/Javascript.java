@@ -60,6 +60,11 @@ public class Javascript extends Task<Javascript> {
         return (String)getInput().get(EXPRESSION_PARAMETER);
     }
 
+    /**
+     * Validates the inline script.
+     *
+     * @return
+     */
     public Javascript validate() {
         ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE);
         if(scriptEngine == null) {

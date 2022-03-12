@@ -18,10 +18,7 @@ import java.util.stream.Collectors;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
-import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
-import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
-import com.netflix.conductor.sdk.workflow.def.tasks.Task;
-import com.netflix.conductor.sdk.workflow.def.tasks.Terminate;
+import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
@@ -142,17 +139,25 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder<T> doWhile(String taskReferenceName, String condition, Task... tasks) {
-        DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
-        add(doWhile);
-        return this;
-    }
-
     public DoWhile loop(String taskReferenceName, int loopCount, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
         doWhile.setBuilder(this);
         add(doWhile);
         return doWhile;
+    }
+
+    public DoWhile loop(String taskReferenceName, String condition, Task... tasks) {
+        DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
+        doWhile.setBuilder(this);
+        add(doWhile);
+        return doWhile;
+    }
+
+    public Fork parallel(String taskReferenceName, Task[]... forkedTasks) {
+        Fork fork = new Fork(taskReferenceName, forkedTasks);
+        fork.setBuilder(this);
+        add(fork);
+        return fork;
     }
 
     public WorkflowBuilder<T> terminate(String taskReferenceName,

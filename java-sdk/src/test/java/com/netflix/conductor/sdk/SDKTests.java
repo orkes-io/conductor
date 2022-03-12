@@ -9,10 +9,7 @@ import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.ValidationError;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
-import com.netflix.conductor.sdk.workflow.def.tasks.Http;
-import com.netflix.conductor.sdk.workflow.def.tasks.SimpleTask;
-import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
-import com.netflix.conductor.sdk.workflow.def.tasks.Terminate;
+import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.tests.KitchensinkWorkflowInput;
 import org.checkerframework.checker.units.qual.K;
@@ -62,8 +59,10 @@ public class SDKTests {
         getUserInfo.input("name", ConductorWorkflow.input.get("name"));
 
         SimpleTask task2 = new SimpleTask("task2", "task2");
+        SimpleTask forkTask1 = new SimpleTask("task2", "task22x");
+        SimpleTask forkTask2 = new SimpleTask("task2", "task22x2");
 
-        Switch decide = new Switch("decide", ConductorWorkflow.input.get("countryCode"));
+        DynamicFork dynamicFork = new DynamicFork("dyn1", "", "");
 
         WorkflowBuilder<KitchensinkWorkflowInput> builder = new WorkflowBuilder<>(executor);
         KitchensinkWorkflowInput defaultInput = new KitchensinkWorkflowInput();
@@ -83,6 +82,7 @@ public class SDKTests {
                                 .input("zipCode", "${workflow.input.zipCode}")
                                 .readTimeout(10_000)
                 )
+                .parallel("parallel", new Task[][]{{forkTask1}, {forkTask2}}).end()
                 .decide("decide", getUserInfo.taskOutput.get("zipCode"))
                     .switchCase("95014", task2)
                     .defaultCase(new Terminate("terminate", Workflow.WorkflowStatus.FAILED, "I don't ship there", new HashMap<>()))
