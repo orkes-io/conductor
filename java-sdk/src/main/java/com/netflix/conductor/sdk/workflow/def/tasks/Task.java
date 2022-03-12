@@ -14,9 +14,12 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import java.util.*;
 
+import com.google.common.base.Strings;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.ValidationError;
+import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
@@ -24,7 +27,7 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Workflow Task */
-public abstract class Task {
+public abstract class Task<T> {
 
     private String name;
 
@@ -42,11 +45,20 @@ public abstract class Task {
 
     protected final ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
+    protected WorkflowBuilder<?> builder;
+
     public final InputOutputGetter taskInput;
 
     public final InputOutputGetter taskOutput;
 
     public Task(String taskReferenceName, TaskType type) {
+        if(Strings.isNullOrEmpty(taskReferenceName)) {
+            throw new AssertionError("taskReferenceName cannot be null");
+        }
+        if(type == null) {
+            throw new AssertionError("type cannot be null");
+        }
+
         this.name = taskReferenceName;
         this.taskReferenceName = taskReferenceName;
         this.type = type;
@@ -54,71 +66,78 @@ public abstract class Task {
         this.taskOutput = new InputOutputGetter(taskReferenceName, InputOutputGetter.Field.output);
     }
 
-    public Task name(String name) {
+    Task(WorkflowTask workflowTask) {
+        this(workflowTask.getTaskReferenceName(), TaskType.valueOf(workflowTask.getType()));
+        this.input = workflowTask.getInputParameters();
+        this.description = workflowTask.getDescription();
+        this.name = workflowTask.getName();
+    }
+
+    public T name(String name) {
         this.name = name;
-        return this;
+        return (T) this;
     }
 
-    public Task description(String description) {
+    public T description(String description) {
         this.description = description;
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, boolean value) {
+    public T input(String key, boolean value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, Object value) {
+    public T input(String key, Object value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, char value) {
+    public T input(String key, char value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, InputOutputGetter value) {
+    public T input(String key, InputOutputGetter value) {
         input.put(key, value.getParent());
-        return this;
+        return (T) this;
     }
 
-    public Task input(InputOutputGetter value) {
+    public T input(InputOutputGetter value) {
         return input("input", value);
     }
 
-    public Task input(String key, String value) {
+    public T input(String key, String value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, Number value) {
+    public T input(String key, Number value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(String key, Map<String, Object> value) {
+    public T input(String key, Map<String, Object> value) {
         input.put(key, value);
-        return this;
+        return (T) this;
     }
 
-    public Task input(Map<String, Object> map) {
+    public T input(Map<String, Object> map) {
         input.putAll(map);
-        return this;
+        return (T) this;
     }
 
-    public Task input(MapBuilder builder) {
+    public T input(MapBuilder builder) {
         input.putAll(builder.build());
-        return this;
+        return (T) this;
     }
 
-    public Task input(Object... keyValues) {
+    public T input(Object... keyValues) {
         if (keyValues.length == 1) {
             Object kv = keyValues[0];
             Map objectMap = om.convertValue(kv, Map.class);
             input.putAll(objectMap);
-            return this;
+            return (T) this;
         }
         if (keyValues.length % 2 == 1) {
             throw new IllegalArgumentException("Not all keys have value specified");
@@ -129,37 +148,16 @@ public abstract class Task {
             input.put(key, value);
             i += 2;
         }
-        return this;
+        return (T) this;
     }
 
-    /*
-    TODO: Delete this
-    public WorkflowTask output(String key, Number value) {
-        output.put(key, value);
-        return this;
+    public void setBuilder(WorkflowBuilder<?> builder) {
+        this.builder = builder;
     }
 
-    public WorkflowTask output(String key, String value) {
-        output.put(key, value);
-        return this;
+    public <I>WorkflowBuilder<I> end() {
+        return (WorkflowBuilder<I>) builder;
     }
-
-    public WorkflowTask output(String key, Map<String, Object> value) {
-        output.put(key, value);
-        return this;
-    }
-
-    public WorkflowTask output(MapBuilder builder) {
-        output.putAll(builder.build());
-        return this;
-    }
-
-    public WorkflowTask output(String key, boolean value) {
-        output.put(key, value);
-        return this;
-    }
-
-     */
 
     public String getName() {
         return name;
@@ -198,7 +196,15 @@ public abstract class Task {
     }
 
     public List<WorkflowTask> getWorkflowDefTasks() {
-        return Arrays.asList(toWorkflowTask());
+        return List.of(toWorkflowTask());
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Map<String, Object> getInput() {
+        return input;
     }
 
     protected WorkflowTask toWorkflowTask() {
@@ -208,14 +214,6 @@ public abstract class Task {
         workflowTask.setWorkflowTaskType(type);
         workflowTask.setDescription(description);
         workflowTask.setInputParameters(input);
-
-        TaskDef taskDef = new TaskDef();
-        taskDef.setName(name);
-        taskDef.setRetryCount(3);
-        taskDef.setRetryDelaySeconds(1);
-        taskDef.setRetryLogic(TaskDef.RetryLogic.FIXED);
-
-        workflowTask.setTaskDefinition(taskDef);
 
         return workflowTask;
     }

@@ -13,11 +13,15 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 
-public class SubWorkflow extends Task {
+public class SubWorkflow extends Task<SubWorkflow> {
 
-    public static final String TYPE = "SUB_WORKFLOW";
+    static {
+        TaskRegistry.register(TaskType.SUB_WORKFLOW.name(), SubWorkflow.class);
+    }
 
     private ConductorWorkflow conductorWorkflow;
 
@@ -34,5 +38,42 @@ public class SubWorkflow extends Task {
     public SubWorkflow(String taskReferenceName, ConductorWorkflow conductorWorkflow) {
         super(taskReferenceName, TaskType.SUB_WORKFLOW);
         this.conductorWorkflow = conductorWorkflow;
+    }
+
+    SubWorkflow(WorkflowTask workflowTask) {
+        super(workflowTask);
+        SubWorkflowParams subworkflowParam = workflowTask.getSubWorkflowParam();
+        this.workflowName = subworkflowParam.getName();
+        this.workflowVersion = subworkflowParam.getVersion();
+        if(subworkflowParam.getWorkflowDef() != null) {
+            this.conductorWorkflow = ConductorWorkflow.fromWorkflowDef(subworkflowParam.getWorkflowDef());
+        }
+    }
+
+    public ConductorWorkflow getConductorWorkflow() {
+        return conductorWorkflow;
+    }
+
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public int getWorkflowVersion() {
+        return workflowVersion;
+    }
+
+    @Override
+    protected WorkflowTask toWorkflowTask() {
+        WorkflowTask task = super.toWorkflowTask();
+        SubWorkflowParams subWorkflowParam = new SubWorkflowParams();
+
+        if(conductorWorkflow != null) {
+            subWorkflowParam.setWorkflowDef(conductorWorkflow.toWorkflowDef());
+        } else {
+            subWorkflowParam.setName(workflowName);
+            subWorkflowParam.setVersion(workflowVersion);
+        }
+        task.setSubWorkflowParam(subWorkflowParam);
+        return task;
     }
 }

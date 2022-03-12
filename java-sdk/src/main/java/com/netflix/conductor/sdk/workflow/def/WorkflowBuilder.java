@@ -13,10 +13,15 @@
 package com.netflix.conductor.sdk.workflow.def;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.DoWhile;
+import com.netflix.conductor.sdk.workflow.def.tasks.Switch;
 import com.netflix.conductor.sdk.workflow.def.tasks.Task;
+import com.netflix.conductor.sdk.workflow.def.tasks.Terminate;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
@@ -127,6 +132,11 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
+    public WorkflowBuilder<T> task(Task task) {
+        this.tasks.add(task);
+        return this;
+    }
+
     public WorkflowBuilder<T> add(Task... tasks) {
         Collections.addAll(this.tasks, tasks);
         return this;
@@ -138,13 +148,33 @@ public class WorkflowBuilder<T> {
         return this;
     }
 
-    public WorkflowBuilder<T> loop(String taskReferenceName, int loopCount, Task... tasks) {
+    public DoWhile loop(String taskReferenceName, int loopCount, Task... tasks) {
         DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
+        doWhile.setBuilder(this);
         add(doWhile);
+        return doWhile;
+    }
+
+    public WorkflowBuilder<T> terminate(String taskReferenceName,
+                                        Workflow.WorkflowStatus terminationStatus,
+                                        String reason,
+                                        Object workflowOutput ) {
+        Terminate terminate = new Terminate(taskReferenceName, terminationStatus, reason, workflowOutput);
+        add(terminate);
         return this;
     }
 
-    public ConductorWorkflow<T> build() {
+    public Switch decide(String taskReferenceName, String caseExpression) {
+        Switch decide = new Switch(taskReferenceName, caseExpression);
+        decide.setBuilder(this);
+        add(decide);
+        return decide;
+    }
+
+    public ConductorWorkflow<T> build() throws ValidationError {
+
+        validate();
+
         ConductorWorkflow<T> workflow = new ConductorWorkflow<T>(workflowExecutor);
         if (description != null) {
             workflow.setDescription(description);
@@ -164,6 +194,39 @@ public class WorkflowBuilder<T> {
         for (Task task : tasks) {
             workflow.add(task);
         }
+
+
         return workflow;
+    }
+
+    /**
+     * Validate:
+     * 1. There are no tasks with duplicate reference names
+     * 2. Each of the task is consistent with its definition
+     * 3.
+     */
+    private void validate() throws ValidationError {
+
+        List<WorkflowTask> allTasks = new ArrayList<>();
+        for (Task task : tasks) {
+            List<WorkflowTask> workflowDefTasks = task.getWorkflowDefTasks();
+            for (WorkflowTask workflowDefTask : workflowDefTasks) {
+                allTasks.addAll(workflowDefTask.collectTasks());
+            }
+        }
+
+        Map<String, WorkflowTask> taskMap = new HashMap<>();
+        Set<String> duplicateTasks = new HashSet<>();
+        for (WorkflowTask task : allTasks) {
+            if(taskMap.containsKey(task.getTaskReferenceName())) {
+                duplicateTasks.add(task.getTaskReferenceName());
+            } else {
+                taskMap.put(task.getTaskReferenceName(), task);
+            }
+        }
+        if(!duplicateTasks.isEmpty()) {
+            throw new ValidationError("Task Reference Names MUST be unique across all the tasks in the workkflow.  " +
+                    "Please update/change reference names to be unique for the following tasks: " + duplicateTasks);
+        }
     }
 }

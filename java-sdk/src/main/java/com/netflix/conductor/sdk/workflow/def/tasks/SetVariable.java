@@ -13,12 +13,19 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
-public class SetVariable extends Task {
+public class SetVariable extends Task<SetVariable> {
 
-    public static final String TYPE = "SET_VARIABLE";
+    static {
+        TaskRegistry.register(TaskType.SET_VARIABLE.name(), SetVariable.class);
+    }
 
     public SetVariable(String taskReferenceName) {
         super(taskReferenceName, TaskType.SET_VARIABLE);
+    }
+
+    public SetVariable(WorkflowTask workflowTask) {
+        super(workflowTask);
     }
 }

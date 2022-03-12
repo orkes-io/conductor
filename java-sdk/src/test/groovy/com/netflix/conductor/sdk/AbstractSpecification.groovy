@@ -32,17 +32,21 @@ class AbstractSpecification extends Specification {
     @Shared
     WorkflowExecutor executor;
 
+    @Shared
+    WorkflowTestRunner testRunner;
+
     def setupSpec() {
-        log.info("Setting up spec")
+        log.info("Setting up spec: " + testRunner)
         if(executor != null) {
             return;
         }
-        WorkflowTestRunner testRunner = new WorkflowTestRunner(8097, "3.5.2");
+        testRunner = new WorkflowTestRunner(8097, "3.5.2");
         testRunner.init("com.netflix.conductor");
         executor = testRunner.getWorkflowExecutor();
     }
 
     def cleanupSpec() {
-        executor.shutdown();
+        log.info("cleaning up spec")
+        testRunner.shutdown();
     }
 }

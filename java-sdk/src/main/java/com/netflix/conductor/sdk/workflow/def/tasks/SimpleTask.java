@@ -12,20 +12,20 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
 
 /** Workflow task executed by a worker */
-public class SimpleTask extends Task {
+public class SimpleTask extends Task<SimpleTask> {
+
+    static {
+        TaskRegistry.register(TaskType.SIMPLE.name(), SimpleTask.class);
+    }
 
     private static final int ONE_HOUR = 60 * 60;
 
@@ -35,13 +35,19 @@ public class SimpleTask extends Task {
 
     private TaskDef taskDef;
 
-    private Map<String, Object> inputTemplate;
-
     public SimpleTask(String taskDefName, String taskReferenceName) {
         super(taskReferenceName, TaskType.SIMPLE);
         super.name(taskDefName);
         this.useGlobalTaskDef = false;
-        this.inputTemplate = new HashMap<>();
+    }
+
+    SimpleTask(WorkflowTask workflowTask) {
+        super(workflowTask);
+        if(workflowTask.getTaskDefinition() == null) {
+            this.useGlobalTaskDef = true;
+        } else {
+            this.taskDef = workflowTask.getTaskDefinition();
+        }
     }
 
     /**
@@ -60,16 +66,8 @@ public class SimpleTask extends Task {
     }
 
     public SimpleTask setTaskDef(TaskDef taskDef) {
+        this.useGlobalTaskDef = false;
         this.taskDef = taskDef;
-        return this;
-    }
-
-    public Map<String, Object> getInputTemplate() {
-        return inputTemplate;
-    }
-
-    public SimpleTask setInputTemplate(Map<String, Object> inputTemplate) {
-        this.inputTemplate = inputTemplate;
         return this;
     }
 
@@ -78,7 +76,6 @@ public class SimpleTask extends Task {
         WorkflowTask task = super.toWorkflowTask();
         if (this.taskDef != null) {
             task.setTaskDefinition(taskDef);
-            task.setInputParameters(inputTemplate);
         }
         return task;
     }

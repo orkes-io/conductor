@@ -13,9 +13,14 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
 
-public class Terminate extends Task {
+public class Terminate extends Task<Terminate> {
+
+    static {
+        TaskRegistry.register(TaskType.TERMINATE.name(), Terminate.class);
+    }
 
     private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";
 
@@ -33,5 +38,9 @@ public class Terminate extends Task {
         input(TERMINATION_STATUS_PARAMETER, terminationStatus.name());
         input(TERMINATION_WORKFLOW_OUTPUT, workflowOutput);
         input(TERMINATION_REASON_PARAMETER, reason);
+    }
+
+    public Terminate(WorkflowTask workflowTask) {
+        super(workflowTask);
     }
 }

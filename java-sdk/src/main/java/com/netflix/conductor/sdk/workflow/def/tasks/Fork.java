@@ -18,8 +18,13 @@ import java.util.List;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.ValidationError;
 
-public class Fork extends Task {
+public class Fork extends Task<Fork> {
+
+    static {
+        TaskRegistry.register(TaskType.FORK_JOIN.name(), Fork.class);
+    }
 
     private Join join;
 
@@ -30,16 +35,35 @@ public class Fork extends Task {
         this.forkedTasks = forkedTasks;
     }
 
+    Fork(WorkflowTask workflowTask) {
+        super(workflowTask);
+        int size = workflowTask.getForkTasks().size();
+        this.forkedTasks = new Task[size][];
+        int i = 0;
+        for (List<WorkflowTask> forkTasks : workflowTask.getForkTasks()) {
+            Task[] tasks = new Task[forkTasks.size()];
+            for (int j = 0; j < forkTasks.size(); j++) {
+                WorkflowTask forkWorkflowTask = forkTasks.get(j);
+                Task task = TaskRegistry.getTask(forkWorkflowTask);
+                tasks[j] = task;
+            }
+            this.forkedTasks[i++] = tasks;
+        }
+    }
+
     public Fork joinOn(String... joinOn) {
         this.join = new Join(getTaskReferenceName() + "_join", joinOn);
         return this;
     }
 
     @Override
+    protected WorkflowTask toWorkflowTask() {
+        WorkflowTask workflowTask = super.toWorkflowTask();
+        return workflowTask;
+    }
+
+    @Override
     public List<WorkflowTask> getWorkflowDefTasks() {
-        if (forkedTasks == null) {
-            throw new IllegalStateException("No fork tasks are defined");
-        }
         WorkflowTask fork = toWorkflowTask();
         List<String> joinOnTaskRefNames = new ArrayList<>();
         List<List<WorkflowTask>> forkTasks = new ArrayList<>();
@@ -69,5 +93,9 @@ public class Fork extends Task {
         }
 
         return Arrays.asList(fork, joinWorkflowTasks);
+    }
+
+    public Task[][] getForkedTasks() {
+        return forkedTasks;
     }
 }

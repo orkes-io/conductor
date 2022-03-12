@@ -14,6 +14,7 @@ package com.netflix.conductor.sdk.workflow.executor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -112,8 +113,7 @@ public class WorkflowExecutor {
         return executeWorkflow(conductorWorkflow, mapBuilder.build());
     }
 
-    public CompletableFuture<Workflow> executeWorkflow(
-            ConductorWorkflow conductorWorkflow, Object input) {
+    public CompletableFuture<Workflow> executeWorkflow(ConductorWorkflow conductorWorkflow, Object input) {
 
         CompletableFuture<Workflow> future = new CompletableFuture<>();
 
@@ -160,13 +160,25 @@ public class WorkflowExecutor {
         annotatedWorkerExecutor.shutdown();
     }
 
-    public boolean registerWorkflow(WorkflowDef workflowDef) {
+    public boolean registerWorkflow(WorkflowDef workflowDef, boolean overwrite) {
         try {
-            metadataClient.registerWorkflowDef(workflowDef);
+            if(overwrite) {
+                metadataClient.updateWorkflowDefs(Arrays.asList(workflowDef));
+            } else {
+                metadataClient.registerWorkflowDef(workflowDef);
+            }
             return true;
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             return false;
         }
+    }
+
+    public MetadataClient getMetadataClient() {
+        return metadataClient;
+    }
+
+    public TaskClient getTaskClient() {
+        return taskClient;
     }
 }

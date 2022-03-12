@@ -18,7 +18,11 @@ import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 /** Switch Task */
-public class Switch extends Task {
+public class Switch extends Task<Switch> {
+
+    static {
+        TaskRegistry.register(TaskType.SWITCH.name(), Switch.class);
+    }
 
     public static final String VALUE_PARAM_NAME = "value-param";
 
@@ -51,6 +55,27 @@ public class Switch extends Task {
         super(taskReferenceName, TaskType.SWITCH);
         this.caseExpression = caseExpression;
         this.useJavascript = false;
+    }
+
+    public Switch(WorkflowTask workflowTask) {
+        super(workflowTask);
+        Map<String, List<WorkflowTask>> decisions = workflowTask.getDecisionCases();
+
+        decisions.entrySet().stream().forEach(branch -> {
+            String branchName = branch.getKey();
+            List<WorkflowTask> branchWorkflowTasks = branch.getValue();
+            List<Task> branchTasks = new ArrayList<>();
+            for (WorkflowTask branchWorkflowTask : branchWorkflowTasks) {
+                branchTasks.add(TaskRegistry.getTask(branchWorkflowTask));
+            }
+            this.branches.put(branchName, branchTasks);
+        });
+
+        List<WorkflowTask> defaultCases = workflowTask.getDefaultCase();
+        for (WorkflowTask defaultCase : defaultCases) {
+            this.defaultTasks.add(TaskRegistry.getTask(defaultCase));
+        }
+
     }
 
     public Switch defaultCase(Task... tasks) {

@@ -13,11 +13,20 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 /** Wait task */
-public class Wait extends Task {
+public class Wait extends Task<Wait> {
+
+    static {
+        TaskRegistry.register(TaskType.WAIT.name(), Wait.class);
+    }
 
     public Wait(String taskReferenceName) {
         super(taskReferenceName, TaskType.WAIT);
+    }
+
+    public Wait(WorkflowTask workflowTask) {
+        super(workflowTask);
     }
 }

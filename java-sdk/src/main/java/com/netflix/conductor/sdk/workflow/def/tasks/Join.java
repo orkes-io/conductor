@@ -13,8 +13,15 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
-public class Join extends Task {
+import java.util.Arrays;
+
+public class Join extends Task<Join> {
+
+    static {
+        TaskRegistry.register(TaskType.JOIN.name(), Join.class);
+    }
 
     private String[] joinOn;
 
@@ -25,5 +32,21 @@ public class Join extends Task {
     public Join(String taskReferenceName, String... joinOn) {
         super(taskReferenceName, TaskType.JOIN);
         this.joinOn = joinOn;
+    }
+
+    Join(WorkflowTask workflowTask) {
+        super(workflowTask);
+        this.joinOn = workflowTask.getJoinOn().toArray(new String[0]);
+    }
+
+    @Override
+    protected WorkflowTask toWorkflowTask() {
+        WorkflowTask task = super.toWorkflowTask();
+        task.setJoinOn(Arrays.asList(joinOn));
+        return task;
+    }
+
+    public String[] getJoinOn() {
+        return joinOn;
     }
 }

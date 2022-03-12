@@ -15,17 +15,30 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.common.base.Strings;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.ValidationError;
 
 /** Wait task */
-public class Dynamic extends Task {
+public class Dynamic extends Task<Dynamic> {
 
-    private static final String TASK_NAME_INPUT_PARAM = "taskToExecute";
+    static {
+        TaskRegistry.register(TaskType.DYNAMIC.name(), Dynamic.class);
+    }
+
+    protected static final String TASK_NAME_INPUT_PARAM = "taskToExecute";
 
     public Dynamic(String taskReferenceName, String dynamicTaskNameValue) {
         super(taskReferenceName, TaskType.DYNAMIC);
+        if(Strings.isNullOrEmpty(dynamicTaskNameValue)) {
+            throw new AssertionError("Null/Empty dynamicTaskNameValue");
+        }
         super.input(TASK_NAME_INPUT_PARAM, dynamicTaskNameValue);
+    }
+
+    Dynamic(WorkflowTask workflowTask) {
+        super(workflowTask);
     }
 
     public List<WorkflowTask> getWorkflowDefTasks() {
