@@ -16,6 +16,8 @@ import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
 
+import java.util.HashMap;
+
 public class Terminate extends Task<Terminate> {
 
     static {
@@ -28,6 +30,16 @@ public class Terminate extends Task<Terminate> {
 
     private static final String TERMINATION_REASON_PARAMETER = "terminationReason";
 
+    public Terminate(String taskReferenceName, String reason) {
+        this(taskReferenceName, Workflow.WorkflowStatus.FAILED, reason, new HashMap<>());
+    }
+
+    public Terminate(
+            String taskReferenceName,
+            Workflow.WorkflowStatus terminationStatus,
+            String reason) {
+        this(taskReferenceName, terminationStatus, reason, new HashMap<>());
+    }
     public Terminate(
             String taskReferenceName,
             Workflow.WorkflowStatus terminationStatus,

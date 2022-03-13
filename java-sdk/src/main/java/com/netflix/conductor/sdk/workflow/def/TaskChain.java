@@ -12,23 +12,18 @@
  */
 package com.netflix.conductor.sdk.workflow.def;
 
-import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
+
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
-import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
-import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
-import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
-
-import java.util.*;
 
 public abstract class TaskChain {
 
     protected List<Task<?>> tasks = new ArrayList<>();
 
-    public TaskChain() {
-
-    }
+    public TaskChain() {}
 
     public TaskChain task(Task<?>... tasks) {
         Collections.addAll(this.tasks, tasks);
@@ -64,29 +59,61 @@ public abstract class TaskChain {
         return decide;
     }
 
+    public Switch decide(String taskReferenceName, String caseExpression,
+                         Callable<List<Task<?>>> defaultCase, Callable<Map<String, List<Task<?>>>> switchCases) {
+        Switch decide = new Switch(taskReferenceName, caseExpression);
+
+        try {
+            decide.defaultCase(defaultCase.call());
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            Map<String, List<Task<?>>> decisionCases = switchCases.call();
+            decide.decisionCases(decisionCases);
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        add(decide);
+        return decide;
+    }
+
     public SetVariable setVariable(String taskReferenceName, Task[]... forkedTasks) {
         SetVariable setVar = new SetVariable(taskReferenceName);
         add(setVar);
         return setVar;
     }
 
-    public <T> SubWorkflow subWorkflow(String taskReferenceName, ConductorWorkflow<T> conductorWorkflow) {
+    public Wait wait(String taskReferenceName) {
+        Wait wait = new Wait(taskReferenceName);
+        add(wait);
+        return wait;
+    }
+
+    public <T> SubWorkflow subWorkflow(
+            String taskReferenceName, ConductorWorkflow<T> conductorWorkflow) {
         SubWorkflow subWorkflow = new SubWorkflow(taskReferenceName, conductorWorkflow);
         add(subWorkflow);
         return subWorkflow;
     }
 
-    public <T> SubWorkflow subWorkflow(String taskReferenceName, String subWorkflowName, Integer subWorkflowVersion) {
-        SubWorkflow subWorkflow = new SubWorkflow(taskReferenceName, subWorkflowName, subWorkflowVersion);
+    public <T> SubWorkflow subWorkflow(
+            String taskReferenceName, String subWorkflowName, Integer subWorkflowVersion) {
+        SubWorkflow subWorkflow =
+                new SubWorkflow(taskReferenceName, subWorkflowName, subWorkflowVersion);
         add(subWorkflow);
         return subWorkflow;
     }
 
-    public TaskChain terminate(String taskReferenceName,
-                                  Workflow.WorkflowStatus terminationStatus,
-                                  String reason,
-                                  Object workflowOutput ) {
-        Terminate terminate = new Terminate(taskReferenceName, terminationStatus, reason, workflowOutput);
+    public TaskChain terminate(
+            String taskReferenceName,
+            Workflow.WorkflowStatus terminationStatus,
+            String reason,
+            Object workflowOutput) {
+        Terminate terminate =
+                new Terminate(taskReferenceName, terminationStatus, reason, workflowOutput);
         add(terminate);
         return this;
     }

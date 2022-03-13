@@ -12,13 +12,10 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.common.base.Strings;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.ValidationError;
+
+import com.google.common.base.Strings;
 
 /** Wait task */
 public class Dynamic extends Task<Dynamic> {
@@ -31,7 +28,7 @@ public class Dynamic extends Task<Dynamic> {
 
     public Dynamic(String taskReferenceName, String dynamicTaskNameValue) {
         super(taskReferenceName, TaskType.DYNAMIC);
-        if(Strings.isNullOrEmpty(dynamicTaskNameValue)) {
+        if (Strings.isNullOrEmpty(dynamicTaskNameValue)) {
             throw new AssertionError("Null/Empty dynamicTaskNameValue");
         }
         super.input(TASK_NAME_INPUT_PARAM, dynamicTaskNameValue);

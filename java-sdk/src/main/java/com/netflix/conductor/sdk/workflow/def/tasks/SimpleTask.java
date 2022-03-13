@@ -12,14 +12,12 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Workflow task executed by a worker */
 public class SimpleTask extends Task<SimpleTask> {
@@ -44,7 +42,7 @@ public class SimpleTask extends Task<SimpleTask> {
 
     SimpleTask(WorkflowTask workflowTask) {
         super(workflowTask);
-        if(workflowTask.getTaskDefinition() == null) {
+        if (workflowTask.getTaskDefinition() == null) {
             this.useGlobalTaskDef = true;
         } else {
             this.taskDef = workflowTask.getTaskDefinition();
@@ -77,7 +75,7 @@ public class SimpleTask extends Task<SimpleTask> {
         if (this.taskDef != null) {
             workflowTask.setTaskDefinition(taskDef);
         }
-        if(useGlobalTaskDef) {
+        if (useGlobalTaskDef) {
             workflowTask.setTaskDefinition(null);
         }
     }

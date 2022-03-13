@@ -18,7 +18,6 @@ import java.util.List;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.ValidationError;
 
 public class Fork extends Task<Fork> {
 
@@ -88,7 +87,7 @@ public class Fork extends Task<Fork> {
             joinOnTaskRefNames.add(
                     forkedWorkflowTasks.get(forkedWorkflowTasks.size() - 1).getTaskReferenceName());
         }
-        if(this.join != null) {
+        if (this.join != null) {
             fork.setJoinOn(List.of(this.join.getJoinOn()));
         } else {
             fork.setJoinOn(joinOnTaskRefNames);

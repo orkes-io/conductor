@@ -17,7 +17,6 @@ import java.util.List;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.ValidationError;
 
 public class DynamicFork extends Task<DynamicFork> {
 
@@ -45,8 +44,10 @@ public class DynamicFork extends Task<DynamicFork> {
         super(workflowTask);
         String nameOfParamForForkTask = workflowTask.getDynamicForkTasksParam();
         String nameOfParamForForkTaskInput = workflowTask.getDynamicForkTasksInputParamName();
-        this.forkTasksParameter = (String)workflowTask.getInputParameters().get(nameOfParamForForkTask);
-        this.forkTasksInputsParameter = (String)workflowTask.getInputParameters().get(nameOfParamForForkTaskInput);
+        this.forkTasksParameter =
+                (String) workflowTask.getInputParameters().get(nameOfParamForForkTask);
+        this.forkTasksInputsParameter =
+                (String) workflowTask.getInputParameters().get(nameOfParamForForkTaskInput);
     }
 
     public Join getJoin() {

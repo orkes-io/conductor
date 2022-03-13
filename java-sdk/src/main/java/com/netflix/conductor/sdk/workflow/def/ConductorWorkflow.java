@@ -30,7 +30,6 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.checkerframework.checker.units.qual.C;
 
 /** @param <T> Type of the workflow input */
 public class ConductorWorkflow<T> {
@@ -169,9 +168,10 @@ public class ConductorWorkflow<T> {
 
     /**
      * Execute a dynamic workflow without creating a definition in metadata store.
-     * <p><br/>
+     *
+     * <p><br>
      * <b>Note</b>: Use this with caution - as this does not promote re-usability of the workflows
-     * </p>
+     *
      * @param input Workflow Input - The input object is converted a JSON doc as an input to the
      *     workflow
      * @return
@@ -196,17 +196,20 @@ public class ConductorWorkflow<T> {
     }
 
     /**
-     * @param overwrite if true, the existing definition will be overwritten.  Use with caution
+     * @param overwrite if true, the existing definition will be overwritten. Use with caution
      * @return true if success, false if the workflow already exists with the given version number
      */
     public boolean registerWorkflow(boolean overwrite, boolean registerTasks) {
         WorkflowDef workflowDef = toWorkflowDef();
         List<WorkflowTask> missing = getMissingTasks(workflowDef);
-        if(!missing.isEmpty()) {
-            if(!registerTasks) {
-                throw new RuntimeException("Workflow cannot be registered.  The following tasks do not have definitions.  " +
-                        "Please register these tasks before creating the workflow.  Missing Tasks = " +
-                        missing.stream().map(WorkflowTask::getName).collect(Collectors.toSet()));
+        if (!missing.isEmpty()) {
+            if (!registerTasks) {
+                throw new RuntimeException(
+                        "Workflow cannot be registered.  The following tasks do not have definitions.  "
+                                + "Please register these tasks before creating the workflow.  Missing Tasks = "
+                                + missing.stream()
+                                        .map(WorkflowTask::getName)
+                                        .collect(Collectors.toSet()));
             } else {
                 missing.stream().forEach(this::registerTaskDef);
             }
@@ -216,20 +219,23 @@ public class ConductorWorkflow<T> {
 
     private List<WorkflowTask> getMissingTasks(WorkflowDef workflowDef) {
         List<WorkflowTask> missing = new ArrayList<>();
-        workflowDef.collectTasks()
-                .stream()
+        workflowDef.collectTasks().stream()
                 .filter(workflowTask -> workflowTask.getType().equals(TaskType.TASK_TYPE_SIMPLE))
-                .forEach(workflowTask -> {
-                    try {
-                        TaskDef taskDef = workflowExecutor.getMetadataClient().getTaskDef(workflowTask.getName());
-                    }catch(ConductorClientException cce) {
-                        if(cce.getStatus() == 404) {
-                            missing.add(workflowTask);
-                        } else {
-                            throw cce;
-                        }
-                    }
-        });
+                .forEach(
+                        workflowTask -> {
+                            try {
+                                TaskDef taskDef =
+                                        workflowExecutor
+                                                .getMetadataClient()
+                                                .getTaskDef(workflowTask.getName());
+                            } catch (ConductorClientException cce) {
+                                if (cce.getStatus() == 404) {
+                                    missing.add(workflowTask);
+                                } else {
+                                    throw cce;
+                                }
+                            }
+                        });
         return missing;
     }
 
@@ -256,7 +262,6 @@ public class ConductorWorkflow<T> {
         def.setOutputParameters(workflowOutput);
         def.setVariables(variables);
         def.setInputTemplate(objectMapper.convertValue(defaultInput, Map.class));
-
 
         for (Task task : tasks) {
             def.getTasks().addAll(task.getWorkflowDefTasks());
@@ -286,8 +291,6 @@ public class ConductorWorkflow<T> {
         }
         return workflow;
     }
-
-
 
     @Override
     public boolean equals(Object o) {

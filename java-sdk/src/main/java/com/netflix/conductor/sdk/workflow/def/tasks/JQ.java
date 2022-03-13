@@ -12,16 +12,14 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.google.common.base.Strings;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.base.Strings;
 
 /**
- * JQ Transformation task
- * See https://stedolan.github.io/jq/ for how to form the queries to parse JSON payloads
+ * JQ Transformation task See https://stedolan.github.io/jq/ for how to form the queries to parse
+ * JSON payloads
  */
 public class JQ extends Task<JQ> {
 
@@ -33,7 +31,7 @@ public class JQ extends Task<JQ> {
 
     public JQ(String taskReferenceName, String queryExpression) {
         super(taskReferenceName, TaskType.JSON_JQ_TRANSFORM);
-        if(Strings.isNullOrEmpty(queryExpression)) {
+        if (Strings.isNullOrEmpty(queryExpression)) {
             throw new AssertionError("Null/Empty queryExpression");
         }
         super.input(QUERY_EXPRESSION_PARAMETER, queryExpression);
@@ -44,6 +42,6 @@ public class JQ extends Task<JQ> {
     }
 
     public String getQueryExpression() {
-        return (String)getInput().get(QUERY_EXPRESSION_PARAMETER);
+        return (String) getInput().get(QUERY_EXPRESSION_PARAMETER);
     }
 }

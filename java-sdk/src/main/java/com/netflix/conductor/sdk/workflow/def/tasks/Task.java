@@ -14,18 +14,15 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import java.util.*;
 
-import com.google.common.base.Strings;
-import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.def.TaskChain;
-import com.netflix.conductor.sdk.workflow.def.ValidationError;
-import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 
 /** Workflow Task */
 public abstract class Task<T> extends TaskChain {
@@ -51,10 +48,10 @@ public abstract class Task<T> extends TaskChain {
     public final InputOutputGetter taskOutput;
 
     public Task(String taskReferenceName, TaskType type) {
-        if(Strings.isNullOrEmpty(taskReferenceName)) {
+        if (Strings.isNullOrEmpty(taskReferenceName)) {
             throw new AssertionError("taskReferenceName cannot be null");
         }
-        if(type == null) {
+        if (type == null) {
             throw new AssertionError("type cannot be null");
         }
 
@@ -199,7 +196,7 @@ public abstract class Task<T> extends TaskChain {
         workflowTasks.add(toWorkflowTask());
         workflowTasks.addAll(getChildrenTasks());
 
-        //chained tasks
+        // chained tasks
         for (Task<?> task : tasks) {
             workflowTasks.addAll(task.getWorkflowDefTasks());
         }
@@ -214,24 +211,24 @@ public abstract class Task<T> extends TaskChain {
         workflowTask.setDescription(description);
         workflowTask.setInputParameters(input);
 
-        //Let the sub-classes enrich the workflow task before returning back
+        // Let the sub-classes enrich the workflow task before returning back
         updateWorkflowTask(workflowTask);
 
         return workflowTask;
     }
 
     /**
-     * Override this method when the sub-class should update the default WorkflowTask generated using
-     * {@link #toWorkflowTask()}
+     * Override this method when the sub-class should update the default WorkflowTask generated
+     * using {@link #toWorkflowTask()}
+     *
      * @param workflowTask
      */
-    protected void updateWorkflowTask(WorkflowTask workflowTask) {
-    }
-
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {}
 
     /**
-     * Override this method when sub-classes will generate multiple workflow tasks.
-     * Used by tasks which have children tasks such as do_while, fork, etc.
+     * Override this method when sub-classes will generate multiple workflow tasks. Used by tasks
+     * which have children tasks such as do_while, fork, etc.
+     *
      * @return
      */
     protected List<WorkflowTask> getChildrenTasks() {

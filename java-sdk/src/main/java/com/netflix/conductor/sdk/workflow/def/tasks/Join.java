@@ -12,10 +12,10 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
+import java.util.Arrays;
+
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-
-import java.util.Arrays;
 
 public class Join extends Task<Join> {
 

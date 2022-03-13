@@ -13,17 +13,16 @@
 package com.netflix.conductor.sdk.workflow.def;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** @param <T> Input type for the workflow */
 public class WorkflowBuilder<T> extends TaskChain {
@@ -103,12 +102,14 @@ public class WorkflowBuilder<T> extends TaskChain {
         this.restartable = restartable;
         return this;
     }
+
     public WorkflowBuilder<T> variables(Object variables) {
         try {
             this.state = objectMapper.convertValue(variables, Map.class);
-        }catch (Exception e) {
-            throw new IllegalArgumentException("Workflow Variables cannot be converted to Map.  Supplied: "  +
-                    variables.getClass().getName());
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Workflow Variables cannot be converted to Map.  Supplied: "
+                            + variables.getClass().getName());
         }
         return this;
     }
@@ -163,15 +164,12 @@ public class WorkflowBuilder<T> extends TaskChain {
             workflow.add(task);
         }
 
-
         return workflow;
     }
 
     /**
-     * Validate:
-     * 1. There are no tasks with duplicate reference names
-     * 2. Each of the task is consistent with its definition
-     * 3.
+     * Validate: 1. There are no tasks with duplicate reference names 2. Each of the task is
+     * consistent with its definition 3.
      */
     private void validate() throws ValidationError {
 
@@ -186,15 +184,17 @@ public class WorkflowBuilder<T> extends TaskChain {
         Map<String, WorkflowTask> taskMap = new HashMap<>();
         Set<String> duplicateTasks = new HashSet<>();
         for (WorkflowTask task : allTasks) {
-            if(taskMap.containsKey(task.getTaskReferenceName())) {
+            if (taskMap.containsKey(task.getTaskReferenceName())) {
                 duplicateTasks.add(task.getTaskReferenceName());
             } else {
                 taskMap.put(task.getTaskReferenceName(), task);
             }
         }
-        if(!duplicateTasks.isEmpty()) {
-            throw new ValidationError("Task Reference Names MUST be unique across all the tasks in the workkflow.  " +
-                    "Please update/change reference names to be unique for the following tasks: " + duplicateTasks);
+        if (!duplicateTasks.isEmpty()) {
+            throw new ValidationError(
+                    "Task Reference Names MUST be unique across all the tasks in the workkflow.  "
+                            + "Please update/change reference names to be unique for the following tasks: "
+                            + duplicateTasks);
         }
     }
 }

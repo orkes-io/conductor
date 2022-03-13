@@ -12,16 +12,16 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
-import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.testing.LocalServerRunner;
-import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Wait task */
 public class Http extends Task<Http> {
@@ -49,10 +49,10 @@ public class Http extends Task<Http> {
         super(workflowTask);
 
         Object inputRequest = workflowTask.getInputParameters().get(INPUT_PARAM);
-        if(inputRequest != null) {
+        if (inputRequest != null) {
             try {
                 this.httpRequest = objectMapper.convertValue(inputRequest, Input.class);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 LOGGER.error("Error while trying to convert input request " + e.getMessage(), e);
             }
         }
@@ -98,7 +98,14 @@ public class Http extends Task<Http> {
     }
 
     public static class Input {
-        public enum HttpMethod {PUT, POST, GET, DELETE, OPTIONS, HEAD}
+        public enum HttpMethod {
+            PUT,
+            POST,
+            GET,
+            DELETE,
+            OPTIONS,
+            HEAD
+        }
 
         private HttpMethod method; // PUT, POST, GET, DELETE, OPTIONS, HEAD
         private String vipAddress;
@@ -209,18 +216,33 @@ public class Http extends Task<Http> {
 
         @Override
         public String toString() {
-            return "Input{" +
-                    "method=" + method +
-                    ", vipAddress='" + vipAddress + '\'' +
-                    ", appName='" + appName + '\'' +
-                    ", headers=" + headers +
-                    ", uri='" + uri + '\'' +
-                    ", body=" + body +
-                    ", accept='" + accept + '\'' +
-                    ", contentType='" + contentType + '\'' +
-                    ", connectionTimeOut=" + connectionTimeOut +
-                    ", readTimeOut=" + readTimeOut +
-                    '}';
+            return "Input{"
+                    + "method="
+                    + method
+                    + ", vipAddress='"
+                    + vipAddress
+                    + '\''
+                    + ", appName='"
+                    + appName
+                    + '\''
+                    + ", headers="
+                    + headers
+                    + ", uri='"
+                    + uri
+                    + '\''
+                    + ", body="
+                    + body
+                    + ", accept='"
+                    + accept
+                    + '\''
+                    + ", contentType='"
+                    + contentType
+                    + '\''
+                    + ", connectionTimeOut="
+                    + connectionTimeOut
+                    + ", readTimeOut="
+                    + readTimeOut
+                    + '}';
         }
 
         @Override
@@ -228,12 +250,31 @@ public class Http extends Task<Http> {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Input input = (Input) o;
-            return method == input.method && Objects.equals(vipAddress, input.vipAddress) && Objects.equals(appName, input.appName) && Objects.equals(headers, input.headers) && Objects.equals(uri, input.uri) && Objects.equals(body, input.body) && Objects.equals(accept, input.accept) && Objects.equals(contentType, input.contentType) && Objects.equals(connectionTimeOut, input.connectionTimeOut) && Objects.equals(readTimeOut, input.readTimeOut);
+            return method == input.method
+                    && Objects.equals(vipAddress, input.vipAddress)
+                    && Objects.equals(appName, input.appName)
+                    && Objects.equals(headers, input.headers)
+                    && Objects.equals(uri, input.uri)
+                    && Objects.equals(body, input.body)
+                    && Objects.equals(accept, input.accept)
+                    && Objects.equals(contentType, input.contentType)
+                    && Objects.equals(connectionTimeOut, input.connectionTimeOut)
+                    && Objects.equals(readTimeOut, input.readTimeOut);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(method, vipAddress, appName, headers, uri, body, accept, contentType, connectionTimeOut, readTimeOut);
+            return Objects.hash(
+                    method,
+                    vipAddress,
+                    appName,
+                    headers,
+                    uri,
+                    body,
+                    accept,
+                    contentType,
+                    connectionTimeOut,
+                    readTimeOut);
         }
     }
 }

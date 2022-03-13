@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import com.netflix.conductor.sdk.workflow.def.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +62,7 @@ public class WorkflowExecutor {
     public WorkflowExecutor(String apiServerURL) {
         this(apiServerURL, 100);
     }
+
     public WorkflowExecutor(String apiServerURL, int pollingInterval) {
         String conductorServerApiBase = apiServerURL;
 
@@ -93,8 +93,11 @@ public class WorkflowExecutor {
                 TimeUnit.MILLISECONDS);
     }
 
-    public WorkflowExecutor(TaskClient taskClient, WorkflowClient workflowClient, MetadataClient metadataClient,
-                            int pollingInterval) {
+    public WorkflowExecutor(
+            TaskClient taskClient,
+            WorkflowClient workflowClient,
+            MetadataClient metadataClient,
+            int pollingInterval) {
 
         this.taskClient = taskClient;
         this.workflowClient = workflowClient;
@@ -141,7 +144,8 @@ public class WorkflowExecutor {
         return executeWorkflow(conductorWorkflow, mapBuilder.build());
     }
 
-    public CompletableFuture<Workflow> executeWorkflow(ConductorWorkflow conductorWorkflow, Object input) {
+    public CompletableFuture<Workflow> executeWorkflow(
+            ConductorWorkflow conductorWorkflow, Object input) {
 
         CompletableFuture<Workflow> future = new CompletableFuture<>();
 
@@ -190,7 +194,7 @@ public class WorkflowExecutor {
 
     public boolean registerWorkflow(WorkflowDef workflowDef, boolean overwrite) {
         try {
-            if(overwrite) {
+            if (overwrite) {
                 metadataClient.updateWorkflowDefs(Arrays.asList(workflowDef));
             } else {
                 metadataClient.registerWorkflowDef(workflowDef);

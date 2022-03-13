@@ -12,22 +12,25 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
-import com.google.common.base.Strings;
-import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.ValidationError;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
 
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.conductor.common.metadata.tasks.TaskType;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.ValidationError;
+
+import com.google.common.base.Strings;
 
 /**
- * JQ Transformation task
- * See https://stedolan.github.io/jq/ for how to form the queries to parse JSON payloads
+ * JQ Transformation task See https://stedolan.github.io/jq/ for how to form the queries to parse
+ * JSON payloads
  */
 public class Javascript extends Task<Javascript> {
 
@@ -45,7 +48,7 @@ public class Javascript extends Task<Javascript> {
 
     public Javascript(String taskReferenceName, String expression) {
         super(taskReferenceName, TaskType.INLINE);
-        if(Strings.isNullOrEmpty(expression)) {
+        if (Strings.isNullOrEmpty(expression)) {
             throw new AssertionError("Null/Empty expression");
         }
         super.input(EVALUDATOR_TYPE_PARAMETER, "javascript");
@@ -57,7 +60,7 @@ public class Javascript extends Task<Javascript> {
     }
 
     public String getExpression() {
-        return (String)getInput().get(EXPRESSION_PARAMETER);
+        return (String) getInput().get(EXPRESSION_PARAMETER);
     }
 
     /**
@@ -67,8 +70,8 @@ public class Javascript extends Task<Javascript> {
      */
     public Javascript validate() {
         ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName(ENGINE);
-        if(scriptEngine == null) {
-            LOGGER.error("missing "  + ENGINE + " engine.  Ensure you are running support JVM");
+        if (scriptEngine == null) {
+            LOGGER.error("missing " + ENGINE + " engine.  Ensure you are running support JVM");
             return this;
         }
 

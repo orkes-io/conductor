@@ -32,9 +32,9 @@ public class Switch extends Task<Switch> {
 
     private boolean useJavascript;
 
-    private List<Task> defaultTasks = new ArrayList<>();
+    private List<Task<?>> defaultTasks = new ArrayList<>();
 
-    private Map<String, List<Task>> branches = new HashMap<>();
+    private Map<String, List<Task<?>>> branches = new HashMap<>();
 
     /**
      * @param taskReferenceName
@@ -61,27 +61,39 @@ public class Switch extends Task<Switch> {
         super(workflowTask);
         Map<String, List<WorkflowTask>> decisions = workflowTask.getDecisionCases();
 
-        decisions.entrySet().stream().forEach(branch -> {
-            String branchName = branch.getKey();
-            List<WorkflowTask> branchWorkflowTasks = branch.getValue();
-            List<Task> branchTasks = new ArrayList<>();
-            for (WorkflowTask branchWorkflowTask : branchWorkflowTasks) {
-                branchTasks.add(TaskRegistry.getTask(branchWorkflowTask));
-            }
-            this.branches.put(branchName, branchTasks);
-        });
+        decisions.entrySet().stream()
+                .forEach(
+                        branch -> {
+                            String branchName = branch.getKey();
+                            List<WorkflowTask> branchWorkflowTasks = branch.getValue();
+                            List<Task<?>> branchTasks = new ArrayList<>();
+                            for (WorkflowTask branchWorkflowTask : branchWorkflowTasks) {
+                                branchTasks.add(TaskRegistry.getTask(branchWorkflowTask));
+                            }
+                            this.branches.put(branchName, branchTasks);
+                        });
 
         List<WorkflowTask> defaultCases = workflowTask.getDefaultCase();
         for (WorkflowTask defaultCase : defaultCases) {
             this.defaultTasks.add(TaskRegistry.getTask(defaultCase));
         }
-
     }
 
-    public Switch defaultCase(Task... tasks) {
+    public Switch defaultCase(Task<?>... tasks) {
         defaultTasks = Arrays.asList(tasks);
         return this;
     }
+
+    public Switch defaultCase(List<Task<?>> defaultTasks) {
+        this.defaultTasks = defaultTasks;
+        return this;
+    }
+
+    public Switch decisionCases(Map<String, List<Task<?>>> branches) {
+        this.branches = branches;
+        return this;
+    }
+
 
     public Switch defaultCase(String... workerTasks) {
         for (String workerTask : workerTasks) {
@@ -96,7 +108,7 @@ public class Switch extends Task<Switch> {
     }
 
     public Switch switchCase(String caseValue, String... workerTasks) {
-        List<Task> tasks = new ArrayList<>(workerTasks.length);
+        List<Task<?>> tasks = new ArrayList<>(workerTasks.length);
         int i = 0;
         for (String workerTask : workerTasks) {
             tasks.add(new SimpleTask(workerTask, workerTask));
@@ -105,11 +117,11 @@ public class Switch extends Task<Switch> {
         return this;
     }
 
-    public List<Task> getDefaultTasks() {
+    public List<Task<?>> getDefaultTasks() {
         return defaultTasks;
     }
 
-    public Map<String, List<Task>> getBranches() {
+    public Map<String, List<Task<?>>> getBranches() {
         return branches;
     }
 
@@ -131,10 +143,10 @@ public class Switch extends Task<Switch> {
                 .forEach(
                         entry -> {
                             String decisionCase = entry.getKey();
-                            List<Task> decisionTasks = entry.getValue();
+                            List<Task<?>> decisionTasks = entry.getValue();
                             List<WorkflowTask> decionTaskDefs =
                                     new ArrayList<>(decisionTasks.size());
-                            for (Task decisionTask : decisionTasks) {
+                            for (Task<?> decisionTask : decisionTasks) {
                                 decionTaskDefs.addAll(decisionTask.getWorkflowDefTasks());
                             }
                             decisionCases.put(decisionCase, decionTaskDefs);
@@ -142,7 +154,7 @@ public class Switch extends Task<Switch> {
 
         workflowTask.setDecisionCases(decisionCases);
         List<WorkflowTask> defaultCaseTaskDefs = new ArrayList<>(defaultTasks.size());
-        for (Task defaultTask : defaultTasks) {
+        for (Task<?> defaultTask : defaultTasks) {
             defaultCaseTaskDefs.addAll(defaultTask.getWorkflowDefTasks());
         }
         workflowTask.setDefaultCase(defaultCaseTaskDefs);

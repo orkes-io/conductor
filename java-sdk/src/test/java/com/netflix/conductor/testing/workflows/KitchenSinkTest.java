@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
@@ -32,7 +31,6 @@ import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
 import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
-import org.junit.jupiter.api.Disabled;
 
 import static org.junit.jupiter.api.Assertions.*;
 
