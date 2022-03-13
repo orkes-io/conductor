@@ -12,7 +12,7 @@
  */
 package com.netflix.conductor.tests;
 
-public class KitchensinkWorkflowInput {
+public class TestWorkflowInput {
 
     private String name;
 
@@ -20,13 +20,13 @@ public class KitchensinkWorkflowInput {
 
     private String countryCode;
 
-    public KitchensinkWorkflowInput(String name, String zipCode, String countryCode) {
+    public TestWorkflowInput(String name, String zipCode, String countryCode) {
         this.name = name;
         this.zipCode = zipCode;
         this.countryCode = countryCode;
     }
 
-    public KitchensinkWorkflowInput() {}
+    public TestWorkflowInput() {}
 
     public String getName() {
         return name;

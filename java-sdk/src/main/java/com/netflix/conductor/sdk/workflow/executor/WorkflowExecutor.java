@@ -65,6 +65,10 @@ public class WorkflowExecutor {
             Executors.newSingleThreadScheduledExecutor();
 
     static {
+        initTaskImplementations();
+    }
+
+    public static void initTaskImplementations() {
         TaskRegistry.register(TaskType.DO_WHILE.name(), DoWhile.class);
         TaskRegistry.register(TaskType.DYNAMIC.name(), Dynamic.class);
         TaskRegistry.register(TaskType.FORK_JOIN_DYNAMIC.name(), DynamicFork.class);
@@ -82,10 +86,10 @@ public class WorkflowExecutor {
     }
 
     public WorkflowExecutor(String apiServerURL) {
-        this(apiServerURL, null, 100);
+        this(apiServerURL, 100);
     }
 
-    public WorkflowExecutor(String apiServerURL, ClientFilter clientFilter, int pollingInterval) {
+    public WorkflowExecutor(String apiServerURL, int pollingInterval, ClientFilter... clientFilter) {
         String conductorServerApiBase = apiServerURL;
 
         taskClient = new TaskClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);

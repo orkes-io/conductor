@@ -12,7 +12,7 @@
  */
 package com.netflix.conductor.tests;
 
-public class KitchensinkWorkflowOutput {
+public class TestWorkflowOutput {
 
     private String greetings;
 

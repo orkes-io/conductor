@@ -198,7 +198,7 @@ public class LocalServerRunner {
                                     LOGGER.error("Exception reading input stream:", e);
                                 }
                                 // copy to standard out
-                                LOGGER.error("Server input stream - {}", line);
+                                LOGGER.trace("Server input stream - {}", line);
                             }
                         });
     }

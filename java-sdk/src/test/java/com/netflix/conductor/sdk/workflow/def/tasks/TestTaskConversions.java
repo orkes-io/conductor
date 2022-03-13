@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import org.junit.jupiter.api.Test;
 
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -27,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class TestTaskConversions {
 
+    static {
+        WorkflowExecutor.initTaskImplementations();
+    }
     @Test
     public void testSimpleTaskConversion() {
         SimpleTask simpleTask = new SimpleTask("task_name", "task_ref_name");
