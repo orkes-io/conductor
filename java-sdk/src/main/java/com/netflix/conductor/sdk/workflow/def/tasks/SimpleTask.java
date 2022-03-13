@@ -18,6 +18,7 @@ import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
+import java.util.Arrays;
 import java.util.List;
 
 /** Workflow task executed by a worker */
@@ -72,20 +73,12 @@ public class SimpleTask extends Task<SimpleTask> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask task = super.toWorkflowTask();
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {
         if (this.taskDef != null) {
-            task.setTaskDefinition(taskDef);
+            workflowTask.setTaskDefinition(taskDef);
         }
-        return task;
-    }
-
-    @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        List<WorkflowTask> tasks = super.getWorkflowDefTasks();
-        if (useGlobalTaskDef) {
-            tasks.forEach(task -> task.setTaskDefinition(null));
+        if(useGlobalTaskDef) {
+            workflowTask.setTaskDefinition(null);
         }
-        return tasks;
     }
 }

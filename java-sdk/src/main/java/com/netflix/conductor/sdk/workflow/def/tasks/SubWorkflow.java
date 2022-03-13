@@ -63,8 +63,7 @@ public class SubWorkflow extends Task<SubWorkflow> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask task = super.toWorkflowTask();
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {
         SubWorkflowParams subWorkflowParam = new SubWorkflowParams();
 
         if(conductorWorkflow != null) {
@@ -73,7 +72,6 @@ public class SubWorkflow extends Task<SubWorkflow> {
             subWorkflowParam.setName(workflowName);
             subWorkflowParam.setVersion(workflowVersion);
         }
-        task.setSubWorkflowParam(subWorkflowParam);
-        return task;
+        workflowTask.setSubWorkflowParam(subWorkflowParam);
     }
 }

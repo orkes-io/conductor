@@ -57,42 +57,44 @@ public class Fork extends Task<Fork> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask workflowTask = super.toWorkflowTask();
-        return workflowTask;
+    protected List<WorkflowTask> getChildrenTasks() {
+        WorkflowTask fork = toWorkflowTask();
+
+        WorkflowTask joinWorkflowTask = null;
+        if (this.join != null) {
+            List<WorkflowTask> joinTasks = this.join.getWorkflowDefTasks();
+            joinWorkflowTask = joinTasks.get(0);
+        } else {
+            joinWorkflowTask = new WorkflowTask();
+            joinWorkflowTask.setWorkflowTaskType(TaskType.JOIN);
+            joinWorkflowTask.setTaskReferenceName(getTaskReferenceName() + "_join");
+            joinWorkflowTask.setName(joinWorkflowTask.getTaskReferenceName());
+            joinWorkflowTask.setJoinOn(fork.getJoinOn());
+        }
+        return Arrays.asList(joinWorkflowTask);
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        WorkflowTask fork = toWorkflowTask();
+    public void updateWorkflowTask(WorkflowTask fork) {
         List<String> joinOnTaskRefNames = new ArrayList<>();
         List<List<WorkflowTask>> forkTasks = new ArrayList<>();
 
-        for (Task[] forkedTaskList : forkedTasks) {
+        for (Task<?>[] forkedTaskList : forkedTasks) {
             List<WorkflowTask> forkedWorkflowTasks = new ArrayList<>();
-            for (Task baseWorkflowTask : forkedTaskList) {
+            for (Task<?> baseWorkflowTask : forkedTaskList) {
                 forkedWorkflowTasks.addAll(baseWorkflowTask.getWorkflowDefTasks());
             }
             forkTasks.add(forkedWorkflowTasks);
             joinOnTaskRefNames.add(
                     forkedWorkflowTasks.get(forkedWorkflowTasks.size() - 1).getTaskReferenceName());
         }
-
-        fork.setForkTasks(forkTasks);
-
-        WorkflowTask joinWorkflowTasks = null;
-        if (this.join != null) {
-            List<WorkflowTask> joinTasks = this.join.getWorkflowDefTasks();
-            joinWorkflowTasks = joinTasks.get(0);
+        if(this.join != null) {
+            fork.setJoinOn(List.of(this.join.getJoinOn()));
         } else {
-            joinWorkflowTasks = new WorkflowTask();
-            joinWorkflowTasks.setWorkflowTaskType(TaskType.JOIN);
-            joinWorkflowTasks.setTaskReferenceName(getTaskReferenceName() + "_join");
-            joinWorkflowTasks.setName(joinWorkflowTasks.getTaskReferenceName());
-            joinWorkflowTasks.setJoinOn(joinOnTaskRefNames);
+            fork.setJoinOn(joinOnTaskRefNames);
         }
 
-        return Arrays.asList(fork, joinWorkflowTasks);
+        fork.setForkTasks(forkTasks);
     }
 
     public Task[][] getForkedTasks() {

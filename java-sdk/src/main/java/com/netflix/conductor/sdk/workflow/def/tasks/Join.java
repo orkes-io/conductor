@@ -40,10 +40,8 @@ public class Join extends Task<Join> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask task = super.toWorkflowTask();
-        task.setJoinOn(Arrays.asList(joinOn));
-        return task;
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {
+        workflowTask.setJoinOn(Arrays.asList(joinOn));
     }
 
     public String[] getJoinOn() {

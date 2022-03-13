@@ -114,21 +114,16 @@ public class Switch extends Task<Switch> {
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-
-        WorkflowTask switchTaskDef = toWorkflowTask();
-
-        List<WorkflowTask> switchTasks = new ArrayList<>();
-        switchTasks.add(switchTaskDef);
+    public void updateWorkflowTask(WorkflowTask workflowTask) {
 
         if (useJavascript) {
-            switchTaskDef.setEvaluatorType(JAVASCRIPT_NAME);
-            switchTaskDef.setExpression(caseExpression);
+            workflowTask.setEvaluatorType(JAVASCRIPT_NAME);
+            workflowTask.setExpression(caseExpression);
 
         } else {
-            switchTaskDef.setEvaluatorType(VALUE_PARAM_NAME);
-            switchTaskDef.getInputParameters().put("switchCaseValue", caseExpression);
-            switchTaskDef.setExpression("switchCaseValue");
+            workflowTask.setEvaluatorType(VALUE_PARAM_NAME);
+            workflowTask.getInputParameters().put("switchCaseValue", caseExpression);
+            workflowTask.setExpression("switchCaseValue");
         }
 
         Map<String, List<WorkflowTask>> decisionCases = new HashMap<>();
@@ -145,13 +140,11 @@ public class Switch extends Task<Switch> {
                             decisionCases.put(decisionCase, decionTaskDefs);
                         });
 
-        switchTaskDef.setDecisionCases(decisionCases);
+        workflowTask.setDecisionCases(decisionCases);
         List<WorkflowTask> defaultCaseTaskDefs = new ArrayList<>(defaultTasks.size());
         for (Task defaultTask : defaultTasks) {
             defaultCaseTaskDefs.addAll(defaultTask.getWorkflowDefTasks());
         }
-        switchTaskDef.setDefaultCase(defaultCaseTaskDefs);
-
-        return switchTasks;
+        workflowTask.setDefaultCase(defaultCaseTaskDefs);
     }
 }

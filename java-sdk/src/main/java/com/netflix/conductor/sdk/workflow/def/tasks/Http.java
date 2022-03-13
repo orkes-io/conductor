@@ -93,10 +93,8 @@ public class Http extends Task<Http> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask workflowTask = super.toWorkflowTask();
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {
         workflowTask.getInputParameters().put(INPUT_PARAM, httpRequest);
-        return workflowTask;
     }
 
     public static class Input {

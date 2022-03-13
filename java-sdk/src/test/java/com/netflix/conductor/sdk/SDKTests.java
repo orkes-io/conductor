@@ -76,20 +76,22 @@ public class SDKTests {
                 .restartable(true)
                 .timeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF, 10)
                 .defaultInput(defaultInput)
+                .parallel("parallel", new Task[][]{{forkTask1}, {forkTask2}})
                 .task(getUserInfo)
                 .task(
                         new Http("http_task").url("https://weatherdbi.herokuapp.com/data/weather/${workflow.input.zipCode}")
                                 .input("zipCode", "${workflow.input.zipCode}")
                                 .readTimeout(10_000)
                 )
-                .parallel("parallel", new Task[][]{{forkTask1}, {forkTask2}}).end()
                 .decide("decide", getUserInfo.taskOutput.get("zipCode"))
                     .switchCase("95014", task2)
-                    .defaultCase(new Terminate("terminate", Workflow.WorkflowStatus.FAILED, "I don't ship there", new HashMap<>()))
-                    .end()
+                    .defaultCase(
+                            new Terminate("terminate",
+                                    Workflow.WorkflowStatus.FAILED,
+                                    "I don't ship there", new HashMap<>())
+                    )
                 .loop("run_twice", 2, new SimpleTask("task3", "task3"))
                     .input("key", "value")
-                    .end()
                 .add(new SimpleTask("task2", "task222"));
 
         ConductorWorkflow<KitchensinkWorkflowInput> workflow = builder.build();

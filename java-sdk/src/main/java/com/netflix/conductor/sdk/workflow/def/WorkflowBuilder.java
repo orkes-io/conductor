@@ -24,7 +24,7 @@ import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 
 /** @param <T> Input type for the workflow */
-public class WorkflowBuilder<T> {
+public class WorkflowBuilder<T> extends TaskChain {
 
     private String name;
 
@@ -46,8 +46,6 @@ public class WorkflowBuilder<T> {
 
     private Map<String, Object> output = new HashMap<>();
 
-    private List<Task> tasks = new ArrayList<>();
-
     private WorkflowExecutor workflowExecutor;
 
     public final InputOutputGetter input =
@@ -55,6 +53,7 @@ public class WorkflowBuilder<T> {
 
     public WorkflowBuilder(WorkflowExecutor workflowExecutor) {
         this.workflowExecutor = workflowExecutor;
+        this.tasks = new ArrayList<>();
     }
 
     public WorkflowBuilder<T> name(String name) {
@@ -122,58 +121,6 @@ public class WorkflowBuilder<T> {
     public WorkflowBuilder<T> output(MapBuilder mapBuilder) {
         output.putAll(mapBuilder.build());
         return this;
-    }
-
-    public WorkflowBuilder<T> add(Task task) {
-        this.tasks.add(task);
-        return this;
-    }
-
-    public WorkflowBuilder<T> task(Task task) {
-        this.tasks.add(task);
-        return this;
-    }
-
-    public WorkflowBuilder<T> add(Task... tasks) {
-        Collections.addAll(this.tasks, tasks);
-        return this;
-    }
-
-    public DoWhile loop(String taskReferenceName, int loopCount, Task... tasks) {
-        DoWhile doWhile = new DoWhile(taskReferenceName, loopCount, tasks);
-        doWhile.setBuilder(this);
-        add(doWhile);
-        return doWhile;
-    }
-
-    public DoWhile loop(String taskReferenceName, String condition, Task... tasks) {
-        DoWhile doWhile = new DoWhile(taskReferenceName, condition, tasks);
-        doWhile.setBuilder(this);
-        add(doWhile);
-        return doWhile;
-    }
-
-    public Fork parallel(String taskReferenceName, Task[]... forkedTasks) {
-        Fork fork = new Fork(taskReferenceName, forkedTasks);
-        fork.setBuilder(this);
-        add(fork);
-        return fork;
-    }
-
-    public WorkflowBuilder<T> terminate(String taskReferenceName,
-                                        Workflow.WorkflowStatus terminationStatus,
-                                        String reason,
-                                        Object workflowOutput ) {
-        Terminate terminate = new Terminate(taskReferenceName, terminationStatus, reason, workflowOutput);
-        add(terminate);
-        return this;
-    }
-
-    public Switch decide(String taskReferenceName, String caseExpression) {
-        Switch decide = new Switch(taskReferenceName, caseExpression);
-        decide.setBuilder(this);
-        add(decide);
-        return decide;
     }
 
     public ConductorWorkflow<T> build() throws ValidationError {

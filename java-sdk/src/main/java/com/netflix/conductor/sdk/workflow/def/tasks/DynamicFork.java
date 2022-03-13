@@ -62,17 +62,14 @@ public class DynamicFork extends Task<DynamicFork> {
     }
 
     @Override
-    protected WorkflowTask toWorkflowTask() {
-        WorkflowTask task = super.toWorkflowTask();
+    public void updateWorkflowTask(WorkflowTask task) {
         task.setDynamicForkTasksParam("forkedTasks");
         task.setDynamicForkTasksInputParamName("forkedTasksInputs");
-        return task;
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
+    protected List<WorkflowTask> getChildrenTasks() {
         List<WorkflowTask> tasks = new ArrayList<>();
-        tasks.addAll(super.getWorkflowDefTasks());
         tasks.addAll(join.getWorkflowDefTasks());
         return tasks;
     }

@@ -18,6 +18,7 @@ import com.google.common.base.Strings;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.TaskChain;
 import com.netflix.conductor.sdk.workflow.def.ValidationError;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
@@ -27,7 +28,7 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** Workflow Task */
-public abstract class Task<T> {
+public abstract class Task<T> extends TaskChain {
 
     private String name;
 
@@ -44,8 +45,6 @@ public abstract class Task<T> {
     private Map<String, Object> input = new HashMap<>();
 
     protected final ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
-
-    protected WorkflowBuilder<?> builder;
 
     public final InputOutputGetter taskInput;
 
@@ -151,14 +150,6 @@ public abstract class Task<T> {
         return (T) this;
     }
 
-    public void setBuilder(WorkflowBuilder<?> builder) {
-        this.builder = builder;
-    }
-
-    public <I>WorkflowBuilder<I> end() {
-        return (WorkflowBuilder<I>) builder;
-    }
-
     public String getName() {
         return name;
     }
@@ -195,10 +186,6 @@ public abstract class Task<T> {
         return type;
     }
 
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        return List.of(toWorkflowTask());
-    }
-
     public String getDescription() {
         return description;
     }
@@ -207,7 +194,19 @@ public abstract class Task<T> {
         return input;
     }
 
-    protected WorkflowTask toWorkflowTask() {
+    public final List<WorkflowTask> getWorkflowDefTasks() {
+        List<WorkflowTask> workflowTasks = new ArrayList<>();
+        workflowTasks.add(toWorkflowTask());
+        workflowTasks.addAll(getChildrenTasks());
+
+        //chained tasks
+        for (Task<?> task : tasks) {
+            workflowTasks.addAll(task.getWorkflowDefTasks());
+        }
+        return workflowTasks;
+    }
+
+    protected final WorkflowTask toWorkflowTask() {
         WorkflowTask workflowTask = new WorkflowTask();
         workflowTask.setName(name);
         workflowTask.setTaskReferenceName(taskReferenceName);
@@ -215,6 +214,27 @@ public abstract class Task<T> {
         workflowTask.setDescription(description);
         workflowTask.setInputParameters(input);
 
+        //Let the sub-classes enrich the workflow task before returning back
+        updateWorkflowTask(workflowTask);
+
         return workflowTask;
+    }
+
+    /**
+     * Override this method when the sub-class should update the default WorkflowTask generated using
+     * {@link #toWorkflowTask()}
+     * @param workflowTask
+     */
+    protected void updateWorkflowTask(WorkflowTask workflowTask) {
+    }
+
+
+    /**
+     * Override this method when sub-classes will generate multiple workflow tasks.
+     * Used by tasks which have children tasks such as do_while, fork, etc.
+     * @return
+     */
+    protected List<WorkflowTask> getChildrenTasks() {
+        return List.of();
     }
 }

@@ -148,11 +148,11 @@ public class TestTaskConversions {
         assertEquals(doWhileTask.getInput(), taskFromWorkflowTask.getInput());
 
         assertEquals(doWhileTask.getLoopCondition(), taskFromWorkflowTask.getLoopCondition());
-        assertEquals(doWhileTask.getTasks()
+        assertEquals(doWhileTask.getLoopTasks()
                 .stream()
                 .map(task -> task.getTaskReferenceName())
                 .sorted().collect(Collectors.toSet()),
-                taskFromWorkflowTask.getTasks()
+                taskFromWorkflowTask.getLoopTasks()
                         .stream()
                         .map(task -> task.getTaskReferenceName())
                         .sorted().collect(Collectors.toSet()));

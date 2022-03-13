@@ -28,12 +28,12 @@ public class DoWhile extends Task<DoWhile> {
 
     private String loopCondition;
 
-    private List<Task<?>> tasks = new ArrayList<>();
+    private List<Task<?>> loopTasks = new ArrayList<>();
 
     public DoWhile(String taskReferenceName, String condition, Task... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
         for (Task<?> task : tasks) {
-            this.tasks.add(task);
+            this.loopTasks.add(task);
         }
         this.loopCondition = condition;
     }
@@ -41,7 +41,7 @@ public class DoWhile extends Task<DoWhile> {
     public DoWhile(String taskReferenceName, int loopCount, Task... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
         for (Task<?> task : tasks) {
-            this.tasks.add(task);
+            this.loopTasks.add(task);
         }
         this.loopCondition = getForLoopCondition(loopCount);
     }
@@ -51,13 +51,13 @@ public class DoWhile extends Task<DoWhile> {
         this.loopCondition = workflowTask.getLoopCondition();
         for (WorkflowTask task : workflowTask.getLoopOver()) {
             Task<?> loopTask = TaskRegistry.getTask(task);
-            this.tasks.add(loopTask);
+            this.loopTasks.add(loopTask);
         }
     }
 
-    public DoWhile add(Task<?>... tasks) {
+    public DoWhile loopOver(Task<?>... tasks) {
         for (Task<?> task : tasks) {
-            this.tasks.add(task);
+            this.loopTasks.add(task);
         }
         return this;
     }
@@ -74,22 +74,18 @@ public class DoWhile extends Task<DoWhile> {
         return loopCondition;
     }
 
-    public List<? extends Task> getTasks() {
-        return tasks;
+    public List<? extends Task> getLoopTasks() {
+        return loopTasks;
     }
 
     @Override
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        List<WorkflowTask> workflowTasks = super.getWorkflowDefTasks();
-        WorkflowTask loopTask = workflowTasks.get(0);
-        loopTask.setLoopCondition(loopCondition);
+    public void updateWorkflowTask(WorkflowTask workflowTask) {
+        workflowTask.setLoopCondition(loopCondition);
 
-        List<WorkflowTask> loopTasks = new ArrayList<>();
-        for (Task task : tasks) {
-            loopTasks.addAll(task.getWorkflowDefTasks());
+        List<WorkflowTask> loopWorkflowTasks = new ArrayList<>();
+        for (Task task : this.loopTasks) {
+            loopWorkflowTasks.addAll(task.getWorkflowDefTasks());
         }
-        loopTask.setLoopOver(loopTasks);
-
-        return workflowTasks;
+        workflowTask.setLoopOver(loopWorkflowTasks);
     }
 }

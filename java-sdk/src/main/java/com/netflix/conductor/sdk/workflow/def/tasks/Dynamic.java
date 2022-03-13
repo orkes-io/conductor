@@ -41,11 +41,8 @@ public class Dynamic extends Task<Dynamic> {
         super(workflowTask);
     }
 
-    public List<WorkflowTask> getWorkflowDefTasks() {
-        List<WorkflowTask> workflowTasks = new ArrayList<>();
-        WorkflowTask task = toWorkflowTask();
+    @Override
+    public void updateWorkflowTask(WorkflowTask task) {
         task.setDynamicTaskNameParam(TASK_NAME_INPUT_PARAM);
-        workflowTasks.add(task);
-        return workflowTasks;
     }
 }
