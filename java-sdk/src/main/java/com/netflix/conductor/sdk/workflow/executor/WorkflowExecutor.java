@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import com.netflix.conductor.sdk.workflow.def.TaskChain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +61,9 @@ public class WorkflowExecutor {
             Executors.newSingleThreadScheduledExecutor();
 
     public WorkflowExecutor(String apiServerURL) {
+        this(apiServerURL, 100);
+    }
+    public WorkflowExecutor(String apiServerURL, int pollingInterval) {
         String conductorServerApiBase = apiServerURL;
 
         taskClient = new TaskClient();
@@ -71,7 +75,31 @@ public class WorkflowExecutor {
         metadataClient = new MetadataClient();
         metadataClient.setRootURI(conductorServerApiBase);
 
-        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient);
+        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
+        scheduledWorkflowMonitor.scheduleAtFixedRate(
+                () -> {
+                    for (Map.Entry<String, CompletableFuture<Workflow>> entry :
+                            runningWorkflowFutures.entrySet()) {
+                        String workflowId = entry.getKey();
+                        CompletableFuture<Workflow> future = entry.getValue();
+                        Workflow workflow = workflowClient.getWorkflow(workflowId, true);
+                        if (workflow.getStatus().isTerminal()) {
+                            future.complete(workflow);
+                        }
+                    }
+                },
+                100,
+                100,
+                TimeUnit.MILLISECONDS);
+    }
+
+    public WorkflowExecutor(TaskClient taskClient, WorkflowClient workflowClient, MetadataClient metadataClient,
+                            int pollingInterval) {
+
+        this.taskClient = taskClient;
+        this.workflowClient = workflowClient;
+        this.metadataClient = metadataClient;
+        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
         scheduledWorkflowMonitor.scheduleAtFixedRate(
                 () -> {
                     for (Map.Entry<String, CompletableFuture<Workflow>> entry :
@@ -93,7 +121,7 @@ public class WorkflowExecutor {
         annotatedWorkerExecutor.initWorkers(packagesToScan);
     }
 
-    public CompletableFuture<Workflow> executeWorkflow(String name, int version, Object input) {
+    public CompletableFuture<Workflow> executeWorkflow(String name, Integer version, Object input) {
         CompletableFuture<Workflow> future = new CompletableFuture<>();
         Map<String, Object> inputMap = objectMapper.convertValue(input, Map.class);
 

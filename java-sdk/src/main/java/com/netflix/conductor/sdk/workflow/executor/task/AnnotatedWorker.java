@@ -37,6 +37,8 @@ public class AnnotatedWorker implements Worker {
 
     private ObjectMapper om = new ObjectMapperProvider().getObjectMapper();
 
+    private int pollingInterval = 100;
+
     public AnnotatedWorker(String name, Method workerMethod, Object obj) {
         this.name = name;
         this.workerMethod = workerMethod;
@@ -139,5 +141,14 @@ public class AnnotatedWorker implements Worker {
             task.setStatus(Task.Status.COMPLETED);
             return new TaskResult(task);
         }
+    }
+
+    public void setPollingInterval(int pollingInterval) {
+        this.pollingInterval = pollingInterval;
+    }
+
+    @Override
+    public int getPollingInterval() {
+        return pollingInterval;
     }
 }

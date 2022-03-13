@@ -61,6 +61,8 @@ public class ConductorWorkflow<T> {
 
     private T defaultInput;
 
+    private Map<String, Object> variables;
+
     private List<Task> tasks = new ArrayList<>();
 
     private final ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
@@ -157,6 +159,14 @@ public class ConductorWorkflow<T> {
         this.workflowOutput = workflowOutput;
     }
 
+    public Object getVariables() {
+        return variables;
+    }
+
+    public void setVariables(Map<String, Object> variables) {
+        this.variables = variables;
+    }
+
     /**
      * Execute a dynamic workflow without creating a definition in metadata store.
      * <p><br/>
@@ -206,16 +216,19 @@ public class ConductorWorkflow<T> {
 
     private List<WorkflowTask> getMissingTasks(WorkflowDef workflowDef) {
         List<WorkflowTask> missing = new ArrayList<>();
-        workflowDef.collectTasks().stream().forEach(workflowTask -> {
-            try {
-                TaskDef taskDef = workflowExecutor.getMetadataClient().getTaskDef(workflowTask.getName());
-            }catch(ConductorClientException cce) {
-                if(cce.getStatus() == 404) {
-                    missing.add(workflowTask);
-                } else {
-                    throw cce;
-                }
-            }
+        workflowDef.collectTasks()
+                .stream()
+                .filter(workflowTask -> workflowTask.getType().equals(TaskType.TASK_TYPE_SIMPLE))
+                .forEach(workflowTask -> {
+                    try {
+                        TaskDef taskDef = workflowExecutor.getMetadataClient().getTaskDef(workflowTask.getName());
+                    }catch(ConductorClientException cce) {
+                        if(cce.getStatus() == 404) {
+                            missing.add(workflowTask);
+                        } else {
+                            throw cce;
+                        }
+                    }
         });
         return missing;
     }
@@ -241,7 +254,9 @@ public class ConductorWorkflow<T> {
         def.setTimeoutSeconds(timeoutSeconds);
         def.setRestartable(restartable);
         def.setOutputParameters(workflowOutput);
+        def.setVariables(variables);
         def.setInputTemplate(objectMapper.convertValue(defaultInput, Map.class));
+
 
         for (Task task : tasks) {
             def.getTasks().addAll(task.getWorkflowDefTasks());
@@ -249,15 +264,15 @@ public class ConductorWorkflow<T> {
         return def;
     }
 
-    public static ConductorWorkflow<?> fromWorkflowDef(WorkflowDef def) {
-        ConductorWorkflow<?> workflow = new ConductorWorkflow<>(null);
+    public static ConductorWorkflow<Map<String, Object>> fromWorkflowDef(WorkflowDef def) {
+        ConductorWorkflow<Map<String, Object>> workflow = new ConductorWorkflow<>(null);
         workflow.setName(def.getName());
         workflow.setVersion(def.getVersion());
         workflow.setFailureWorkflow(def.getFailureWorkflow());
         workflow.setRestartable(def.isRestartable());
-        //TODO: fix this
-        //workflow.setDefaultInput(def.getInputTemplate());
-        //def.getVariables()
+        workflow.setVariables(def.getVariables());
+        workflow.setDefaultInput(def.getInputTemplate());
+
         workflow.setWorkflowOutput(def.getOutputParameters());
         workflow.setOwnerEmail(def.getOwnerEmail());
         workflow.setDescription(def.getDescription());

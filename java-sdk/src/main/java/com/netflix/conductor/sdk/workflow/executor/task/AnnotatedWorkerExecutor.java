@@ -39,8 +39,15 @@ public class AnnotatedWorkerExecutor {
 
     private static Set<String> scannedPackages = new HashSet<>();
 
+    private int pollingInteralInMS = 100;
+
     public AnnotatedWorkerExecutor(TaskClient taskClient) {
         this.taskClient = taskClient;
+    }
+
+    public AnnotatedWorkerExecutor(TaskClient taskClient, int pollingInteralInMS) {
+        this.taskClient = taskClient;
+        this.pollingInteralInMS = pollingInteralInMS;
     }
 
     /**
@@ -137,6 +144,7 @@ public class AnnotatedWorkerExecutor {
                 (taskName, method) -> {
                     Object obj = workerClassObjs.get(taskName);
                     AnnotatedWorker executor = new AnnotatedWorker(taskName, method, obj);
+                    executor.setPollingInterval(pollingInteralInMS);
                     executors.add(executor);
                 });
 

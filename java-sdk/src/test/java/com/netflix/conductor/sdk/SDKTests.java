@@ -1,5 +1,8 @@
 package com.netflix.conductor.sdk;
 
+import com.netflix.conductor.client.http.MetadataClient;
+import com.netflix.conductor.client.http.TaskClient;
+import com.netflix.conductor.client.http.WorkflowClient;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.task.InputParam;
@@ -12,6 +15,12 @@ import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.tests.KitchensinkWorkflowInput;
+import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.ClientHandlerException;
+import com.sun.jersey.api.client.ClientRequest;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
 import org.checkerframework.checker.units.qual.K;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -19,16 +28,51 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 public class SDKTests {
 
-    private static WorkflowTestRunner testRunner;
+    private static final String AUTHORIZATION_HEADER = "X-Authorization";
+
+    private static final String token = "";
 
     private static WorkflowExecutor executor;
 
+    private static ClientFilter getAuthFilter(String token) {
+
+        ClientFilter filter = new ClientFilter() {
+            @Override
+            public ClientResponse handle(ClientRequest request) throws ClientHandlerException {
+                try {
+                    request.getHeaders().add(AUTHORIZATION_HEADER, token);
+                    return getNext().handle(request);
+                } catch (ClientHandlerException e) {
+                    e.printStackTrace();
+                    throw e;
+                }
+            }
+        };
+
+        return filter;
+    }
     @BeforeClass
     public static void init() throws IOException {
-        executor = new WorkflowExecutor("https://loadtest.conductorworkflow.net/api/");
+        String url = "https://loadtest.conductorworkflow.net/api/";
+        url = "http://localhost:8080/api/";
+        url = "https://play.orkes.io/api/";
+
+        ClientFilter filter = getAuthFilter(token);
+        TaskClient taskClient = new TaskClient(new DefaultClientConfig(), (ClientHandler) null, filter);
+        taskClient.setRootURI(url);
+
+        WorkflowClient workflowClient = new WorkflowClient(new DefaultClientConfig(), (ClientHandler) null, filter);
+        workflowClient.setRootURI(url);
+
+        MetadataClient metadataClient = new MetadataClient(new DefaultClientConfig(), (ClientHandler) null, filter);
+        metadataClient.setRootURI(url);
+
+        executor = new WorkflowExecutor(taskClient, workflowClient, metadataClient, 10);
         executor.initWorkers("com.netflix.conductor.sdk");
     }
 
@@ -62,37 +106,30 @@ public class SDKTests {
         SimpleTask forkTask1 = new SimpleTask("task2", "task22x");
         SimpleTask forkTask2 = new SimpleTask("task2", "task22x2");
 
-        DynamicFork dynamicFork = new DynamicFork("dyn1", "", "");
-
         WorkflowBuilder<KitchensinkWorkflowInput> builder = new WorkflowBuilder<>(executor);
         KitchensinkWorkflowInput defaultInput = new KitchensinkWorkflowInput();
         defaultInput.setName("defaultName");
+        int len = 3;
+        Task[][] parallelTasks = new Task[len][1];
+        for(int i = 0; i < len; i++) {
+            parallelTasks[i][0] = new SimpleTask("task2", "task_parallel_" + i);;
+        }
 
         builder
-                .name("redfin_example")
-                .version(5)
+                .name("sub_workflow_example")
+                .version(6)
                 .ownerEmail("hello@example.com")
                 .description("Example Workflow for Redfin")
                 .restartable(true)
-                .timeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF, 10)
+                .variables(new MyWorkflowState())
+                .timeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF, 100)
                 .defaultInput(defaultInput)
-                .parallel("parallel", new Task[][]{{forkTask1}, {forkTask2}})
+                .parallel("parallel", parallelTasks)
                 .task(getUserInfo)
-                .task(
-                        new Http("http_task").url("https://weatherdbi.herokuapp.com/data/weather/${workflow.input.zipCode}")
-                                .input("zipCode", "${workflow.input.zipCode}")
-                                .readTimeout(10_000)
-                )
-                .decide("decide", getUserInfo.taskOutput.get("zipCode"))
-                    .switchCase("95014", task2)
-                    .defaultCase(
-                            new Terminate("terminate",
-                                    Workflow.WorkflowStatus.FAILED,
-                                    "I don't ship there", new HashMap<>())
-                    )
-                .loop("run_twice", 2,
-                        new SimpleTask("task3", "task3")
-                            .input("key", "${workflow.input.name}"))
+                .decide("decide1", "${workflow.input.name}")
+                    .switchCase("viren", task2)
+                    .defaultCase(forkTask1)
+                .subWorkflow("subflow", "sub_workflow_example", 5)
                 .add(new SimpleTask("task2", "task222"));
 
         ConductorWorkflow<KitchensinkWorkflowInput> workflow = builder.build();
@@ -105,5 +142,12 @@ public class SDKTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test2() throws ExecutionException, InterruptedException {
+        CompletableFuture<Workflow> execution = executor.executeWorkflow("sub_workflow_example", null, new KitchensinkWorkflowInput());
+        Workflow run = execution.get();
+        System.out.println("run: " + run);
     }
 }

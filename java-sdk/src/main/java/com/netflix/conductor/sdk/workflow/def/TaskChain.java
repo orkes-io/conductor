@@ -64,6 +64,24 @@ public abstract class TaskChain {
         return decide;
     }
 
+    public SetVariable setVariable(String taskReferenceName, Task[]... forkedTasks) {
+        SetVariable setVar = new SetVariable(taskReferenceName);
+        add(setVar);
+        return setVar;
+    }
+
+    public <T> SubWorkflow subWorkflow(String taskReferenceName, ConductorWorkflow<T> conductorWorkflow) {
+        SubWorkflow subWorkflow = new SubWorkflow(taskReferenceName, conductorWorkflow);
+        add(subWorkflow);
+        return subWorkflow;
+    }
+
+    public <T> SubWorkflow subWorkflow(String taskReferenceName, String subWorkflowName, Integer subWorkflowVersion) {
+        SubWorkflow subWorkflow = new SubWorkflow(taskReferenceName, subWorkflowName, subWorkflowVersion);
+        add(subWorkflow);
+        return subWorkflow;
+    }
+
     public TaskChain terminate(String taskReferenceName,
                                   Workflow.WorkflowStatus terminationStatus,
                                   String reason,
