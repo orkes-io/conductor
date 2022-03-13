@@ -13,6 +13,7 @@
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.common.base.Strings;
@@ -30,19 +31,15 @@ public class DoWhile extends Task<DoWhile> {
 
     private List<Task<?>> loopTasks = new ArrayList<>();
 
-    public DoWhile(String taskReferenceName, String condition, Task... tasks) {
+    public DoWhile(String taskReferenceName, String condition, Task<?>... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
-        for (Task<?> task : tasks) {
-            this.loopTasks.add(task);
-        }
+        Collections.addAll(this.loopTasks, tasks);
         this.loopCondition = condition;
     }
 
-    public DoWhile(String taskReferenceName, int loopCount, Task... tasks) {
+    public DoWhile(String taskReferenceName, int loopCount, Task<?>... tasks) {
         super(taskReferenceName, TaskType.DO_WHILE);
-        for (Task<?> task : tasks) {
-            this.loopTasks.add(task);
-        }
+        Collections.addAll(this.loopTasks, tasks);
         this.loopCondition = getForLoopCondition(loopCount);
     }
 

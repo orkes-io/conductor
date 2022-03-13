@@ -55,8 +55,8 @@ public class SDKTests {
     @Test
     public void test() throws ValidationError {
 
-        SimpleTask getUserInfo = new SimpleTask("get_user_info", "get_user_info");
-        getUserInfo.input("name", ConductorWorkflow.input.get("name"));
+        SimpleTask getUserInfo = new SimpleTask("get_user_info", "get_user_info")
+                .input("name", ConductorWorkflow.input.get("name"));
 
         SimpleTask task2 = new SimpleTask("task2", "task2");
         SimpleTask forkTask1 = new SimpleTask("task2", "task22x");
@@ -90,8 +90,9 @@ public class SDKTests {
                                     Workflow.WorkflowStatus.FAILED,
                                     "I don't ship there", new HashMap<>())
                     )
-                .loop("run_twice", 2, new SimpleTask("task3", "task3"))
-                    .input("key", "value")
+                .loop("run_twice", 2,
+                        new SimpleTask("task3", "task3")
+                            .input("key", "${workflow.input.name}"))
                 .add(new SimpleTask("task2", "task222"));
 
         ConductorWorkflow<KitchensinkWorkflowInput> workflow = builder.build();
@@ -104,11 +105,5 @@ public class SDKTests {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
-
-
-
-
     }
 }
