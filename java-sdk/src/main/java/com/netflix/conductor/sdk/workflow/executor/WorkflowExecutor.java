@@ -89,7 +89,8 @@ public class WorkflowExecutor {
         this(apiServerURL, 100);
     }
 
-    public WorkflowExecutor(String apiServerURL, int pollingInterval, ClientFilter... clientFilter) {
+    public WorkflowExecutor(
+            String apiServerURL, int pollingInterval, ClientFilter... clientFilter) {
         String conductorServerApiBase = apiServerURL;
 
         taskClient = new TaskClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
