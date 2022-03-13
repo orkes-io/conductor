@@ -13,8 +13,10 @@
 package com.netflix.conductor.sdk;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -25,15 +27,15 @@ import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.task.InputParam;
 import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
-import com.netflix.conductor.sdk.testing.LocalServerRunner;
+import com.netflix.conductor.sdk.testing.WorkflowTestRunner;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.ValidationError;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
-import com.netflix.conductor.tests.KitchensinkWorkflowInput;
+import com.netflix.conductor.tests.TestWorkflowInput;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class SDKTests {
 
@@ -41,21 +43,17 @@ public class SDKTests {
 
     private static WorkflowExecutor executor;
 
-    private static LocalServerRunner runner;
+    private static WorkflowTestRunner runner;
 
     @BeforeClass
     public static void init() throws IOException {
-        runner = new LocalServerRunner(8080, "3.5.3");
-        runner.startLocalServer();
-
-        executor = new WorkflowExecutor("http://localhost:8080/api/", 1);
-
-        executor.initWorkers("com.netflix.conductor.sdk");
+        runner = new WorkflowTestRunner(8080, "3.5.3");
+        runner.init("com.netflix.conductor.sdk");
+        executor = runner.getWorkflowExecutor();
     }
 
     @AfterClass
     public static void cleanUp() {
-        executor.shutdown();
         runner.shutdown();
     }
 
@@ -74,70 +72,78 @@ public class SDKTests {
         return "Hello World-3";
     }
 
-    @Test
-    public void test() throws ValidationError {
+    private ConductorWorkflow<TestWorkflowInput> registerTestWorkflow() {
+        InputStream script = getClass().getResourceAsStream("/script.js");
+        SimpleTask getUserInfo = new SimpleTask("get_user_info", "get_user_info");
+        getUserInfo.input("name", ConductorWorkflow.input.get("name"));
 
-        SimpleTask getUserInfo =
-                new SimpleTask("get_user_info", "get_user_info")
-                        .input("name", ConductorWorkflow.input.get("name"));
+        SimpleTask sendToCupertino = new SimpleTask("task2", "cupertino");
+        SimpleTask sendToNYC = new SimpleTask("task2", "nyc");
 
-        SimpleTask task2 = new SimpleTask("task2", "task2");
-        SimpleTask forkTask1 = new SimpleTask("task2", "task22x");
-        SimpleTask forkTask2 = new SimpleTask("task2", "ship_to_US");
-        SimpleTask forkTask3 = new SimpleTask("task2", "ship_to_CA");
-        SimpleTask forkTask4 = new SimpleTask("task2", "ship_to_Outsideof_NA");
-
-        SimpleTask cupertino = new SimpleTask("task2", "cupertino");
-        SimpleTask nyc = new SimpleTask("task2", "nyc");
-
-        WorkflowBuilder<KitchensinkWorkflowInput> builder = new WorkflowBuilder<>(executor);
-        KitchensinkWorkflowInput defaultInput = new KitchensinkWorkflowInput();
-        defaultInput.setName("defaultName");
-        int len = 3;
-        Task[][] parallelTasks = new Task[len][1];
+        int len = 4;
+        Task<?>[][] parallelTasks = new Task[len][1];
         for (int i = 0; i < len; i++) {
             parallelTasks[i][0] = new SimpleTask("task2", "task_parallel_" + i);
         }
 
-        builder.name("sub_workflow_example")
-                .version(6)
+        WorkflowBuilder<TestWorkflowInput> builder = new WorkflowBuilder<>(executor);
+        TestWorkflowInput defaultInput = new TestWorkflowInput();
+        defaultInput.setName("defaultName");
+
+        builder.name("sdk_workflow_example")
+                .version(1)
                 .ownerEmail("hello@example.com")
-                .description("Example Workflow for Redfin")
+                .description("Example Workflow")
                 .restartable(true)
                 .variables(new MyWorkflowState())
                 .timeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF, 100)
                 .defaultInput(defaultInput)
-                .parallel("parallel", parallelTasks)
-                .task(getUserInfo.input("a", "b"))
-                .decide("decide2", "${workflow.input.zipCode}")
-                .switchCase("95014", cupertino)
-                .switchCase("10121", nyc)
-                .end()
-                // .subWorkflow("subflow", "sub_workflow_example", 5)
+                .add(new Javascript("js", script))
+                .add(new ForkJoin("parallel", parallelTasks))
+                .add(getUserInfo)
+                .add(
+                        new Switch("decide2", "${workflow.input.zipCode}")
+                                .switchCase("95014", sendToCupertino)
+                                .switchCase("10121", sendToNYC))
+                // .add(new SubWorkflow("subflow", "sub_workflow_example", 5))
                 .add(new SimpleTask("task2", "task222"));
 
-        ConductorWorkflow<KitchensinkWorkflowInput> workflow = builder.build();
+        ConductorWorkflow<TestWorkflowInput> workflow = builder.build();
         boolean registered = workflow.registerWorkflow(true, true);
-        System.out.println("Registered : " + registered);
+        assertTrue(registered);
 
+        return workflow;
+    }
+
+    @Test
+    public void test() throws ValidationError {
+        TestWorkflowInput workflowInput = new TestWorkflowInput("viren", "10121", "CA");
         try {
-            Workflow run =
-                    workflow.execute(new KitchensinkWorkflowInput("viren", "10121", "CA")).get();
-            System.out.println("executed http://localhost:5000/execution/" + run.getWorkflowId());
+            Workflow run = registerTestWorkflow().execute(workflowInput).get(10, TimeUnit.SECONDS);
+            assertEquals(
+                    run.getReasonForIncompletion(),
+                    Workflow.WorkflowStatus.COMPLETED,
+                    run.getStatus());
         } catch (Exception e) {
-            e.printStackTrace();
             fail(e.getMessage());
         }
     }
 
     @Test
     public void test2() throws ExecutionException, InterruptedException {
-        CompletableFuture<Workflow> execution =
-                executor.executeWorkflow(
-                        "sub_workflow_example",
-                        null,
-                        new KitchensinkWorkflowInput("viren", "95014", "US"));
-        Workflow run = execution.get();
-        System.out.println("run: " + run);
+        registerTestWorkflow();
+
+        TestWorkflowInput input = new TestWorkflowInput("Viren", "10121", "US");
+
+        ConductorWorkflow<TestWorkflowInput> conductorWorkflow =
+                new ConductorWorkflow<TestWorkflowInput>(executor)
+                        .from("sdk_workflow_example", null);
+
+        CompletableFuture<Workflow> execution = conductorWorkflow.execute(input);
+        try {
+            execution.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
     }
 }

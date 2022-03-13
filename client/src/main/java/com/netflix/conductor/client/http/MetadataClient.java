@@ -14,8 +14,6 @@ package com.netflix.conductor.client.http;
 
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.sun.jersey.api.client.GenericType;
 import org.apache.commons.lang.StringUtils;
 
 import com.netflix.conductor.client.config.ConductorClientConfiguration;
@@ -25,6 +23,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 
 import com.google.common.base.Preconditions;
 import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
@@ -118,7 +117,11 @@ public class MetadataClient extends ClientBase {
     }
 
     public List<WorkflowDef> getWorkflowDefs() {
-        List<WorkflowDef> workflowDefs = getForEntity("metadata/workflow", new Object[0], new GenericType<List<WorkflowDef>>() {});
+        List<WorkflowDef> workflowDefs =
+                getForEntity(
+                        "metadata/workflow",
+                        new Object[0],
+                        new GenericType<List<WorkflowDef>>() {});
         return workflowDefs;
     }
 
