@@ -20,10 +20,6 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 public class DynamicFork extends Task<DynamicFork> {
 
-    static {
-        TaskRegistry.register(TaskType.FORK_JOIN_DYNAMIC.name(), DynamicFork.class);
-    }
-
     private String forkTasksParameter;
 
     private String forkTasksInputsParameter;

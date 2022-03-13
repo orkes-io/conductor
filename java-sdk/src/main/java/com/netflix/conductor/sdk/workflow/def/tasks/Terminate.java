@@ -20,20 +20,29 @@ import com.netflix.conductor.common.run.Workflow;
 
 public class Terminate extends Task<Terminate> {
 
-    static {
-        TaskRegistry.register(TaskType.TERMINATE.name(), Terminate.class);
-    }
-
     private static final String TERMINATION_STATUS_PARAMETER = "terminationStatus";
 
     private static final String TERMINATION_WORKFLOW_OUTPUT = "workflowOutput";
 
     private static final String TERMINATION_REASON_PARAMETER = "terminationReason";
 
+    /**
+     * Terminate the workflow and mark it as FAILED
+     *
+     * @param taskReferenceName
+     * @param reason
+     */
     public Terminate(String taskReferenceName, String reason) {
         this(taskReferenceName, Workflow.WorkflowStatus.FAILED, reason, new HashMap<>());
     }
 
+    /**
+     * Terminate the workflow with a specific terminate status
+     *
+     * @param taskReferenceName
+     * @param terminationStatus
+     * @param reason
+     */
     public Terminate(
             String taskReferenceName, Workflow.WorkflowStatus terminationStatus, String reason) {
         this(taskReferenceName, terminationStatus, reason, new HashMap<>());

@@ -19,22 +19,31 @@ import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 
 public class SubWorkflow extends Task<SubWorkflow> {
 
-    static {
-        TaskRegistry.register(TaskType.SUB_WORKFLOW.name(), SubWorkflow.class);
-    }
-
     private ConductorWorkflow conductorWorkflow;
 
     private String workflowName;
 
     private int workflowVersion;
 
+    /**
+     * Start a workflow as a sub-workflow
+     *
+     * @param taskReferenceName
+     * @param workflowName
+     * @param workflowVersion
+     */
     public SubWorkflow(String taskReferenceName, String workflowName, int workflowVersion) {
         super(taskReferenceName, TaskType.SUB_WORKFLOW);
         this.workflowName = workflowName;
         this.workflowVersion = workflowVersion;
     }
 
+    /**
+     * Start a workflow as a sub-workflow
+     *
+     * @param taskReferenceName
+     * @param conductorWorkflow
+     */
     public SubWorkflow(String taskReferenceName, ConductorWorkflow conductorWorkflow) {
         super(taskReferenceName, TaskType.SUB_WORKFLOW);
         this.conductorWorkflow = conductorWorkflow;

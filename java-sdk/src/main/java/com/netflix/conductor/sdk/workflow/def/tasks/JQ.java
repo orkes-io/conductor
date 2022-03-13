@@ -23,10 +23,6 @@ import com.google.common.base.Strings;
  */
 public class JQ extends Task<JQ> {
 
-    static {
-        TaskRegistry.register(TaskType.JSON_JQ_TRANSFORM.name(), JQ.class);
-    }
-
     private static final String QUERY_EXPRESSION_PARAMETER = "queryExpression";
 
     public JQ(String taskReferenceName, String queryExpression) {

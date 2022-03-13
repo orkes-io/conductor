@@ -14,13 +14,15 @@ package com.netflix.conductor.sdk.workflow.def.tasks;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
 
 public class SetVariable extends Task<SetVariable> {
-
-    static {
-        TaskRegistry.register(TaskType.SET_VARIABLE.name(), SetVariable.class);
-    }
-
+    /**
+     * Sets the value of the variable in workflow. Used for workflow state management. Workflow
+     * state is a Map that is initialized using @see {@link WorkflowBuilder#variables(Object)}
+     *
+     * @param taskReferenceName Use input methods to set the variable values
+     */
     public SetVariable(String taskReferenceName) {
         super(taskReferenceName, TaskType.SET_VARIABLE);
     }

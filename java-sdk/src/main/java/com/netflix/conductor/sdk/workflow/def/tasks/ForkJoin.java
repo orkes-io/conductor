@@ -19,22 +19,50 @@ import java.util.List;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
-public class Fork extends Task<Fork> {
-
-    static {
-        TaskRegistry.register(TaskType.FORK_JOIN.name(), Fork.class);
-    }
+/** ForkJoin task */
+public class ForkJoin extends Task<ForkJoin> {
 
     private Join join;
 
     private Task[][] forkedTasks;
 
-    public Fork(String taskReferenceName, Task[]... forkedTasks) {
+    /**
+     * execute task specified in the forkedTasks parameter in parallel.
+     *
+     * <p>forkedTask is a two-dimensional list that executes the outermost list in parallel and list
+     * within that is executed sequentially.
+     *
+     * <p>e.g. [[task1, task2],[task3, task4],[task5]] are executed as:
+     *
+     * <pre>
+     *                    ---------------
+     *                    |     fork    |
+     *                    ---------------
+     *                    |       |     |
+     *                    |       |     |
+     *                  task1  task3  task5
+     *                  task2  task4    |
+     *                    |      |      |
+     *                 ---------------------
+     *                 |       join        |
+     *                 ---------------------
+     * </pre>
+     *
+     * <p>This method automatically adds a join that waits for all the *last* tasks in the fork
+     * (e.g. task2, task4 and task5 in the above example) to be completed.*
+     *
+     * <p>Use join method @see {@link ForkJoin#joinOn(String...)} to override this behavior (note:
+     * not a common scenario)
+     *
+     * @param taskReferenceName unique task reference name
+     * @param forkedTasks List of tasks to be executed in parallel
+     */
+    public ForkJoin(String taskReferenceName, Task[]... forkedTasks) {
         super(taskReferenceName, TaskType.FORK_JOIN);
         this.forkedTasks = forkedTasks;
     }
 
-    Fork(WorkflowTask workflowTask) {
+    ForkJoin(WorkflowTask workflowTask) {
         super(workflowTask);
         int size = workflowTask.getForkTasks().size();
         this.forkedTasks = new Task[size][];
@@ -50,7 +78,7 @@ public class Fork extends Task<Fork> {
         }
     }
 
-    public Fork joinOn(String... joinOn) {
+    public ForkJoin joinOn(String... joinOn) {
         this.join = new Join(getTaskReferenceName() + "_join", joinOn);
         return this;
     }

@@ -20,10 +20,6 @@ import com.google.common.base.Strings;
 /** Wait task */
 public class Dynamic extends Task<Dynamic> {
 
-    static {
-        TaskRegistry.register(TaskType.DYNAMIC.name(), Dynamic.class);
-    }
-
     protected static final String TASK_NAME_INPUT_PARAM = "taskToExecute";
 
     public Dynamic(String taskReferenceName, String dynamicTaskNameValue) {

@@ -16,7 +16,6 @@ import java.util.*;
 
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.sdk.workflow.def.TaskChain;
 import com.netflix.conductor.sdk.workflow.utils.InputOutputGetter;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
@@ -25,7 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 
 /** Workflow Task */
-public abstract class Task<T> extends TaskChain {
+public abstract class Task<T> {
 
     private String name;
 
@@ -195,11 +194,6 @@ public abstract class Task<T> extends TaskChain {
         List<WorkflowTask> workflowTasks = new ArrayList<>();
         workflowTasks.add(toWorkflowTask());
         workflowTasks.addAll(getChildrenTasks());
-
-        // chained tasks
-        for (Task<?> task : tasks) {
-            workflowTasks.addAll(task.getWorkflowDefTasks());
-        }
         return workflowTasks;
     }
 

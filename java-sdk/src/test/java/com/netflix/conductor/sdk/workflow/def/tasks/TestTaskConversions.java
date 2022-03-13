@@ -81,15 +81,16 @@ public class TestTaskConversions {
         SimpleTask task2 = new SimpleTask("task2", "task2");
         SimpleTask task3 = new SimpleTask("task3", "task3");
 
-        Fork forkTask = new Fork("task_ref_name", new Task[] {task1}, new Task[] {task2, task3});
+        ForkJoin forkTask =
+                new ForkJoin("task_ref_name", new Task[] {task1}, new Task[] {task2, task3});
 
         WorkflowTask workflowTask = forkTask.getWorkflowDefTasks().get(0);
         assertNotNull(workflowTask.getForkTasks());
         assertFalse(workflowTask.getForkTasks().isEmpty());
 
         Task fromWorkflowTask = TaskRegistry.getTask(workflowTask);
-        assertTrue(fromWorkflowTask instanceof Fork);
-        Fork taskFromWorkflowTask = (Fork) fromWorkflowTask;
+        assertTrue(fromWorkflowTask instanceof ForkJoin);
+        ForkJoin taskFromWorkflowTask = (ForkJoin) fromWorkflowTask;
 
         assertNotNull(fromWorkflowTask);
         assertEquals(forkTask.getName(), fromWorkflowTask.getName());
@@ -287,7 +288,7 @@ public class TestTaskConversions {
         assertEquals(decision.getType(), taskFromWorkflowTask.getType());
         assertEquals(decision.getStartDelay(), taskFromWorkflowTask.getStartDelay());
         assertEquals(decision.getInput(), taskFromWorkflowTask.getInput());
-        //TODO: ADD CASES FOR DEFAULT CASE
+        // TODO: ADD CASES FOR DEFAULT CASE
         assertEquals(decision.getBranches().keySet(), taskFromWorkflowTask.getBranches().keySet());
         assertEquals(
                 decision.getBranches().values().stream()

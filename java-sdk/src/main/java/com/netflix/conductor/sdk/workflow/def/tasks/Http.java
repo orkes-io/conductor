@@ -28,10 +28,6 @@ public class Http extends Task<Http> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Http.class);
 
-    static {
-        TaskRegistry.register(TaskType.HTTP.name(), Http.class);
-    }
-
     private static final String INPUT_PARAM = "http_request";
 
     private ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();

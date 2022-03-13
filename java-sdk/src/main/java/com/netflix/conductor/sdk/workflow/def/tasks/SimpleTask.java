@@ -22,10 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /** Workflow task executed by a worker */
 public class SimpleTask extends Task<SimpleTask> {
 
-    static {
-        TaskRegistry.register(TaskType.SIMPLE.name(), SimpleTask.class);
-    }
-
     private static final int ONE_HOUR = 60 * 60;
 
     private final ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();

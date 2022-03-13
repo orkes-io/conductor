@@ -19,10 +19,6 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 public class Join extends Task<Join> {
 
-    static {
-        TaskRegistry.register(TaskType.JOIN.name(), Join.class);
-    }
-
     private String[] joinOn;
 
     /**

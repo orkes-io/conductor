@@ -12,6 +12,8 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 
 import javax.script.Bindings;
@@ -36,23 +38,51 @@ public class Javascript extends Task<Javascript> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Javascript.class);
 
-    static {
-        TaskRegistry.register(TaskType.INLINE.name(), Javascript.class);
-    }
-
     private static final String EXPRESSION_PARAMETER = "expression";
 
-    private static final String EVALUDATOR_TYPE_PARAMETER = "evaluatorType";
+    private static final String EVALUATOR_TYPE_PARAMETER = "evaluatorType";
 
     private static final String ENGINE = "nashorn";
 
-    public Javascript(String taskReferenceName, String expression) {
+    /**
+     * Javascript tasks are executed on the Conductor server without having to write worker code
+     *
+     * <p>Use {@link Javascript#validate()} method to validate the javascript to ensure the script
+     * is valid.
+     *
+     * @param taskReferenceName
+     * @param script script to execute
+     */
+    public Javascript(String taskReferenceName, String script) {
         super(taskReferenceName, TaskType.INLINE);
-        if (Strings.isNullOrEmpty(expression)) {
-            throw new AssertionError("Null/Empty expression");
+        if (Strings.isNullOrEmpty(script)) {
+            throw new AssertionError("Null/Empty script");
         }
-        super.input(EVALUDATOR_TYPE_PARAMETER, "javascript");
-        super.input(EXPRESSION_PARAMETER, expression);
+        super.input(EVALUATOR_TYPE_PARAMETER, "javascript");
+        super.input(EXPRESSION_PARAMETER, script);
+    }
+
+    /**
+     * Javascript tasks are executed on the Conductor server without having to write worker code
+     *
+     * <p>Use {@link Javascript#validate()} method to validate the javascript to ensure the script
+     * is valid.
+     *
+     * @param taskReferenceName
+     * @param stream stream to load the script file from
+     */
+    public Javascript(String taskReferenceName, InputStream stream) {
+        super(taskReferenceName, TaskType.INLINE);
+        if (stream == null) {
+            throw new AssertionError("Stream is empty");
+        }
+        super.input(EVALUATOR_TYPE_PARAMETER, "javascript");
+        try {
+            String script = new String(stream.readAllBytes());
+            super.input(EXPRESSION_PARAMETER, script);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     Javascript(WorkflowTask workflowTask) {
@@ -64,7 +94,7 @@ public class Javascript extends Task<Javascript> {
     }
 
     /**
-     * Validates the inline script.
+     * Validates the script.
      *
      * @return
      */

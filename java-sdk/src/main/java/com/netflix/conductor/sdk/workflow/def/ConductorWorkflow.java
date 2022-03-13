@@ -14,7 +14,6 @@ package com.netflix.conductor.sdk.workflow.def;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import com.netflix.conductor.client.exception.ConductorClientException;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -68,7 +67,7 @@ public class ConductorWorkflow<T> {
 
     private final WorkflowExecutor workflowExecutor;
 
-    ConductorWorkflow(WorkflowExecutor workflowExecutor) {
+    public ConductorWorkflow(WorkflowExecutor workflowExecutor) {
         this.workflowOutput = new HashMap<>();
         this.workflowExecutor = workflowExecutor;
         this.restartable = true;
@@ -180,24 +179,44 @@ public class ConductorWorkflow<T> {
         return workflowExecutor.executeWorkflow(this, input);
     }
 
+    /**
+     * Executes the workflow using registered metadata definitions
+     *
+     * @see #registerWorkflow()
+     * @param input
+     * @return
+     */
     public CompletableFuture<Workflow> execute(T input) {
         return workflowExecutor.executeWorkflow(this.getName(), this.getVersion(), input);
     }
 
     /**
-     * @return true if success, false if the workflow already exists with the given version number
+     * Registers a new workflow in the server.
+     *
+     * @return true if the workflow is successfully registered. False if the workflow cannot be
+     *     registered and the workflow definition already exists on the server with given name +
+     *     version The call will throw a runtime exception if any of the tasks are missing
+     *     definitions on the server.
      */
     public boolean registerWorkflow() {
         return registerWorkflow(false, false);
     }
 
+    /**
+     * @param overwrite set to true if the workflow should be overwritten if the definition already
+     *     exists with the given name and version. <font color=red>Use with caution</font>
+     * @return true if success, false otherwise.
+     */
     public boolean registerWorkflow(boolean overwrite) {
         return registerWorkflow(overwrite, false);
     }
 
     /**
-     * @param overwrite if true, the existing definition will be overwritten. Use with caution
-     * @return true if success, false if the workflow already exists with the given version number
+     * @param overwrite set to true if the workflow should be overwritten if the definition already
+     *     exists with the given name and version. <font color=red>Use with caution</font>
+     * @param registerTasks if set to true, missing task definitions are registered with the default
+     *     configuration.
+     * @return true if success, false otherwise.
      */
     public boolean registerWorkflow(boolean overwrite, boolean registerTasks) {
         WorkflowDef workflowDef = toWorkflowDef();
@@ -216,42 +235,7 @@ public class ConductorWorkflow<T> {
         return workflowExecutor.registerWorkflow(workflowDef, overwrite);
     }
 
-    private List<String> getMissingTasks(WorkflowDef workflowDef) {
-        List<String> missing = new ArrayList<>();
-        workflowDef.collectTasks()
-                .stream()
-                .filter(workflowTask -> workflowTask.getType().equals(TaskType.TASK_TYPE_SIMPLE))
-                .map(WorkflowTask::getName)
-                .distinct()
-                .parallel()
-                .forEach(
-                        taskName -> {
-                            try {
-                                TaskDef taskDef =
-                                        workflowExecutor
-                                                .getMetadataClient()
-                                                .getTaskDef(taskName);
-                            } catch (ConductorClientException cce) {
-                                if (cce.getStatus() == 404) {
-                                    missing.add(taskName);
-                                } else {
-                                    throw cce;
-                                }
-                            }
-                        });
-        return missing;
-    }
-
-    private void registerTaskDef(String taskName, String ownerEmail) {
-        TaskDef taskDef = new TaskDef();
-        taskDef.setName(taskName);
-        taskDef.setRetryCount(3);
-        taskDef.setRetryDelaySeconds(1);
-        taskDef.setRetryLogic(TaskDef.RetryLogic.FIXED);
-        taskDef.setOwnerEmail(ownerEmail);
-        workflowExecutor.getMetadataClient().registerTaskDefs(Arrays.asList(taskDef));
-    }
-
+    /** @return Convert to the WorkflowDef model used by the Metadata APIs */
     public WorkflowDef toWorkflowDef() {
 
         WorkflowDef def = new WorkflowDef();
@@ -273,14 +257,32 @@ public class ConductorWorkflow<T> {
         return def;
     }
 
-    public static ConductorWorkflow<Map<String, Object>> fromWorkflowDef(WorkflowDef def) {
-        ConductorWorkflow<Map<String, Object>> workflow = new ConductorWorkflow<>(null);
+    /**
+     * Generate ConductorWorkflow based on the workflow metadata definition
+     *
+     * @param def
+     * @return
+     */
+    public static <T> ConductorWorkflow<T> fromWorkflowDef(WorkflowDef def) {
+        ConductorWorkflow<T> workflow = new ConductorWorkflow<>(null);
+        fromWorkflowDef(workflow, def);
+        return workflow;
+    }
+
+    public ConductorWorkflow<T> from(String workflowName, Integer workflowVersion) {
+        WorkflowDef def =
+                workflowExecutor.getMetadataClient().getWorkflowDef(workflowName, workflowVersion);
+        fromWorkflowDef(this, def);
+        return this;
+    }
+
+    private static <T> void fromWorkflowDef(ConductorWorkflow<T> workflow, WorkflowDef def) {
         workflow.setName(def.getName());
         workflow.setVersion(def.getVersion());
         workflow.setFailureWorkflow(def.getFailureWorkflow());
         workflow.setRestartable(def.isRestartable());
         workflow.setVariables(def.getVariables());
-        workflow.setDefaultInput(def.getInputTemplate());
+        workflow.setDefaultInput((T) def.getInputTemplate());
 
         workflow.setWorkflowOutput(def.getOutputParameters());
         workflow.setOwnerEmail(def.getOwnerEmail());
@@ -293,7 +295,36 @@ public class ConductorWorkflow<T> {
             Task task = TaskRegistry.getTask(workflowTask);
             workflow.tasks.add(task);
         }
-        return workflow;
+    }
+
+    private List<String> getMissingTasks(WorkflowDef workflowDef) {
+        List<String> missing = new ArrayList<>();
+        workflowDef.collectTasks().stream()
+                .filter(workflowTask -> workflowTask.getType().equals(TaskType.TASK_TYPE_SIMPLE))
+                .map(WorkflowTask::getName)
+                .distinct()
+                .parallel()
+                .forEach(
+                        taskName -> {
+                            try {
+                                TaskDef taskDef =
+                                        workflowExecutor.getMetadataClient().getTaskDef(taskName);
+                            } catch (ConductorClientException cce) {
+                                if (cce.getStatus() == 404) {
+                                    missing.add(taskName);
+                                } else {
+                                    throw cce;
+                                }
+                            }
+                        });
+        return missing;
+    }
+
+    private void registerTaskDef(String taskName, String ownerEmail) {
+        TaskDef taskDef = new TaskDef();
+        taskDef.setName(taskName);
+        taskDef.setOwnerEmail(ownerEmail);
+        workflowExecutor.getMetadataClient().registerTaskDefs(Arrays.asList(taskDef));
     }
 
     @Override

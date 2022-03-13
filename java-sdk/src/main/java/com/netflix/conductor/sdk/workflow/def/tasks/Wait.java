@@ -18,10 +18,17 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 /** Wait task */
 public class Wait extends Task<Wait> {
 
-    static {
-        TaskRegistry.register(TaskType.WAIT.name(), Wait.class);
-    }
-
+    /**
+     * Wait until and external signal completes the task. The external signal can be either an API
+     * call (POST /api/task) to update the task status or an event coming from a supported external
+     * queue integration like SQS, Kafka, NATS, AMQP etc.
+     *
+     * <p><br>
+     * see <a href=https://netflix.github.io/conductor/reference-docs/wait-task/>
+     * https://netflix.github.io/conductor/reference-docs/wait-task</a> for more details
+     *
+     * @param taskReferenceName
+     */
     public Wait(String taskReferenceName) {
         super(taskReferenceName, TaskType.WAIT);
     }

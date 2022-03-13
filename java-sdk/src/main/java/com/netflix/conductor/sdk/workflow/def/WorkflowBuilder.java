@@ -25,7 +25,7 @@ import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /** @param <T> Input type for the workflow */
-public class WorkflowBuilder<T> extends TaskChain {
+public class WorkflowBuilder<T> {
 
     private String name;
 
@@ -48,6 +48,8 @@ public class WorkflowBuilder<T> extends TaskChain {
     private Map<String, Object> output = new HashMap<>();
 
     private Map<String, Object> state;
+
+    protected List<Task<?>> tasks = new ArrayList<>();
 
     private WorkflowExecutor workflowExecutor;
 
@@ -90,6 +92,11 @@ public class WorkflowBuilder<T> extends TaskChain {
             WorkflowDef.TimeoutPolicy timeoutPolicy, long timeoutSeconds) {
         this.timeoutPolicy = timeoutPolicy;
         this.timeoutSeconds = timeoutSeconds;
+        return this;
+    }
+
+    public WorkflowBuilder<T> add(Task<?>... tasks) {
+        Collections.addAll(this.tasks, tasks);
         return this;
     }
 

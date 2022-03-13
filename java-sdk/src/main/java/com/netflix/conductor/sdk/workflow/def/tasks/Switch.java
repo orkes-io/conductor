@@ -20,10 +20,6 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 /** Switch Task */
 public class Switch extends Task<Switch> {
 
-    static {
-        TaskRegistry.register(TaskType.SWITCH.name(), Switch.class);
-    }
-
     public static final String VALUE_PARAM_NAME = "value-param";
 
     public static final String JAVASCRIPT_NAME = "javascript";
@@ -37,9 +33,13 @@ public class Switch extends Task<Switch> {
     private Map<String, List<Task<?>>> branches = new HashMap<>();
 
     /**
+     * Switch case (similar to if...then...else or switch in java language)
+     *
      * @param taskReferenceName
-     * @param caseExpression
-     * @param useJavascript set to true if the caseExpression is a javascript fragment
+     * @param caseExpression An expression that outputs a string value to be used as case branches.
+     *     Case expression can be a support value parameter e.g. ${workflow.input.key} or
+     *     ${task.output.key} or a Javascript statement.
+     * @param useJavascript set to true if the caseExpression is a javascript statement
      */
     public Switch(String taskReferenceName, String caseExpression, boolean useJavascript) {
         super(taskReferenceName, TaskType.SWITCH);
@@ -48,6 +48,8 @@ public class Switch extends Task<Switch> {
     }
 
     /**
+     * Switch case (similar to if...then...else or switch in java language)
+     *
      * @param taskReferenceName
      * @param caseExpression
      */

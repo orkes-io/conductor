@@ -26,16 +26,21 @@ import com.netflix.conductor.client.http.MetadataClient;
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.client.http.WorkflowClient;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
+import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorkerExecutor;
 import com.netflix.conductor.sdk.workflow.utils.MapBuilder;
 import com.netflix.conductor.sdk.workflow.utils.ObjectMapperProvider;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.jersey.api.client.ClientHandler;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
 
 public class WorkflowExecutor {
 
@@ -59,20 +64,39 @@ public class WorkflowExecutor {
     private ScheduledExecutorService scheduledWorkflowMonitor =
             Executors.newSingleThreadScheduledExecutor();
 
-    public WorkflowExecutor(String apiServerURL) {
-        this(apiServerURL, 100);
+    static {
+        TaskRegistry.register(TaskType.DO_WHILE.name(), DoWhile.class);
+        TaskRegistry.register(TaskType.DYNAMIC.name(), Dynamic.class);
+        TaskRegistry.register(TaskType.FORK_JOIN_DYNAMIC.name(), DynamicFork.class);
+        TaskRegistry.register(TaskType.FORK_JOIN.name(), ForkJoin.class);
+        TaskRegistry.register(TaskType.HTTP.name(), Http.class);
+        TaskRegistry.register(TaskType.INLINE.name(), Javascript.class);
+        TaskRegistry.register(TaskType.JOIN.name(), Join.class);
+        TaskRegistry.register(TaskType.JSON_JQ_TRANSFORM.name(), JQ.class);
+        TaskRegistry.register(TaskType.SET_VARIABLE.name(), SetVariable.class);
+        TaskRegistry.register(TaskType.SIMPLE.name(), SimpleTask.class);
+        TaskRegistry.register(TaskType.SUB_WORKFLOW.name(), SubWorkflow.class);
+        TaskRegistry.register(TaskType.SWITCH.name(), Switch.class);
+        TaskRegistry.register(TaskType.TERMINATE.name(), Terminate.class);
+        TaskRegistry.register(TaskType.WAIT.name(), Wait.class);
     }
 
-    public WorkflowExecutor(String apiServerURL, int pollingInterval) {
+    public WorkflowExecutor(String apiServerURL) {
+        this(apiServerURL, null, 100);
+    }
+
+    public WorkflowExecutor(String apiServerURL, ClientFilter clientFilter, int pollingInterval) {
         String conductorServerApiBase = apiServerURL;
 
-        taskClient = new TaskClient();
+        taskClient = new TaskClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
         taskClient.setRootURI(conductorServerApiBase);
 
-        workflowClient = new WorkflowClient();
+        workflowClient =
+                new WorkflowClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
         workflowClient.setRootURI(conductorServerApiBase);
 
-        metadataClient = new MetadataClient();
+        metadataClient =
+                new MetadataClient(new DefaultClientConfig(), (ClientHandler) null, clientFilter);
         metadataClient.setRootURI(conductorServerApiBase);
 
         annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);

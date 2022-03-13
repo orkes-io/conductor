@@ -27,6 +27,7 @@ public class TaskRegistry {
     private static Map<String, Class<? extends Task>> taskTypeMap = new HashMap<>();
 
     public static void register(String taskType, Class<? extends Task> taskImplementation) {
+        System.out.println("Going ot register " + taskType + " with impl: " + taskImplementation);
         taskTypeMap.put(taskType, taskImplementation);
     }
 

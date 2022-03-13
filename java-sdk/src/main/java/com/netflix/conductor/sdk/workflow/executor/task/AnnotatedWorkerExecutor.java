@@ -78,7 +78,6 @@ public class AnnotatedWorkerExecutor {
             // Add here so to avoid infinite recursion where a class in the package contains the
             // code to init workers
             scannedPackages.add(basePackage);
-            System.out.println("Scanning for workers " + basePackage);
             List<String> packagesToScan = new ArrayList<>();
             if (basePackage != null) {
                 String[] packages = basePackage.split(",");
