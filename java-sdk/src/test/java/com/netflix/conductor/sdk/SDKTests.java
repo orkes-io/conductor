@@ -13,10 +13,6 @@
 package com.netflix.conductor.sdk;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -24,14 +20,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.netflix.conductor.client.http.MetadataClient;
-import com.netflix.conductor.client.http.TaskClient;
-import com.netflix.conductor.client.http.WorkflowClient;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.task.InputParam;
 import com.netflix.conductor.sdk.task.OutputParam;
 import com.netflix.conductor.sdk.task.WorkflowTask;
+import com.netflix.conductor.sdk.testing.LocalServerRunner;
 import com.netflix.conductor.sdk.workflow.def.ConductorWorkflow;
 import com.netflix.conductor.sdk.workflow.def.ValidationError;
 import com.netflix.conductor.sdk.workflow.def.WorkflowBuilder;
@@ -39,68 +33,30 @@ import com.netflix.conductor.sdk.workflow.def.tasks.*;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.tests.KitchensinkWorkflowInput;
 
-import com.sun.jersey.api.client.ClientHandler;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.ClientFilter;
+import static org.junit.Assert.fail;
 
 public class SDKTests {
 
     private static final String AUTHORIZATION_HEADER = "X-Authorization";
 
-    private static final String token =
-            "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLm9ya2VzLmlvLyJ9..TAjV68cUkzautfxQ.Hi-CG3s4AdKTSWB9FXLfLinlugj1juItbyw7JRrhi6cPxPJh9mwmj-sE83Q9flHeeW5loozQ7DQZ28A8TRd8PAV6miikfbVV64nfRBWHYW4X5r7DFU-e-cp52CDINwFUyVNqnlswfphqxbXeeuUrPFXGIBClvUKiZUMf15LJhV73UeiyhMfG-SJ5SF8OY7DZ6ZQMrbA-4Wt7Bu-tg8kNyVKlppC2V3wsSZUZCl4nPvEznFCFucbulmlrPxRoJAPb0S0AgkXRflXDgeMTV4rEj5jFUYlh-4CfUeVS26dM3GUUEuoufmuskIY.evPcHEsIjwUZ_gLFTNvHJg";
-
     private static WorkflowExecutor executor;
 
-    private static ClientFilter getAuthFilter(String token) {
-
-        ClientFilter filter =
-                new ClientFilter() {
-                    @Override
-                    public ClientResponse handle(ClientRequest request)
-                            throws ClientHandlerException {
-                        try {
-                            request.getHeaders().add(AUTHORIZATION_HEADER, token);
-                            return getNext().handle(request);
-                        } catch (ClientHandlerException e) {
-                            e.printStackTrace();
-                            throw e;
-                        }
-                    }
-                };
-
-        return filter;
-    }
+    private static LocalServerRunner runner;
 
     @BeforeClass
     public static void init() throws IOException {
-        String url = "https://loadtest.conductorworkflow.net/api/";
-        url = "http://localhost:8080/api/";
-        url = "https://play.orkes.io/api/";
+        runner = new LocalServerRunner(8080, "3.5.3");
+        runner.startLocalServer();
 
-        ClientFilter filter = getAuthFilter(token);
-        TaskClient taskClient =
-                new TaskClient(new DefaultClientConfig(), (ClientHandler) null, filter);
-        taskClient.setRootURI(url);
+        executor = new WorkflowExecutor("http://localhost:8080/api/", 1);
 
-        WorkflowClient workflowClient =
-                new WorkflowClient(new DefaultClientConfig(), (ClientHandler) null, filter);
-        workflowClient.setRootURI(url);
-
-        MetadataClient metadataClient =
-                new MetadataClient(new DefaultClientConfig(), (ClientHandler) null, filter);
-        metadataClient.setRootURI(url);
-
-        executor = new WorkflowExecutor(taskClient, workflowClient, metadataClient, 10);
         executor.initWorkers("com.netflix.conductor.sdk");
     }
 
     @AfterClass
     public static void cleanUp() {
         executor.shutdown();
+        runner.shutdown();
     }
 
     @WorkflowTask("get_user_info")
@@ -131,6 +87,9 @@ public class SDKTests {
         SimpleTask forkTask3 = new SimpleTask("task2", "ship_to_CA");
         SimpleTask forkTask4 = new SimpleTask("task2", "ship_to_Outsideof_NA");
 
+        SimpleTask cupertino = new SimpleTask("task2", "cupertino");
+        SimpleTask nyc = new SimpleTask("task2", "nyc");
+
         WorkflowBuilder<KitchensinkWorkflowInput> builder = new WorkflowBuilder<>(executor);
         KitchensinkWorkflowInput defaultInput = new KitchensinkWorkflowInput();
         defaultInput.setName("defaultName");
@@ -149,19 +108,11 @@ public class SDKTests {
                 .timeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF, 100)
                 .defaultInput(defaultInput)
                 .parallel("parallel", parallelTasks)
-                .task(getUserInfo)
-                .decide(
-                        "decide1",
-                        "${workflow.input.countryCode}",
-                        () -> {
-                            return Arrays.asList(forkTask4);
-                        },
-                        () -> {
-                            Map<String, List<Task<?>>> switchCase = new HashMap<>();
-                            switchCase.put("US", Arrays.asList(forkTask2));
-                            switchCase.put("CA", Arrays.asList(forkTask3));
-                            return switchCase;
-                        })
+                .task(getUserInfo.input("a", "b"))
+                .decide("decide2", "${workflow.input.zipCode}")
+                .switchCase("95014", cupertino)
+                .switchCase("10121", nyc)
+                .end()
                 // .subWorkflow("subflow", "sub_workflow_example", 5)
                 .add(new SimpleTask("task2", "task222"));
 
@@ -170,9 +121,12 @@ public class SDKTests {
         System.out.println("Registered : " + registered);
 
         try {
-            workflow.execute(new KitchensinkWorkflowInput("viren", "10121", "CA")).get();
+            Workflow run =
+                    workflow.execute(new KitchensinkWorkflowInput("viren", "10121", "CA")).get();
+            System.out.println("executed http://localhost:5000/execution/" + run.getWorkflowId());
         } catch (Exception e) {
             e.printStackTrace();
+            fail(e.getMessage());
         }
     }
 

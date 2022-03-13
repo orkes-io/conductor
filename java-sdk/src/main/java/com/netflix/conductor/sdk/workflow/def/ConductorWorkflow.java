@@ -211,7 +211,8 @@ public class ConductorWorkflow<T> {
                                         .map(WorkflowTask::getName)
                                         .collect(Collectors.toSet()));
             } else {
-                missing.stream().forEach(this::registerTaskDef);
+                String ownerEmail = this.ownerEmail;
+                missing.stream().forEach(task -> registerTaskDef(task, ownerEmail));
             }
         }
         return workflowExecutor.registerWorkflow(workflowDef, overwrite);
@@ -239,12 +240,13 @@ public class ConductorWorkflow<T> {
         return missing;
     }
 
-    private void registerTaskDef(WorkflowTask workflowTask) {
+    private void registerTaskDef(WorkflowTask workflowTask, String ownerEmail) {
         TaskDef taskDef = new TaskDef();
         taskDef.setName(workflowTask.getName());
         taskDef.setRetryCount(3);
         taskDef.setRetryDelaySeconds(1);
         taskDef.setRetryLogic(TaskDef.RetryLogic.FIXED);
+        taskDef.setOwnerEmail(ownerEmail);
         workflowExecutor.getMetadataClient().registerTaskDefs(Arrays.asList(taskDef));
     }
 
