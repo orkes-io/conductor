@@ -201,37 +201,39 @@ public class ConductorWorkflow<T> {
      */
     public boolean registerWorkflow(boolean overwrite, boolean registerTasks) {
         WorkflowDef workflowDef = toWorkflowDef();
-        List<WorkflowTask> missing = getMissingTasks(workflowDef);
+        List<String> missing = getMissingTasks(workflowDef);
         if (!missing.isEmpty()) {
             if (!registerTasks) {
                 throw new RuntimeException(
                         "Workflow cannot be registered.  The following tasks do not have definitions.  "
                                 + "Please register these tasks before creating the workflow.  Missing Tasks = "
-                                + missing.stream()
-                                        .map(WorkflowTask::getName)
-                                        .collect(Collectors.toSet()));
+                                + missing);
             } else {
                 String ownerEmail = this.ownerEmail;
-                missing.stream().forEach(task -> registerTaskDef(task, ownerEmail));
+                missing.stream().forEach(taskName -> registerTaskDef(taskName, ownerEmail));
             }
         }
         return workflowExecutor.registerWorkflow(workflowDef, overwrite);
     }
 
-    private List<WorkflowTask> getMissingTasks(WorkflowDef workflowDef) {
-        List<WorkflowTask> missing = new ArrayList<>();
-        workflowDef.collectTasks().stream()
+    private List<String> getMissingTasks(WorkflowDef workflowDef) {
+        List<String> missing = new ArrayList<>();
+        workflowDef.collectTasks()
+                .stream()
                 .filter(workflowTask -> workflowTask.getType().equals(TaskType.TASK_TYPE_SIMPLE))
+                .map(WorkflowTask::getName)
+                .distinct()
+                .parallel()
                 .forEach(
-                        workflowTask -> {
+                        taskName -> {
                             try {
                                 TaskDef taskDef =
                                         workflowExecutor
                                                 .getMetadataClient()
-                                                .getTaskDef(workflowTask.getName());
+                                                .getTaskDef(taskName);
                             } catch (ConductorClientException cce) {
                                 if (cce.getStatus() == 404) {
-                                    missing.add(workflowTask);
+                                    missing.add(taskName);
                                 } else {
                                     throw cce;
                                 }
@@ -240,9 +242,9 @@ public class ConductorWorkflow<T> {
         return missing;
     }
 
-    private void registerTaskDef(WorkflowTask workflowTask, String ownerEmail) {
+    private void registerTaskDef(String taskName, String ownerEmail) {
         TaskDef taskDef = new TaskDef();
-        taskDef.setName(workflowTask.getName());
+        taskDef.setName(taskName);
         taskDef.setRetryCount(3);
         taskDef.setRetryDelaySeconds(1);
         taskDef.setRetryLogic(TaskDef.RetryLogic.FIXED);
