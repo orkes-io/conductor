@@ -12,11 +12,11 @@
  */
 package com.netflix.conductor.sdk.workflow.def.tasks;
 
+import java.util.HashMap;
+
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.Workflow;
-
-import java.util.HashMap;
 
 public class Terminate extends Task<Terminate> {
 
@@ -35,11 +35,10 @@ public class Terminate extends Task<Terminate> {
     }
 
     public Terminate(
-            String taskReferenceName,
-            Workflow.WorkflowStatus terminationStatus,
-            String reason) {
+            String taskReferenceName, Workflow.WorkflowStatus terminationStatus, String reason) {
         this(taskReferenceName, terminationStatus, reason, new HashMap<>());
     }
+
     public Terminate(
             String taskReferenceName,
             Workflow.WorkflowStatus terminationStatus,

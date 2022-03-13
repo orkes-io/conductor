@@ -14,7 +14,6 @@ package com.netflix.conductor.sdk.workflow.def;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.function.Function;
 
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.sdk.workflow.def.tasks.*;
@@ -59,20 +58,23 @@ public abstract class TaskChain {
         return decide;
     }
 
-    public Switch decide(String taskReferenceName, String caseExpression,
-                         Callable<List<Task<?>>> defaultCase, Callable<Map<String, List<Task<?>>>> switchCases) {
+    public Switch decide(
+            String taskReferenceName,
+            String caseExpression,
+            Callable<List<Task<?>>> defaultCase,
+            Callable<Map<String, List<Task<?>>>> switchCases) {
         Switch decide = new Switch(taskReferenceName, caseExpression);
 
         try {
             decide.defaultCase(defaultCase.call());
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
         try {
             Map<String, List<Task<?>>> decisionCases = switchCases.call();
             decide.decisionCases(decisionCases);
-        }catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 

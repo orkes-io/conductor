@@ -50,7 +50,8 @@ public class SDKTests {
 
     private static final String AUTHORIZATION_HEADER = "X-Authorization";
 
-    private static final String token = "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLm9ya2VzLmlvLyJ9..TAjV68cUkzautfxQ.Hi-CG3s4AdKTSWB9FXLfLinlugj1juItbyw7JRrhi6cPxPJh9mwmj-sE83Q9flHeeW5loozQ7DQZ28A8TRd8PAV6miikfbVV64nfRBWHYW4X5r7DFU-e-cp52CDINwFUyVNqnlswfphqxbXeeuUrPFXGIBClvUKiZUMf15LJhV73UeiyhMfG-SJ5SF8OY7DZ6ZQMrbA-4Wt7Bu-tg8kNyVKlppC2V3wsSZUZCl4nPvEznFCFucbulmlrPxRoJAPb0S0AgkXRflXDgeMTV4rEj5jFUYlh-4CfUeVS26dM3GUUEuoufmuskIY.evPcHEsIjwUZ_gLFTNvHJg";
+    private static final String token =
+            "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwiaXNzIjoiaHR0cHM6Ly9hdXRoLm9ya2VzLmlvLyJ9..TAjV68cUkzautfxQ.Hi-CG3s4AdKTSWB9FXLfLinlugj1juItbyw7JRrhi6cPxPJh9mwmj-sE83Q9flHeeW5loozQ7DQZ28A8TRd8PAV6miikfbVV64nfRBWHYW4X5r7DFU-e-cp52CDINwFUyVNqnlswfphqxbXeeuUrPFXGIBClvUKiZUMf15LJhV73UeiyhMfG-SJ5SF8OY7DZ6ZQMrbA-4Wt7Bu-tg8kNyVKlppC2V3wsSZUZCl4nPvEznFCFucbulmlrPxRoJAPb0S0AgkXRflXDgeMTV4rEj5jFUYlh-4CfUeVS26dM3GUUEuoufmuskIY.evPcHEsIjwUZ_gLFTNvHJg";
 
     private static WorkflowExecutor executor;
 
@@ -149,15 +150,19 @@ public class SDKTests {
                 .defaultInput(defaultInput)
                 .parallel("parallel", parallelTasks)
                 .task(getUserInfo)
-                .decide("decide1", "${workflow.input.countryCode}", () -> {
-                    return Arrays.asList(forkTask4);
-                }, () -> {
-                    Map<String, List<Task<?>>> switchCase = new HashMap<>();
-                    switchCase.put("US", Arrays.asList(forkTask2));
-                    switchCase.put("CA", Arrays.asList(forkTask3));
-                    return switchCase;
-                })
-                //.subWorkflow("subflow", "sub_workflow_example", 5)
+                .decide(
+                        "decide1",
+                        "${workflow.input.countryCode}",
+                        () -> {
+                            return Arrays.asList(forkTask4);
+                        },
+                        () -> {
+                            Map<String, List<Task<?>>> switchCase = new HashMap<>();
+                            switchCase.put("US", Arrays.asList(forkTask2));
+                            switchCase.put("CA", Arrays.asList(forkTask3));
+                            return switchCase;
+                        })
+                // .subWorkflow("subflow", "sub_workflow_example", 5)
                 .add(new SimpleTask("task2", "task222"));
 
         ConductorWorkflow<KitchensinkWorkflowInput> workflow = builder.build();
@@ -175,7 +180,9 @@ public class SDKTests {
     public void test2() throws ExecutionException, InterruptedException {
         CompletableFuture<Workflow> execution =
                 executor.executeWorkflow(
-                        "sub_workflow_example", null, new KitchensinkWorkflowInput("viren", "95014", "US"));
+                        "sub_workflow_example",
+                        null,
+                        new KitchensinkWorkflowInput("viren", "95014", "US"));
         Workflow run = execution.get();
         System.out.println("run: " + run);
     }

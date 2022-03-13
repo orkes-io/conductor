@@ -94,7 +94,6 @@ public class Switch extends Task<Switch> {
         return this;
     }
 
-
     public Switch defaultCase(String... workerTasks) {
         for (String workerTask : workerTasks) {
             this.defaultTasks.add(new SimpleTask(workerTask, workerTask));
