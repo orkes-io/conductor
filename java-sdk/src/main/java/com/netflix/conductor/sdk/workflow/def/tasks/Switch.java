@@ -57,7 +57,7 @@ public class Switch extends Task<Switch> {
         this.useJavascript = false;
     }
 
-    public Switch(WorkflowTask workflowTask) {
+    Switch(WorkflowTask workflowTask) {
         super(workflowTask);
         Map<String, List<WorkflowTask>> decisions = workflowTask.getDecisionCases();
 

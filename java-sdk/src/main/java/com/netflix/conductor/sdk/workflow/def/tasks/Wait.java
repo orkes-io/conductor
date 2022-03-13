@@ -26,7 +26,7 @@ public class Wait extends Task<Wait> {
         super(taskReferenceName, TaskType.WAIT);
     }
 
-    public Wait(WorkflowTask workflowTask) {
+    Wait(WorkflowTask workflowTask) {
         super(workflowTask);
     }
 }

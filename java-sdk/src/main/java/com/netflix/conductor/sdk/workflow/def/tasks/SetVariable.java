@@ -25,7 +25,7 @@ public class SetVariable extends Task<SetVariable> {
         super(taskReferenceName, TaskType.SET_VARIABLE);
     }
 
-    public SetVariable(WorkflowTask workflowTask) {
+    SetVariable(WorkflowTask workflowTask) {
         super(workflowTask);
     }
 }

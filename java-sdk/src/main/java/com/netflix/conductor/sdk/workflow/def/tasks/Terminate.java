@@ -51,7 +51,7 @@ public class Terminate extends Task<Terminate> {
         input(TERMINATION_REASON_PARAMETER, reason);
     }
 
-    public Terminate(WorkflowTask workflowTask) {
+    Terminate(WorkflowTask workflowTask) {
         super(workflowTask);
     }
 }
