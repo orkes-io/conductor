@@ -16,36 +16,16 @@
 
 -->
 <!-- default log configuration -->
-<Configuration status="DEBUG">
-    <Properties>
-        <Property name="basePath">E:/logs</Property>
-    </Properties>
-
+<Configuration status="WARN">
     <Appenders>
-        <RollingFile name="fileLogger"
-                     fileName="${basePath}/conductor.log"
-                     filePattern="${basePath}/conductor-%d{yyyy-MM-dd}.log">
-            <PatternLayout>
-                <pattern>[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
-                </pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
-                <SizeBasedTriggeringPolicy size="100MB" />
-            </Policies>
-            <!-- Max 10 files will be created everyday -->
-            <DefaultRolloverStrategy max="10">
-                <Delete basePath="${basePath}" maxDepth="10">
-                    <!-- Delete all files older than 30 days -->
-                    <IfLastModified age="30d" />
-                </Delete>
-            </DefaultRolloverStrategy>
-        </RollingFile>
+        <Console name="CONSOLE">
+            <PatternLayout pattern="%-4r [%t] %-5p %c %x - %m%n"/>
+        </Console>
     </Appenders>
 
     <Loggers>
-        <Root level="info" additivity="false">
-            <appender-ref ref="fileLogger" />
+        <Root level="INFO">
+            <AppenderRef ref="CONSOLE" />
         </Root>
     </Loggers>
 </Configuration>
