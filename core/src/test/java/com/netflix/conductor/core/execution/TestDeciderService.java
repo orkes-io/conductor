@@ -892,7 +892,7 @@ public class TestDeciderService {
         task1.setTaskType("junit_task_l1");
         task1.setReferenceTaskName("s1");
         task1.setSeq(1);
-        task1.setIteration(1);
+        task1.setIteration(0);
         task1.setRetried(false);
         task1.setExecuted(false);
         task1.setStatus(TaskModel.Status.COMPLETED);
@@ -1008,7 +1008,7 @@ public class TestDeciderService {
         task1.setReferenceTaskName("task1");
         task1.setStatus(TaskModel.Status.COMPLETED);
         task1.setTaskId("task1");
-        task1.setIteration(1);
+        task1.setIteration(0);
 
         TaskModel task2 = new TaskModel();
         task2.setReferenceTaskName("task2");
