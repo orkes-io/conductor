@@ -89,7 +89,21 @@ will produce the following execution, assuming 3 executions occurred (alongside 
 {
     "taskType": "DO_WHILE",
     "outputData": {
-        "iteration": 3,
+        "iteration": 2,
+        "0": {
+            "first_task": {
+                "response": {},
+                "headers": {
+                    "Content-Type": "application/json"
+                }
+            },
+            "second_task": {
+                "response": {},
+                "headers": {
+                    "Content-Type": "application/json"
+                }
+            }
+        },
         "1": {
             "first_task": {
                 "response": {},
@@ -105,20 +119,6 @@ will produce the following execution, assuming 3 executions occurred (alongside 
             }
         },
         "2": {
-            "first_task": {
-                "response": {},
-                "headers": {
-                    "Content-Type": "application/json"
-                }
-            },
-            "second_task": {
-                "response": {},
-                "headers": {
-                    "Content-Type": "application/json"
-                }
-            }
-        },
-        "3": {
             "first_task": {
                 "response": {},
                 "headers": {
