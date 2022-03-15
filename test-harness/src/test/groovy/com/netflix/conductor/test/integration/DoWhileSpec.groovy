@@ -12,19 +12,28 @@
  */
 package com.netflix.conductor.test.integration
 
+import org.springframework.beans.factory.annotation.Autowired
+
 import com.netflix.conductor.common.metadata.tasks.Task
 import com.netflix.conductor.common.metadata.tasks.TaskDef
 import com.netflix.conductor.common.run.Workflow
 import com.netflix.conductor.common.utils.TaskUtils
+import com.netflix.conductor.core.execution.tasks.SubWorkflow
 import com.netflix.conductor.test.base.AbstractSpecification
 
 import static com.netflix.conductor.test.util.WorkflowTestUtil.verifyPolledAndAcknowledgedTask
 
 class DoWhileSpec extends AbstractSpecification {
 
+    @Autowired
+    SubWorkflow subWorkflowTask
+
     def setup() {
         workflowTestUtil.registerWorkflows("do_while_integration_test.json",
                 "do_while_multiple_integration_test.json",
+                "do_while_as_subtask_integration_test.json",
+                'simple_one_task_sub_workflow_integration_test.json',
+                "do_while_sub_workflow_integration_test.json",
                 "do_while_iteration_fix_test.json",
                 "do_while_as_subtask_integration_test.json")
     }
@@ -32,7 +41,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a single iteration Do While task"() {
         given: "Number of iterations of the loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
@@ -117,10 +126,174 @@ class DoWhileSpec extends AbstractSpecification {
         }
     }
 
+    def "Test workflow with a single iteration Do While task with Sub workflow"() {
+        given: "Number of iterations of the loop is set to 1"
+        def workflowInput = new HashMap()
+        workflowInput['loop'] = 0
+
+        when: "A do_while workflow is started"
+        def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Sub_Workflow", 1, "looptest", workflowInput, null, null)
+
+        then: "Verify that the workflow has started"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 2
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.IN_PROGRESS
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.SCHEDULED
+        }
+
+        when: "Polling and completing first task"
+        Tuple polledAndCompletedTask0 = workflowTestUtil.pollAndCompleteTask('integration_task_0', 'integration.test.worker')
+
+        then: "Verify that the task was polled and acknowledged and workflow is in running state"
+        verifyPolledAndAcknowledgedTask(polledAndCompletedTask0)
+        verifyTaskIteration(polledAndCompletedTask0[0] as Task, 1)
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 6
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.IN_PROGRESS
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[2].taskType == 'FORK'
+            tasks[2].status == Task.Status.COMPLETED
+            tasks[3].taskType == 'integration_task_1'
+            tasks[3].status == Task.Status.SCHEDULED
+            tasks[4].taskType == 'integration_task_2'
+            tasks[4].status == Task.Status.SCHEDULED
+            tasks[5].taskType == 'JOIN'
+            tasks[5].status == Task.Status.IN_PROGRESS
+        }
+
+        when: "Polling and completing second task"
+        Tuple polledAndCompletedTask1 = workflowTestUtil.pollAndCompleteTask('integration_task_1', 'integration.test.worker')
+
+        then: "Verify that the task was polled and acknowledged and workflow is in running state"
+        verifyPolledAndAcknowledgedTask(polledAndCompletedTask1)
+        verifyTaskIteration(polledAndCompletedTask1[0] as Task, 1)
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 6
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.IN_PROGRESS
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[2].taskType == 'FORK'
+            tasks[2].status == Task.Status.COMPLETED
+            tasks[3].taskType == 'integration_task_1'
+            tasks[3].status == Task.Status.COMPLETED
+            tasks[4].taskType == 'integration_task_2'
+            tasks[4].status == Task.Status.SCHEDULED
+            tasks[5].taskType == 'JOIN'
+            tasks[5].status == Task.Status.IN_PROGRESS
+        }
+
+        when: "Polling and completing third task"
+        Tuple polledAndCompletedTask2 = workflowTestUtil.pollAndCompleteTask('integration_task_2', 'integration.test.worker')
+
+        then: "Verify that the task was polled and acknowledged and workflow is in completed state"
+        verifyPolledAndAcknowledgedTask(polledAndCompletedTask2)
+        verifyTaskIteration(polledAndCompletedTask2[0] as Task, 1)
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 7
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.IN_PROGRESS
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[2].taskType == 'FORK'
+            tasks[2].status == Task.Status.COMPLETED
+            tasks[3].taskType == 'integration_task_1'
+            tasks[3].status == Task.Status.COMPLETED
+            tasks[4].taskType == 'integration_task_2'
+            tasks[4].status == Task.Status.COMPLETED
+            tasks[5].taskType == 'JOIN'
+            tasks[5].status == Task.Status.COMPLETED
+            tasks[6].taskType == 'SUB_WORKFLOW'
+            tasks[6].status == Task.Status.SCHEDULED
+        }
+
+        when: "the sub workflow is started by issuing a system task call"
+        def parentWorkflow = workflowExecutionService.getExecutionStatus(workflowInstanceId, true)
+        def subWorkflowTaskId = parentWorkflow.getTaskByRefName('st1__0').taskId
+        asyncSystemTaskExecutor.execute(subWorkflowTask, subWorkflowTaskId)
+
+        then: "verify that the sub workflow task is in a IN PROGRESS state"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 7
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.IN_PROGRESS
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[2].taskType == 'FORK'
+            tasks[2].status == Task.Status.COMPLETED
+            tasks[3].taskType == 'integration_task_1'
+            tasks[3].status == Task.Status.COMPLETED
+            tasks[4].taskType == 'integration_task_2'
+            tasks[4].status == Task.Status.COMPLETED
+            tasks[5].taskType == 'JOIN'
+            tasks[5].status == Task.Status.COMPLETED
+            tasks[6].taskType == 'SUB_WORKFLOW'
+            tasks[6].status == Task.Status.IN_PROGRESS
+        }
+
+        when: "sub workflow is retrieved"
+        def workflow = workflowExecutionService.getExecutionStatus(workflowInstanceId, true)
+        def subWorkflowInstanceId = workflow.getTaskByRefName('st1__0').subWorkflowId
+
+        then: "verify that the sub workflow is in a RUNNING state"
+        with(workflowExecutionService.getExecutionStatus(subWorkflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.RUNNING
+            tasks.size() == 1
+            tasks[0].taskType == 'simple_task_in_sub_wf'
+            tasks[0].status == Task.Status.SCHEDULED
+        }
+
+        when: "the 'simple_task_in_sub_wf' belonging to the sub workflow is polled and completed"
+        def polledAndCompletedSubWorkflowTask = workflowTestUtil.pollAndCompleteTask('simple_task_in_sub_wf', 'subworkflow.task.worker')
+
+        then: "verify that the task was polled and acknowledged"
+        workflowTestUtil.verifyPolledAndAcknowledgedTask(polledAndCompletedSubWorkflowTask)
+
+        and: "verify that the sub workflow is in COMPLETED state"
+        with(workflowExecutionService.getExecutionStatus(subWorkflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.COMPLETED
+            tasks.size() == 1
+            tasks[0].status == Task.Status.COMPLETED
+            tasks[0].taskType == 'simple_task_in_sub_wf'
+        }
+
+        and: "the parent workflow is swept"
+        sweep(workflowInstanceId)
+
+        and: "verify that the workflow is in COMPLETED state"
+        with(workflowExecutionService.getExecutionStatus(workflowInstanceId, true)) {
+            status == Workflow.WorkflowStatus.COMPLETED
+            tasks.size() == 7
+            tasks[0].taskType == 'DO_WHILE'
+            tasks[0].status == Task.Status.COMPLETED
+            tasks[1].taskType == 'integration_task_0'
+            tasks[1].status == Task.Status.COMPLETED
+            tasks[2].taskType == 'FORK'
+            tasks[2].status == Task.Status.COMPLETED
+            tasks[3].taskType == 'integration_task_1'
+            tasks[3].status == Task.Status.COMPLETED
+            tasks[4].taskType == 'integration_task_2'
+            tasks[4].status == Task.Status.COMPLETED
+            tasks[5].taskType == 'JOIN'
+            tasks[5].status == Task.Status.COMPLETED
+            tasks[6].taskType == 'SUB_WORKFLOW'
+            tasks[6].status == Task.Status.COMPLETED
+        }
+    }
+
     def "Test workflow with a iteration fix Do While task"() {
         given: "Number of iterations of the loop is set to 2"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 2
+        workflowInput['loop'] = 1
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow_Iteration_Fix", 1, "looptest", workflowInput, null, null)
@@ -143,8 +316,8 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with multiple Do While tasks with multiple iterations"() {
         given: "Number of iterations of the first loop is set to 2 and second loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 2
-        workflowInput['loop2'] = 1
+        workflowInput['loop'] = 1
+        workflowInput['loop2'] = 0
 
         when: "A workflow with multiple do while tasks with multiple iterations is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Multiple", 1, "looptest", workflowInput, null, null)
@@ -382,7 +555,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "A do while workflow is started"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
 
         then: "Verify that the workflow has started"
@@ -516,7 +689,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "A do while workflow is started"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
 
         then: "Verify that the workflow has started"
@@ -631,7 +804,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a iteration Do While task as subtask of a forkjoin task"() {
         given: "Number of iterations of the loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_SubTask", 1, "looptest", workflowInput, null, null)
@@ -723,6 +896,6 @@ class DoWhileSpec extends AbstractSpecification {
 
     void verifyTaskIteration(Task task, int iteration) {
         assert task.getReferenceTaskName().endsWith(TaskUtils.getLoopOverTaskRefNameSuffix(task.getIteration()))
-        assert task.iteration == iteration
+        assert task.iteration == iteration - 1
     }
 }

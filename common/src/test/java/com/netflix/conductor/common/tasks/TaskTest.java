@@ -128,7 +128,7 @@ public class TaskTest {
         task.setExternalInputPayloadStoragePath("externalInputPayloadStoragePath");
         task.setExternalOutputPayloadStoragePath("externalOutputPayloadStoragePath");
         task.setWorkflowPriority(0);
-        task.setIteration(1);
+        task.setIteration(0);
         task.setExecutionNameSpace("name_space");
         task.setIsolationGroupId("groupId");
         task.setStartTime(12L);
