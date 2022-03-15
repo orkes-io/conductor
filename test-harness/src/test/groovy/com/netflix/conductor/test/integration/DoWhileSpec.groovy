@@ -33,7 +33,7 @@ class DoWhileSpec extends AbstractSpecification {
                 "do_while_multiple_integration_test.json",
                 "do_while_as_subtask_integration_test.json",
                 'simple_one_task_sub_workflow_integration_test.json',
-                "do_while_sub_workflow_integration_test.json")
+                "do_while_sub_workflow_integration_test.json",
                 "do_while_iteration_fix_test.json",
                 "do_while_as_subtask_integration_test.json")
     }
@@ -41,7 +41,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a single iteration Do While task"() {
         given: "Number of iterations of the loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
@@ -129,7 +129,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a single iteration Do While task with Sub workflow"() {
         given: "Number of iterations of the loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Sub_Workflow", 1, "looptest", workflowInput, null, null)
@@ -217,7 +217,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "the sub workflow is started by issuing a system task call"
         def parentWorkflow = workflowExecutionService.getExecutionStatus(workflowInstanceId, true)
-        def subWorkflowTaskId = parentWorkflow.getTaskByRefName('st1__1').taskId
+        def subWorkflowTaskId = parentWorkflow.getTaskByRefName('st1__0').taskId
         asyncSystemTaskExecutor.execute(subWorkflowTask, subWorkflowTaskId)
 
         then: "verify that the sub workflow task is in a IN PROGRESS state"
@@ -242,7 +242,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "sub workflow is retrieved"
         def workflow = workflowExecutionService.getExecutionStatus(workflowInstanceId, true)
-        def subWorkflowInstanceId = workflow.getTaskByRefName('st1__1').subWorkflowId
+        def subWorkflowInstanceId = workflow.getTaskByRefName('st1__0').subWorkflowId
 
         then: "verify that the sub workflow is in a RUNNING state"
         with(workflowExecutionService.getExecutionStatus(subWorkflowInstanceId, true)) {
@@ -293,7 +293,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a iteration fix Do While task"() {
         given: "Number of iterations of the loop is set to 2"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 2
+        workflowInput['loop'] = 1
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow_Iteration_Fix", 1, "looptest", workflowInput, null, null)
@@ -316,8 +316,8 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with multiple Do While tasks with multiple iterations"() {
         given: "Number of iterations of the first loop is set to 2 and second loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 2
-        workflowInput['loop2'] = 1
+        workflowInput['loop'] = 1
+        workflowInput['loop2'] = 0
 
         when: "A workflow with multiple do while tasks with multiple iterations is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Multiple", 1, "looptest", workflowInput, null, null)
@@ -555,7 +555,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "A do while workflow is started"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
 
         then: "Verify that the workflow has started"
@@ -689,7 +689,7 @@ class DoWhileSpec extends AbstractSpecification {
 
         when: "A do while workflow is started"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_Workflow", 1, "looptest", workflowInput, null, null)
 
         then: "Verify that the workflow has started"
@@ -804,7 +804,7 @@ class DoWhileSpec extends AbstractSpecification {
     def "Test workflow with a iteration Do While task as subtask of a forkjoin task"() {
         given: "Number of iterations of the loop is set to 1"
         def workflowInput = new HashMap()
-        workflowInput['loop'] = 1
+        workflowInput['loop'] = 0
 
         when: "A do_while workflow is started"
         def workflowInstanceId = workflowExecutor.startWorkflow("Do_While_SubTask", 1, "looptest", workflowInput, null, null)
@@ -896,6 +896,6 @@ class DoWhileSpec extends AbstractSpecification {
 
     void verifyTaskIteration(Task task, int iteration) {
         assert task.getReferenceTaskName().endsWith(TaskUtils.getLoopOverTaskRefNameSuffix(task.getIteration()))
-        assert task.iteration == iteration
+        assert task.iteration == iteration - 1
     }
 }

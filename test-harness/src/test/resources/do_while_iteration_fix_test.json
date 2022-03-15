@@ -25,7 +25,7 @@
           "taskReferenceName": "form_uri",
           "inputParameters": {
             "index" : "${loopTask.output.iteration}",
-            "scriptExpression": "return $.index - 1;"
+            "scriptExpression": "return $.index;"
           },
           "type": "LAMBDA"
         }
