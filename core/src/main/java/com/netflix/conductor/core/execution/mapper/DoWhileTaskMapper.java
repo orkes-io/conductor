@@ -96,7 +96,7 @@ public class DoWhileTaskMapper implements TaskMapper {
         loopTask.setWorkflowType(workflowInstance.getWorkflowName());
         loopTask.setScheduledTime(System.currentTimeMillis());
         loopTask.setTaskId(taskId);
-        loopTask.setIteration(1);
+        loopTask.setIteration(0);
         loopTask.setStatus(TaskModel.Status.IN_PROGRESS);
         loopTask.setWorkflowTask(taskToSchedule);
         loopTask.setRateLimitPerFrequency(taskDefinition.getRateLimitPerFrequency());

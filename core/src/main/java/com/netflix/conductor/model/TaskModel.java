@@ -145,7 +145,7 @@ public class TaskModel {
 
     private String isolationGroupId;
 
-    private int iteration;
+    private int iteration = -1;
 
     private String subWorkflowId;
 
@@ -511,7 +511,7 @@ public class TaskModel {
     }
 
     public boolean isLoopOverTask() {
-        return iteration > 0;
+        return iteration >= 0;
     }
 
     /** @return the queueWaitTime */

@@ -148,7 +148,7 @@ public class ParametersUtils {
                                     "output",
                                     new HashMap<String, Object>() {
                                         {
-                                            put("iteration", 1);
+                                            put("iteration", 0);
                                         }
                                     });
                             inputMap.put(looptask.getTaskReferenceName(), taskParams);
