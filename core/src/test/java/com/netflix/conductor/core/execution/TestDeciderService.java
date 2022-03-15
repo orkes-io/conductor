@@ -906,7 +906,7 @@ public class TestDeciderService {
         assertEquals(1, deciderOutcome.tasksToBeUpdated.size());
         assertEquals("s1", deciderOutcome.tasksToBeUpdated.get(0).getReferenceTaskName());
         assertEquals(1, deciderOutcome.tasksToBeScheduled.size());
-        assertEquals("s2__1", deciderOutcome.tasksToBeScheduled.get(0).getReferenceTaskName());
+        assertEquals("s2__0", deciderOutcome.tasksToBeScheduled.get(0).getReferenceTaskName());
         assertFalse(deciderOutcome.isComplete);
     }
 
@@ -1016,9 +1016,9 @@ public class TestDeciderService {
         task2.setTaskId("task2");
 
         TaskModel task3 = new TaskModel();
-        task3.setReferenceTaskName("task3__1");
+        task3.setReferenceTaskName("task3__0");
         task3.setStatus(TaskModel.Status.IN_PROGRESS);
-        task3.setTaskId("task3__1");
+        task3.setTaskId("task3__0");
 
         TaskModel task4 = new TaskModel();
         task4.setReferenceTaskName("task4");
@@ -1039,8 +1039,8 @@ public class TestDeciderService {
                 task -> {
                     assertTrue(
                             task.getReferenceTaskName()
-                                    .endsWith(TaskUtils.getLoopOverTaskRefNameSuffix(1)));
-                    assertEquals(1, task.getIteration());
+                                    .endsWith(TaskUtils.getLoopOverTaskRefNameSuffix(0)));
+                    assertEquals(0, task.getIteration());
                 });
     }
 

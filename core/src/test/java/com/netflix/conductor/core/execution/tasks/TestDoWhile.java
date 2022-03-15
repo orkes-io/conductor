@@ -131,7 +131,7 @@ public class TestDoWhile {
         loopWorkflowTask.setType(TaskType.DO_WHILE.name());
         loopWorkflowTask.setName("loopTask");
         loopWorkflowTask.setLoopCondition(
-                "if ($.loopTask['iteration'] < 1) { false; } else { true; }");
+                "if ($.loopTask['iteration'] < 0) { false; } else { true; }");
         loopWorkflowTask.setLoopOver(
                 Arrays.asList(task1.getWorkflowTask(), task2.getWorkflowTask()));
         loopTask.setWorkflowTask(loopWorkflowTask);
@@ -140,8 +140,8 @@ public class TestDoWhile {
         doReturn(loopTaskDef).when(provider).getTaskDefinition(loopTask);
         doReturn(task1).when(workflow).getTaskByRefName(task1.getReferenceTaskName());
         doReturn(task2).when(workflow).getTaskByRefName(task2.getReferenceTaskName());
-        doReturn(task1).when(workflow).getTaskByRefName("task1__2");
-        doReturn(task2).when(workflow).getTaskByRefName("task2__2");
+        doReturn(task1).when(workflow).getTaskByRefName("task1__1");
+        doReturn(task2).when(workflow).getTaskByRefName("task2__1");
         doReturn(new HashMap<>())
                 .when(parametersUtils)
                 .getTaskInputV2(
@@ -155,7 +155,7 @@ public class TestDoWhile {
     public void testSingleSuccessfulIteration() {
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
         loopWorkflowTask.setLoopCondition(
-                "if ($.loopTask['iteration'] < 1) { true; } else { false; }");
+                "if ($.loopTask['iteration'] < 0) { true; } else { false; }");
         boolean success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
         verify(provider, times(0)).scheduleNextIteration(loopTask, workflow);
@@ -189,11 +189,11 @@ public class TestDoWhile {
         loopTask.setStatus(TaskModel.Status.IN_PROGRESS);
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
         loopWorkflowTask.setLoopCondition(
-                "if ($.loopTask['iteration'] > 1) { false; } else { true; }");
+                "if ($.loopTask['iteration'] > 0) { false; } else { true; }");
         doNothing().when(provider).scheduleNextIteration(loopTask, workflow);
         boolean success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
-        assertEquals(loopTask.getIteration(), 2);
+        assertEquals(loopTask.getIteration(), 1);
         verify(provider, times(1)).scheduleNextIteration(loopTask, workflow);
         assertSame(loopTask.getStatus(), TaskModel.Status.IN_PROGRESS);
     }
@@ -202,10 +202,10 @@ public class TestDoWhile {
     public void testLoopOverTaskOutputInCondition() {
         loopTask.setStatus(TaskModel.Status.IN_PROGRESS);
         Map<String, Object> output = new HashMap<>();
-        output.put("value", 1);
+        output.put("value", 0);
         task1.setOutputData(output);
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
-        loopWorkflowTask.setLoopCondition("if ($.task1['value'] == 1) { false; } else { true; }");
+        loopWorkflowTask.setLoopCondition("if ($.task1['value'] == 0) { false; } else { true; }");
         doNothing().when(provider).scheduleNextIteration(loopTask, workflow);
         boolean success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
@@ -216,7 +216,7 @@ public class TestDoWhile {
     @Test
     public void testInputParameterInCondition() {
         Map<String, Object> output = new HashMap<>();
-        output.put("value", 1);
+        output.put("value", 0);
         loopTask.setInputData(output);
         loopTask.setStatus(TaskModel.Status.IN_PROGRESS);
         loopWorkflowTask.setInputParameters(output);
@@ -228,7 +228,7 @@ public class TestDoWhile {
                         loopTask.getTaskId(),
                         loopTaskDef);
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
-        loopWorkflowTask.setLoopCondition("if ($.value == 1) { false; } else { true; }");
+        loopWorkflowTask.setLoopCondition("if ($.value == 0) { false; } else { true; }");
         doNothing().when(provider).scheduleNextIteration(loopTask, workflow);
         boolean success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
@@ -241,13 +241,13 @@ public class TestDoWhile {
         loopTask.setStatus(TaskModel.Status.IN_PROGRESS);
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
         loopWorkflowTask.setLoopCondition(
-                "if ($.loopTask['iteration'] > 1) { false; } else { true; }");
+                "if ($.loopTask['iteration'] > 0) { false; } else { true; }");
         doNothing().when(provider).scheduleNextIteration(loopTask, workflow);
         boolean success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
         doReturn(Arrays.asList(task1, task2)).when(workflow).getTasks();
-        task1.setReferenceTaskName("task1__2");
-        task2.setReferenceTaskName("task1__2");
+        task1.setReferenceTaskName("task1__1");
+        task2.setReferenceTaskName("task1__1");
         success = doWhile.execute(workflow, loopTask, provider);
         assertTrue(success);
         verify(provider, times(1)).scheduleNextIteration(loopTask, workflow);
