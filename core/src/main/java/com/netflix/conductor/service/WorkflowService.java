@@ -91,6 +91,7 @@ public interface WorkflowService {
      * @param correlationId CorrelationID of the workflow you want to start.
      * @param priority Priority of the workflow you want to start.
      * @param input Input to the workflow you want to start.
+     * @param tags
      * @return the id of the workflow instance that can be use for tracking.
      */
     String startWorkflow(
@@ -100,7 +101,7 @@ public interface WorkflowService {
             @Min(value = 0, message = "0 is the minimum priority value")
                     @Max(value = 99, message = "99 is the maximum priority value")
                     Integer priority,
-            Map<String, Object> input);
+            Map<String, Object> input, Map<String, Object> tags);
 
     /**
      * Start a new workflow. Returns the ID of the workflow instance that can be later used for
@@ -434,4 +435,6 @@ public interface WorkflowService {
      */
     ExternalStorageLocation getExternalStorageLocation(
             String path, String operation, String payloadType);
+
+    void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags);
 }

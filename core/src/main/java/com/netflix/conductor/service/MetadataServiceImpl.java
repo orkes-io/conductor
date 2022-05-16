@@ -13,6 +13,7 @@
 package com.netflix.conductor.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -211,5 +212,15 @@ public class MetadataServiceImpl implements MetadataService {
      */
     public List<EventHandler> getEventHandlersForEvent(String event, boolean activeOnly) {
         return eventHandlerDAO.getEventHandlersForEvent(event, activeOnly);
+    }
+
+    @Override
+    public void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags) {
+        metadataDAO.createWorkflowMetadata(name, version, tags);
+    }
+
+    @Override
+    public Map<String, Object> getWorkflowMetadata(String name, Integer version) {
+        return metadataDAO.getWorkflowMetadata(name, version);
     }
 }

@@ -13,6 +13,7 @@
 package com.netflix.conductor.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.validation.Valid;
@@ -133,4 +134,8 @@ public interface MetadataService {
     List<EventHandler> getEventHandlersForEvent(
             @NotEmpty(message = "EventName cannot be null or empty") String event,
             boolean activeOnly);
+
+    void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags);
+
+    Map<String, Object> getWorkflowMetadata(String name, Integer version);
 }

@@ -223,7 +223,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     public String startWorkflow(
             String name, Integer version, String correlationId, Map<String, Object> input) {
         metadataService.getWorkflowDef(name, version);
-        return startWorkflow(name, version, correlationId, 0, input);
+        return startWorkflow(name, version, correlationId, 0, input, null);
     }
 
     /**
@@ -235,6 +235,7 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param correlationId CorrelationID of the workflow you want to start.
      * @param priority Priority of the workflow you want to start.
      * @param input Input to the workflow you want to start.
+     * @param tags
      * @return the id of the workflow instance that can be use for tracking.
      */
     public String startWorkflow(
@@ -242,7 +243,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             Integer version,
             String correlationId,
             Integer priority,
-            Map<String, Object> input) {
+            Map<String, Object> input, Map<String, Object> tags) {
         WorkflowDef workflowDef = metadataService.getWorkflowDef(name, version);
         if (workflowDef == null) {
             throw new ApplicationException(
@@ -250,13 +251,8 @@ public class WorkflowServiceImpl implements WorkflowService {
                     String.format(
                             "No such workflow found by name: %s, version: %d", name, version));
         }
-        return workflowExecutor.startWorkflow(
-                workflowDef.getName(),
-                workflowDef.getVersion(),
-                correlationId,
-                priority,
-                input,
-                null);
+        return workflowExecutor.startWorkflow(workflowDef,
+                input, null,correlationId, priority, null, null, null,null, null, tags);
     }
 
     /**
@@ -599,5 +595,10 @@ public class WorkflowServiceImpl implements WorkflowService {
                     ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT,
                     path);
         }
+    }
+
+    @Override
+    public void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags) {
+        metadataService.createWorkflowMetadata(name, version, tags);
     }
 }

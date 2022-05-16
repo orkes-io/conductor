@@ -13,6 +13,7 @@
 package com.netflix.conductor.dao;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -81,4 +82,8 @@ public interface MetadataDAO {
      * @return List of all the workflow definitions
      */
     List<WorkflowDef> getAllWorkflowDefs();
+
+    void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags);
+
+    Map<String, Object> getWorkflowMetadata(String name, Integer version);
 }

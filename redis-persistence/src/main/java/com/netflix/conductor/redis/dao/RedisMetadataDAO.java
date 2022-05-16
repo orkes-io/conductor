@@ -53,6 +53,7 @@ public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO {
     private static final String ALL_TASK_DEFS = "TASK_DEFS";
     private static final String WORKFLOW_DEF_NAMES = "WORKFLOW_DEF_NAMES";
     private static final String WORKFLOW_DEF = "WORKFLOW_DEF";
+    private static final String WORKFLOW_METADATA_DEF = "WORKFLOW_METADATA_DEF";
     private static final String LATEST = "latest";
     private static final String className = RedisMetadataDAO.class.getSimpleName();
     private Map<String, TaskDef> taskDefCache = new HashMap<>();
@@ -290,6 +291,30 @@ public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO {
         }
         recordRedisDaoPayloadSize("getAllWorkflowDefs", size, "n/a", "n/a");
         return workflows;
+    }
+
+    @Override
+    public void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags) {
+        jedisProxy.hset(
+                nsKey(WORKFLOW_METADATA_DEF, name),
+                String.valueOf(version),
+                toJson(tags));
+        recordRedisDaoRequests("storeWorkflowMetadataDef", "n/a", name);
+    }
+
+    @Override
+    public Map<String, Object> getWorkflowMetadata(String name, Integer version) {
+        Map<String, Object> def = null;
+
+        recordRedisDaoRequests("getWorkflowDef");
+        String tagJsonString =
+                jedisProxy.hget(nsKey(WORKFLOW_METADATA_DEF, name), String.valueOf(version));
+        if (tagJsonString != null) {
+            def = readValue(tagJsonString, Map.class);
+            recordRedisDaoPayloadSize(
+                    "getWorkflowDef", tagJsonString.length(), "n/a", name);
+        }
+        return  def;
     }
 
     private void _createOrUpdate(WorkflowDef workflowDef) {

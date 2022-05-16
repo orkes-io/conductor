@@ -360,7 +360,7 @@ public class WorkflowExecutor {
                 null,
                 event,
                 taskToDomain,
-                createdBy);
+                createdBy, null);
     }
 
     /**
@@ -415,7 +415,7 @@ public class WorkflowExecutor {
                 parentWorkflowId,
                 parentWorkflowTaskId,
                 event,
-                taskToDomain);
+                taskToDomain, null, null);
     }
 
     /**
@@ -446,7 +446,7 @@ public class WorkflowExecutor {
                 parentWorkflowTaskId,
                 event,
                 taskToDomain,
-                createdBy);
+                createdBy, null);
     }
 
     /**
@@ -472,7 +472,7 @@ public class WorkflowExecutor {
                 parentWorkflowTaskId,
                 event,
                 taskToDomain,
-                null);
+                null, null);
     }
 
     /**
@@ -488,7 +488,7 @@ public class WorkflowExecutor {
             String parentWorkflowTaskId,
             String event,
             Map<String, String> taskToDomain,
-            String createdBy) {
+            String createdBy, Map<String, Object> tags) {
 
         workflowDefinition = metadataMapperService.populateTaskDefinitions(workflowDefinition);
 
@@ -510,6 +510,7 @@ public class WorkflowExecutor {
         workflow.setOwnerApp(WorkflowContext.get().getClientApp());
         workflow.setCreateTime(System.currentTimeMillis());
         workflow.setCreatedBy(createdBy);
+        workflow.setTags(tags);
         workflow.setUpdatedBy(null);
         workflow.setUpdatedTime(null);
         workflow.setEvent(event);

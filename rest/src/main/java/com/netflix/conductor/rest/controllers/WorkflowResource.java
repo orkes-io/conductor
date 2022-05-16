@@ -69,8 +69,20 @@ public class WorkflowResource {
             @RequestParam(value = "version", required = false) Integer version,
             @RequestParam(value = "correlationId", required = false) String correlationId,
             @RequestParam(value = "priority", defaultValue = "0", required = false) int priority,
-            @RequestBody Map<String, Object> input) {
-        return workflowService.startWorkflow(name, version, correlationId, priority, input);
+            @RequestBody Map<String, Object> input,
+            @RequestBody Map<String, Object> tags) {
+        return workflowService.startWorkflow(name, version, correlationId, priority, input, tags);
+    }
+
+    @PostMapping(value = "/{name}", produces = TEXT_PLAIN_VALUE)
+    @Operation(
+            summary =
+                    "Start a new workflow. Returns the ID of the workflow instance that can be later used for tracking")
+    public void createWorkflowMetadata(
+            @PathVariable("name") String name,
+            @RequestParam(value = "version", required = false) Integer version,
+            @RequestBody Map<String, Object> tags) {
+        workflowService.createWorkflowMetadata(name, version, tags);
     }
 
     @GetMapping("/{name}/correlated/{correlationId}")
