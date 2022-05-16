@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.netflix.conductor.dao.MetadataExecutionDAO;
 import org.springframework.stereotype.Service;
 
 import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
@@ -35,12 +36,15 @@ public class MetadataServiceImpl implements MetadataService {
 
     private final MetadataDAO metadataDAO;
     private final EventHandlerDAO eventHandlerDAO;
+    private final MetadataExecutionDAO metadataExecutionDAO;
 
     public MetadataServiceImpl(
             MetadataDAO metadataDAO,
+            MetadataExecutionDAO metadataExecutionDAO,
             EventHandlerDAO eventHandlerDAO,
             ConductorProperties properties) {
         this.metadataDAO = metadataDAO;
+        this.metadataExecutionDAO = metadataExecutionDAO;
         this.eventHandlerDAO = eventHandlerDAO;
 
         ValidationContext.initialize(metadataDAO);
@@ -216,11 +220,11 @@ public class MetadataServiceImpl implements MetadataService {
 
     @Override
     public void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags) {
-        metadataDAO.createWorkflowMetadata(name, version, tags);
+        metadataExecutionDAO.createWorkflowMetadata(name, version, tags);
     }
 
     @Override
     public Map<String, Object> getWorkflowMetadata(String name, Integer version) {
-        return metadataDAO.getWorkflowMetadata(name, version);
+        return metadataExecutionDAO.getWorkflowMetadata(name, version);
     }
 }

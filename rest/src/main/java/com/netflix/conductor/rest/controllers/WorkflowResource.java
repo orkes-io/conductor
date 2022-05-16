@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.rest.controllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -69,12 +70,11 @@ public class WorkflowResource {
             @RequestParam(value = "version", required = false) Integer version,
             @RequestParam(value = "correlationId", required = false) String correlationId,
             @RequestParam(value = "priority", defaultValue = "0", required = false) int priority,
-            @RequestBody Map<String, Object> input,
             @RequestBody Map<String, Object> tags) {
-        return workflowService.startWorkflow(name, version, correlationId, priority, input, tags);
+        return workflowService.startWorkflow(name, version, correlationId, priority, new HashMap<>(), tags);
     }
 
-    @PostMapping(value = "/{name}", produces = TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/tags/{name}", produces = TEXT_PLAIN_VALUE)
     @Operation(
             summary =
                     "Start a new workflow. Returns the ID of the workflow instance that can be later used for tracking")

@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.dao.MetadataExecutionDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class WorkflowExecutor {
     private static final int PARENT_WF_PRIORITY = 10;
 
     private final MetadataDAO metadataDAO;
+    private final MetadataExecutionDAO metadataExecutionDAO;
     private final QueueDAO queueDAO;
     private final DeciderService deciderService;
     private final ConductorProperties properties;
@@ -96,6 +98,7 @@ public class WorkflowExecutor {
     public WorkflowExecutor(
             DeciderService deciderService,
             MetadataDAO metadataDAO,
+            MetadataExecutionDAO metadataExecutionDAO,
             QueueDAO queueDAO,
             MetadataMapperService metadataMapperService,
             WorkflowStatusListener workflowStatusListener,
@@ -107,6 +110,7 @@ public class WorkflowExecutor {
             IDGenerator idGenerator) {
         this.deciderService = deciderService;
         this.metadataDAO = metadataDAO;
+        this.metadataExecutionDAO = metadataExecutionDAO;
         this.queueDAO = queueDAO;
         this.properties = properties;
         this.metadataMapperService = metadataMapperService;
@@ -1394,11 +1398,35 @@ public class WorkflowExecutor {
         workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
 
         if (workflow.getStatus().isTerminal()) {
+            //Write logic to notify the rate limited workflow.
             if (!workflow.getStatus().isSuccessful()) {
                 cancelNonTerminalTasks(workflow);
             }
             return true;
         }
+
+        // Write logic to rate limit the workflow.
+        Map<String, Object> tags = metadataExecutionDAO.getWorkflowMetadata(workflow.getWorkflowName(),
+                workflow.getWorkflowVersion());
+        if (tags != null) {
+            String rateLimitTags = String.valueOf(tags.get("rateLimiterField"));
+            if ("correlationId".equals(rateLimitTags)) {
+                int executionCount = metadataExecutionDAO.getExecutionCount(workflow.getWorkflowName(),
+                        workflow.getWorkflowVersion(),
+                        workflow.getCorrelationId());
+                if (executionCount > Integer.valueOf(tags.get("rateLimitValue") + "")) {
+                    // Push to decider queue
+                    queueDAO.postpone(DECIDER_QUEUE, workflowId, workflow.getPriority(),
+                            properties.getTaskExecutionPostponeDuration().getSeconds());
+                    return true;
+                } else {
+                    // Increment count and continue;
+                    metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
+                            workflow.getWorkflowVersion(), workflow.getCorrelationId(), 1);
+                }
+            }
+        }
+
 
         // we find any sub workflow tasks that have changed
         // and change the workflow/task state accordingly

@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import com.netflix.conductor.dao.MetadataExecutionDAO;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ import com.google.common.base.Preconditions;
 
 @Component
 @Conditional(AnyRedisCondition.class)
-public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO {
+public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO, MetadataExecutionDAO {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisMetadataDAO.class);
 
@@ -315,6 +316,23 @@ public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO {
                     "getWorkflowDef", tagJsonString.length(), "n/a", name);
         }
         return  def;
+    }
+
+    @Override
+    public int getExecutionCount(String workflowName, int workflowVersion, String correlationId) {
+        String count = jedisProxy.get(nsKey(workflowName, String.valueOf(workflowVersion), correlationId));
+        return StringUtils.isEmpty(count) ? 0 : Integer.valueOf(count);
+    }
+
+    @Override
+    public void createOrUpdateExecutionCount(String workflowName, int workflowVersion, String correlationId, int count) {
+        String existingValue = jedisProxy.get(nsKey(workflowName, String.valueOf(workflowVersion), correlationId));
+        if (StringUtils.isEmpty(existingValue)) {
+            jedisProxy.set(nsKey(workflowName, String.valueOf(workflowVersion), correlationId), "1");
+        }else {
+            jedisProxy.set(nsKey(workflowName, String.valueOf(workflowVersion), correlationId),
+                    String.valueOf(Integer.valueOf(existingValue) + count));
+        }
     }
 
     private void _createOrUpdate(WorkflowDef workflowDef) {

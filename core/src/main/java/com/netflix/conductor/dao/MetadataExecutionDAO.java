@@ -12,21 +12,17 @@
  */
 package com.netflix.conductor.dao;
 
+import java.util.Map;
+
 /** Data access layer for storing workflow executions */
 public interface MetadataExecutionDAO {
 
 
-    /**
-     * @param workflowName Name of the workflow
-     * @param tag Name of the tag
-     * @return void
-     */
-    void createWorkflowMetadata(String workflowName, String tag);
+    void createWorkflowMetadata(String name, Integer version, Map<String, Object> tags);
 
-    /**
-     * @param workflowName Name of the workflow
-     * @param tag Name of the tag
-     * @return void
-     */
-    void updateWorkflowMetadata(String workflowName, String tag);
+    Map<String, Object> getWorkflowMetadata(String name, Integer version);
+
+    int getExecutionCount(String workflowName, int workflowVersion, String correlationId);
+
+    void createOrUpdateExecutionCount(String workflowName, int workflowVersion, String correlationId, int count);
 }
