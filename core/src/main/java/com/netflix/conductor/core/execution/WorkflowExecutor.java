@@ -987,6 +987,8 @@ public class WorkflowExecutor {
             executionDAOFacade.removeFromPendingWorkflow(
                     workflow.getWorkflowName(), workflow.getWorkflowId());
             LOGGER.debug("Workflow: {} has already been completed.", workflow.getWorkflowId());
+            metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
+                    workflow.getWorkflowVersion(), workflow.getCorrelationId(), -1);
             return workflow;
         }
 
@@ -1019,6 +1021,8 @@ public class WorkflowExecutor {
                                 .collect(Collectors.toSet()));
 
         executionDAOFacade.updateWorkflow(workflow);
+        metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
+                workflow.getWorkflowVersion(), workflow.getCorrelationId(), -1);
         LOGGER.debug("Completed workflow execution for {}", workflow.getWorkflowId());
         workflowStatusListener.onWorkflowCompletedIfEnabled(workflow);
         Monitors.recordWorkflowCompletion(
@@ -1418,11 +1422,8 @@ public class WorkflowExecutor {
                     // Push to decider queue
                     queueDAO.postpone(DECIDER_QUEUE, workflowId, workflow.getPriority(),
                             properties.getTaskExecutionPostponeDuration().getSeconds());
+                    LOGGER.info("Postpoing workflow {} by {} seconds {}", workflowId, properties.getTaskExecutionPostponeDuration().getSeconds());
                     return true;
-                } else {
-                    // Increment count and continue;
-                    metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
-                            workflow.getWorkflowVersion(), workflow.getCorrelationId(), 1);
                 }
             }
         }

@@ -67,6 +67,7 @@ public class ExecutionDAOFacade {
     private static final String RAW_JSON_FIELD = "rawJSON";
 
     private final ExecutionDAO executionDAO;
+    private final MetadataExecutionDAO metadataExecutionDAO;
     private final QueueDAO queueDAO;
     private final IndexDAO indexDAO;
     private final RateLimitingDAO rateLimitingDao;
@@ -80,6 +81,7 @@ public class ExecutionDAOFacade {
 
     public ExecutionDAOFacade(
             ExecutionDAO executionDAO,
+            MetadataExecutionDAO metadataExecutionDAO,
             QueueDAO queueDAO,
             IndexDAO indexDAO,
             RateLimitingDAO rateLimitingDao,
@@ -89,6 +91,7 @@ public class ExecutionDAOFacade {
             ConductorProperties properties,
             ExternalPayloadStorageUtils externalPayloadStorageUtils) {
         this.executionDAO = executionDAO;
+        this.metadataExecutionDAO = metadataExecutionDAO;
         this.queueDAO = queueDAO;
         this.indexDAO = indexDAO;
         this.rateLimitingDao = rateLimitingDao;
@@ -253,6 +256,27 @@ public class ExecutionDAOFacade {
     public String createWorkflow(WorkflowModel workflowModel) {
         externalizeWorkflowData(workflowModel);
         executionDAO.createWorkflow(workflowModel);
+        // Write logic to rate limit the workflow.
+        Map<String, Object> tags = metadataExecutionDAO.getWorkflowMetadata(workflowModel.getWorkflowName(),
+                workflowModel.getWorkflowVersion());
+        if (tags != null) {
+            String rateLimitTags = String.valueOf(tags.get("rateLimiterField"));
+            if ("correlationId".equals(rateLimitTags)) {
+                int executionCount = metadataExecutionDAO.getExecutionCount(workflowModel.getWorkflowName(),
+                        workflowModel.getWorkflowVersion(),
+                        workflowModel.getCorrelationId());
+                if (executionCount >= Integer.valueOf(tags.get("rateLimitValue") + "")) {
+                    // Push to decider queue
+                    queueDAO.postpone(DECIDER_QUEUE, workflowModel.getWorkflowId(), workflowModel.getPriority(),
+                            properties.getTaskExecutionPostponeDuration().getSeconds());
+                    return workflowModel.getWorkflowId();
+                } else {
+                    // Increment count and continue;
+                    metadataExecutionDAO.createOrUpdateExecutionCount(workflowModel.getWorkflowName(),
+                            workflowModel.getWorkflowVersion(), workflowModel.getCorrelationId(), 1);
+                }
+            }
+        }
         // Add to decider queue
         queueDAO.push(
                 DECIDER_QUEUE,
