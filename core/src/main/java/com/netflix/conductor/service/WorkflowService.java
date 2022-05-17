@@ -101,7 +101,7 @@ public interface WorkflowService {
             @Min(value = 0, message = "0 is the minimum priority value")
                     @Max(value = 99, message = "99 is the maximum priority value")
                     Integer priority,
-            Map<String, Object> input, Map<String, Object> tags);
+            Map<String, Object> input);
 
     /**
      * Start a new workflow. Returns the ID of the workflow instance that can be later used for

@@ -105,16 +105,6 @@ public class WorkflowModel {
 
     @JsonIgnore private Map<String, Object> input = new HashMap<>();
 
-    public Map<String, Object> getTags() {
-        return tags;
-    }
-
-    public void setTags(Map<String, Object> tags) {
-        this.tags = tags;
-    }
-
-    @JsonIgnore private Map<String, Object> tags = new HashMap<>();
-
     @JsonIgnore private Map<String, Object> output = new HashMap<>();
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();

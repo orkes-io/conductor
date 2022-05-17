@@ -44,6 +44,8 @@ import com.netflix.conductor.redis.jedis.JedisProxy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 
+import static com.netflix.conductor.metrics.Monitors.recordGauge;
+
 @Component
 @Conditional(AnyRedisCondition.class)
 public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO, MetadataExecutionDAO {
@@ -319,20 +321,27 @@ public class RedisMetadataDAO extends BaseDynoDAO implements MetadataDAO, Metada
     }
 
     @Override
-    public int getExecutionCount(String workflowName, int workflowVersion, String correlationId) {
-        String count = jedisProxy.get(nsKey(workflowName, String.valueOf(workflowVersion), correlationId));
-        return StringUtils.isEmpty(count) ? 0 : Integer.valueOf(count);
+    public boolean isInProgress(String workflowName, int workflowVersion, String correlationId, String workflowId) {
+        return jedisProxy.sismember(nsKey(workflowName, String.valueOf(workflowVersion), correlationId), workflowId);
     }
 
     @Override
-    public void createOrUpdateExecutionCount(String workflowName, int workflowVersion, String correlationId, int count) {
-        String existingValue = jedisProxy.get(nsKey(workflowName, String.valueOf(workflowVersion), correlationId));
-        if (StringUtils.isEmpty(existingValue)) {
-            jedisProxy.set(nsKey(workflowName, String.valueOf(workflowVersion), correlationId), "1");
-        }else {
-            jedisProxy.set(nsKey(workflowName, String.valueOf(workflowVersion), correlationId),
-                    String.valueOf(Integer.valueOf(existingValue) + count));
-        }
+    public int getInprogressWorkflowCount(String workflowName, int workflowVersion, String correlationId) {
+        return jedisProxy.scard(nsKey(workflowName, String.valueOf(workflowVersion), correlationId)).intValue();
+    }
+
+    @Override
+    public void addWorkflowToLimit(String workflowName, int workflowVersion, String correlationId, String workflowId) {
+        jedisProxy.sadd(nsKey(workflowName, String.valueOf(workflowVersion), correlationId), workflowId);
+        recordGauge("inProgressWorkflow",
+                jedisProxy.scard(nsKey(workflowName, String.valueOf(workflowVersion), correlationId)).intValue());
+    }
+
+    @Override
+    public void removeWorkflowFromLimit(String workflowName, int workflowVersion, String correlationId, String workflowId) {
+        jedisProxy.srem(nsKey(workflowName, String.valueOf(workflowVersion), correlationId), workflowId);
+        recordGauge("inProgressWorkflow",
+                jedisProxy.scard(nsKey(workflowName, String.valueOf(workflowVersion), correlationId)).intValue());
     }
 
     private void _createOrUpdate(WorkflowDef workflowDef) {

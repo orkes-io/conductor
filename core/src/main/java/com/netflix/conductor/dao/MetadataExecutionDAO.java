@@ -22,7 +22,12 @@ public interface MetadataExecutionDAO {
 
     Map<String, Object> getWorkflowMetadata(String name, Integer version);
 
-    int getExecutionCount(String workflowName, int workflowVersion, String correlationId);
+    boolean isInProgress(String workflowName, int workflowVersion, String correlationId, String workflowId);
 
-    void createOrUpdateExecutionCount(String workflowName, int workflowVersion, String correlationId, int count);
+    int getInprogressWorkflowCount(String workflowName, int workflowVersion, String correlationId);
+
+    void addWorkflowToLimit(String workflowName, int workflowVersion, String correlationId, String workflowId);
+
+    void removeWorkflowFromLimit(String workflowName, int workflowVersion, String correlationId, String workflowId);
+
 }

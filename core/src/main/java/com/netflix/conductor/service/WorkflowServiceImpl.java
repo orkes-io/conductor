@@ -223,7 +223,7 @@ public class WorkflowServiceImpl implements WorkflowService {
     public String startWorkflow(
             String name, Integer version, String correlationId, Map<String, Object> input) {
         metadataService.getWorkflowDef(name, version);
-        return startWorkflow(name, version, correlationId, 0, input, null);
+        return startWorkflow(name, version, correlationId, 0, input);
     }
 
     /**
@@ -235,7 +235,6 @@ public class WorkflowServiceImpl implements WorkflowService {
      * @param correlationId CorrelationID of the workflow you want to start.
      * @param priority Priority of the workflow you want to start.
      * @param input Input to the workflow you want to start.
-     * @param tags
      * @return the id of the workflow instance that can be use for tracking.
      */
     public String startWorkflow(
@@ -243,7 +242,7 @@ public class WorkflowServiceImpl implements WorkflowService {
             Integer version,
             String correlationId,
             Integer priority,
-            Map<String, Object> input, Map<String, Object> tags) {
+            Map<String, Object> input) {
         WorkflowDef workflowDef = metadataService.getWorkflowDef(name, version);
         if (workflowDef == null) {
             throw new ApplicationException(
@@ -252,7 +251,7 @@ public class WorkflowServiceImpl implements WorkflowService {
                             "No such workflow found by name: %s, version: %d", name, version));
         }
         return workflowExecutor.startWorkflow(workflowDef,
-                input, null,correlationId, priority, null, null, null,null, null, tags);
+                input, null,correlationId, priority, null, null, null,null, null);
     }
 
     /**

@@ -70,8 +70,8 @@ public class WorkflowResource {
             @RequestParam(value = "version", required = false) Integer version,
             @RequestParam(value = "correlationId", required = false) String correlationId,
             @RequestParam(value = "priority", defaultValue = "0", required = false) int priority,
-            @RequestBody Map<String, Object> tags) {
-        return workflowService.startWorkflow(name, version, correlationId, priority, new HashMap<>(), tags);
+            @RequestBody Map<String, Object> input) {
+        return workflowService.startWorkflow(name, version, correlationId, priority, input);
     }
 
     @PostMapping(value = "/tags/{name}", produces = TEXT_PLAIN_VALUE)

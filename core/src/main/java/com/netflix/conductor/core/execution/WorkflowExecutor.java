@@ -364,7 +364,7 @@ public class WorkflowExecutor {
                 null,
                 event,
                 taskToDomain,
-                createdBy, null);
+                createdBy);
     }
 
     /**
@@ -419,7 +419,7 @@ public class WorkflowExecutor {
                 parentWorkflowId,
                 parentWorkflowTaskId,
                 event,
-                taskToDomain, null, null);
+                taskToDomain, null);
     }
 
     /**
@@ -450,7 +450,7 @@ public class WorkflowExecutor {
                 parentWorkflowTaskId,
                 event,
                 taskToDomain,
-                createdBy, null);
+                createdBy);
     }
 
     /**
@@ -476,7 +476,7 @@ public class WorkflowExecutor {
                 parentWorkflowTaskId,
                 event,
                 taskToDomain,
-                null, null);
+                null);
     }
 
     /**
@@ -492,7 +492,7 @@ public class WorkflowExecutor {
             String parentWorkflowTaskId,
             String event,
             Map<String, String> taskToDomain,
-            String createdBy, Map<String, Object> tags) {
+            String createdBy) {
 
         workflowDefinition = metadataMapperService.populateTaskDefinitions(workflowDefinition);
 
@@ -514,7 +514,6 @@ public class WorkflowExecutor {
         workflow.setOwnerApp(WorkflowContext.get().getClientApp());
         workflow.setCreateTime(System.currentTimeMillis());
         workflow.setCreatedBy(createdBy);
-        workflow.setTags(tags);
         workflow.setUpdatedBy(null);
         workflow.setUpdatedTime(null);
         workflow.setEvent(event);
@@ -987,8 +986,8 @@ public class WorkflowExecutor {
             executionDAOFacade.removeFromPendingWorkflow(
                     workflow.getWorkflowName(), workflow.getWorkflowId());
             LOGGER.debug("Workflow: {} has already been completed.", workflow.getWorkflowId());
-            metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
-                    workflow.getWorkflowVersion(), workflow.getCorrelationId(), -1);
+            metadataExecutionDAO.removeWorkflowFromLimit(workflow.getWorkflowName(),
+                    workflow.getWorkflowVersion(), workflow.getCorrelationId(), workflow.getWorkflowId());
             return workflow;
         }
 
@@ -1021,8 +1020,8 @@ public class WorkflowExecutor {
                                 .collect(Collectors.toSet()));
 
         executionDAOFacade.updateWorkflow(workflow);
-        metadataExecutionDAO.createOrUpdateExecutionCount(workflow.getWorkflowName(),
-                workflow.getWorkflowVersion(), workflow.getCorrelationId(), -1);
+        metadataExecutionDAO.removeWorkflowFromLimit(workflow.getWorkflowName(),
+                workflow.getWorkflowVersion(), workflow.getCorrelationId(), workflow.getWorkflowId());
         LOGGER.debug("Completed workflow execution for {}", workflow.getWorkflowId());
         workflowStatusListener.onWorkflowCompletedIfEnabled(workflow);
         Monitors.recordWorkflowCompletion(
@@ -1413,17 +1412,25 @@ public class WorkflowExecutor {
         Map<String, Object> tags = metadataExecutionDAO.getWorkflowMetadata(workflow.getWorkflowName(),
                 workflow.getWorkflowVersion());
         if (tags != null) {
-            String rateLimitTags = String.valueOf(tags.get("rateLimiterField"));
-            if ("correlationId".equals(rateLimitTags)) {
-                int executionCount = metadataExecutionDAO.getExecutionCount(workflow.getWorkflowName(),
-                        workflow.getWorkflowVersion(),
-                        workflow.getCorrelationId());
-                if (executionCount > Integer.valueOf(tags.get("rateLimitValue") + "")) {
-                    // Push to decider queue
-                    queueDAO.postpone(DECIDER_QUEUE, workflowId, workflow.getPriority(),
-                            properties.getTaskExecutionPostponeDuration().getSeconds());
-                    LOGGER.info("Postpoing workflow {} by {} seconds {}", workflowId, properties.getTaskExecutionPostponeDuration().getSeconds());
-                    return true;
+            String rateLimitField = String.valueOf(tags.get("rateLimiterField"));
+            if ("correlationId".equals(rateLimitField)) {
+                boolean isInProgress = metadataExecutionDAO.isInProgress(workflow.getWorkflowName(),
+                        workflow.getWorkflowVersion(), workflow.getCorrelationId(), workflow.getWorkflowId());
+                if (!isInProgress) {
+                    int count = metadataExecutionDAO.getInprogressWorkflowCount(workflow.getWorkflowName(),
+                            workflow.getWorkflowVersion(),
+                            workflow.getCorrelationId());
+                    if (count >= Integer.valueOf(tags.get("rateLimitValue") + "")) {
+                        // Push to decider queue to be picked up later
+                        queueDAO.postpone(DECIDER_QUEUE, workflowId, workflow.getPriority(),
+                                properties.getTaskExecutionPostponeDuration().getSeconds());
+                        LOGGER.info("Postponing workflow {} by {} seconds", workflowId, properties.getTaskExecutionPostponeDuration().getSeconds());
+                        return true;
+                    } else {
+                        // If not in progress add workflowId to in-progress Set.
+                        metadataExecutionDAO.addWorkflowToLimit(workflow.getWorkflowName(),
+                                workflow.getWorkflowVersion(), workflow.getCorrelationId(), workflow.getWorkflowId());
+                    }
                 }
             }
         }

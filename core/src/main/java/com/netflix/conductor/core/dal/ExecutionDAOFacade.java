@@ -256,27 +256,6 @@ public class ExecutionDAOFacade {
     public String createWorkflow(WorkflowModel workflowModel) {
         externalizeWorkflowData(workflowModel);
         executionDAO.createWorkflow(workflowModel);
-        // Write logic to rate limit the workflow.
-        Map<String, Object> tags = metadataExecutionDAO.getWorkflowMetadata(workflowModel.getWorkflowName(),
-                workflowModel.getWorkflowVersion());
-        if (tags != null) {
-            String rateLimitTags = String.valueOf(tags.get("rateLimiterField"));
-            if ("correlationId".equals(rateLimitTags)) {
-                int executionCount = metadataExecutionDAO.getExecutionCount(workflowModel.getWorkflowName(),
-                        workflowModel.getWorkflowVersion(),
-                        workflowModel.getCorrelationId());
-                if (executionCount >= Integer.valueOf(tags.get("rateLimitValue") + "")) {
-                    // Push to decider queue
-                    queueDAO.postpone(DECIDER_QUEUE, workflowModel.getWorkflowId(), workflowModel.getPriority(),
-                            properties.getTaskExecutionPostponeDuration().getSeconds());
-                    return workflowModel.getWorkflowId();
-                } else {
-                    // Increment count and continue;
-                    metadataExecutionDAO.createOrUpdateExecutionCount(workflowModel.getWorkflowName(),
-                            workflowModel.getWorkflowVersion(), workflowModel.getCorrelationId(), 1);
-                }
-            }
-        }
         // Add to decider queue
         queueDAO.push(
                 DECIDER_QUEUE,
