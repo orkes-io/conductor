@@ -1190,14 +1190,6 @@ public class WorkflowExecutor {
         }
 
         String workflowId = taskResult.getWorkflowInstanceId();
-        WorkflowModel workflowInstance = executionDAOFacade.getWorkflowModel(workflowId, true);
-
-        // FIXME Backwards compatibility for legacy workflows already running.
-        // This code will be removed in a future version.
-        if (workflowInstance.getWorkflowDefinition() == null) {
-            workflowInstance =
-                    metadataMapperService.populateWorkflowWithDefinitions(workflowInstance);
-        }
 
         TaskModel task =
                 Optional.ofNullable(executionDAOFacade.getTaskModel(taskResult.getTaskId()))
@@ -1208,7 +1200,7 @@ public class WorkflowExecutor {
                                                 "No such task found by id: "
                                                         + taskResult.getTaskId()));
 
-        LOGGER.debug("Task: {} belonging to Workflow {} being updated", task, workflowInstance);
+        LOGGER.debug("Task: {} belonging to Workflow {} being updated", task, workflowId);
 
         String taskQueueName = QueueUtils.getQueueName(task);
 
@@ -1222,10 +1214,12 @@ public class WorkflowExecutor {
                     task.getWorkflowInstanceId(),
                     taskQueueName);
             Monitors.recordUpdateConflict(
-                    task.getTaskType(), workflowInstance.getWorkflowName(), task.getStatus());
+                    task.getTaskType(), "", task.getStatus());
             return;
         }
 
+        /*
+        //Ignoring for now - but this might not be necessary
         if (workflowInstance.getStatus().isTerminal()) {
             // Workflow is in terminal state
             queueDAO.remove(taskQueueName, taskResult.getTaskId());
@@ -1240,6 +1234,7 @@ public class WorkflowExecutor {
                     workflowInstance.getStatus());
             return;
         }
+         */
 
         // for system tasks, setting to SCHEDULED would mean restarting the task which is
         // undesirable
@@ -1289,7 +1284,7 @@ public class WorkflowExecutor {
                                     task.getTaskId(), workflowId);
                     LOGGER.warn(errorMsg, e);
                     Monitors.recordTaskQueueOpError(
-                            task.getTaskType(), workflowInstance.getWorkflowName());
+                            task.getTaskType(), "");
                 }
                 break;
             case IN_PROGRESS:
@@ -1312,7 +1307,7 @@ public class WorkflowExecutor {
                                     task.getTaskId(), workflowId);
                     LOGGER.error(errorMsg, e);
                     Monitors.recordTaskQueueOpError(
-                            task.getTaskType(), workflowInstance.getWorkflowName());
+                            task.getTaskType(), "");
                     throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, e);
                 }
                 break;
@@ -1329,7 +1324,7 @@ public class WorkflowExecutor {
                             "Error updating task: %s for workflow: %s",
                             task.getTaskId(), workflowId);
             LOGGER.error(errorMsg, e);
-            Monitors.recordTaskUpdateError(task.getTaskType(), workflowInstance.getWorkflowName());
+            Monitors.recordTaskUpdateError(task.getTaskType(), "");
             throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, e);
         }
 

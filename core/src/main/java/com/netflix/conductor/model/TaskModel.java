@@ -712,110 +712,71 @@ public class TaskModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TaskModel taskModel = (TaskModel) o;
-        return getRetryCount() == taskModel.getRetryCount()
-                && getSeq() == taskModel.getSeq()
-                && getPollCount() == taskModel.getPollCount()
-                && getScheduledTime() == taskModel.getScheduledTime()
-                && getStartTime() == taskModel.getStartTime()
-                && getEndTime() == taskModel.getEndTime()
-                && getUpdateTime() == taskModel.getUpdateTime()
-                && getStartDelayInSeconds() == taskModel.getStartDelayInSeconds()
-                && isRetried() == taskModel.isRetried()
-                && isExecuted() == taskModel.isExecuted()
-                && isCallbackFromWorker() == taskModel.isCallbackFromWorker()
-                && getResponseTimeoutSeconds() == taskModel.getResponseTimeoutSeconds()
-                && getCallbackAfterSeconds() == taskModel.getCallbackAfterSeconds()
-                && getRateLimitPerFrequency() == taskModel.getRateLimitPerFrequency()
-                && getRateLimitFrequencyInSeconds() == taskModel.getRateLimitFrequencyInSeconds()
-                && getWorkflowPriority() == taskModel.getWorkflowPriority()
-                && getIteration() == taskModel.getIteration()
-                && isSubworkflowChanged() == taskModel.isSubworkflowChanged()
-                && Objects.equals(getTaskType(), taskModel.getTaskType())
-                && getStatus() == taskModel.getStatus()
-                && Objects.equals(getInputData(), taskModel.getInputData())
-                && Objects.equals(getReferenceTaskName(), taskModel.getReferenceTaskName())
-                && Objects.equals(getCorrelationId(), taskModel.getCorrelationId())
-                && Objects.equals(getTaskDefName(), taskModel.getTaskDefName())
-                && Objects.equals(getRetriedTaskId(), taskModel.getRetriedTaskId())
-                && Objects.equals(getWorkflowInstanceId(), taskModel.getWorkflowInstanceId())
-                && Objects.equals(getWorkflowType(), taskModel.getWorkflowType())
-                && Objects.equals(getTaskId(), taskModel.getTaskId())
-                && Objects.equals(getReasonForIncompletion(), taskModel.getReasonForIncompletion())
-                && Objects.equals(getWorkerId(), taskModel.getWorkerId())
-                && Objects.equals(getOutputData(), taskModel.getOutputData())
-                && Objects.equals(getWorkflowTask(), taskModel.getWorkflowTask())
-                && Objects.equals(getDomain(), taskModel.getDomain())
-                && Objects.equals(getInputMessage(), taskModel.getInputMessage())
-                && Objects.equals(getOutputMessage(), taskModel.getOutputMessage())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        taskModel.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        taskModel.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getExecutionNameSpace(), taskModel.getExecutionNameSpace())
-                && Objects.equals(getIsolationGroupId(), taskModel.getIsolationGroupId())
-                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId());
+        return taskId.equals(taskModel.taskId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getTaskType(),
-                getStatus(),
-                getInputData(),
-                getReferenceTaskName(),
-                getRetryCount(),
-                getSeq(),
-                getCorrelationId(),
-                getPollCount(),
-                getTaskDefName(),
-                getScheduledTime(),
-                getStartTime(),
-                getEndTime(),
-                getUpdateTime(),
-                getStartDelayInSeconds(),
-                getRetriedTaskId(),
-                isRetried(),
-                isExecuted(),
-                isCallbackFromWorker(),
-                getResponseTimeoutSeconds(),
-                getWorkflowInstanceId(),
-                getWorkflowType(),
-                getTaskId(),
-                getReasonForIncompletion(),
-                getCallbackAfterSeconds(),
-                getWorkerId(),
-                getOutputData(),
-                getWorkflowTask(),
-                getDomain(),
-                getInputMessage(),
-                getOutputMessage(),
-                getRateLimitPerFrequency(),
-                getRateLimitFrequencyInSeconds(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getWorkflowPriority(),
-                getExecutionNameSpace(),
-                getIsolationGroupId(),
-                getIteration(),
-                getSubWorkflowId(),
-                isSubworkflowChanged());
+        return Objects.hash(taskId);
+    }
+
+    private static Task toTask(TaskModel taskModel) {
+        Task task = new Task();
+
+        task.setTaskType(taskModel.taskType);
+        task.setStatus(Task.Status.valueOf(taskModel.status.name()));
+        task.setInputData(taskModel.inputData);
+        task.setReferenceTaskName(taskModel.referenceTaskName);
+        task.setRetryCount(taskModel.retryCount);
+        task.setSeq(taskModel.seq);
+        task.setCorrelationId(taskModel.correlationId);
+        task.setPollCount(taskModel.pollCount);
+        task.setTaskDefName(taskModel.taskDefName);
+        task.setScheduledTime(taskModel.scheduledTime);
+        task.setStartTime(taskModel.startTime);
+        task.setEndTime(taskModel.endTime);
+        task.setUpdateTime(taskModel.updateTime);
+        task.setStartDelayInSeconds(taskModel.startDelayInSeconds);
+        task.setRetriedTaskId(taskModel.retriedTaskId);
+        task.setRetried(taskModel.retried);
+        task.setExecuted(taskModel.executed);
+        task.setCallbackFromWorker(taskModel.callbackFromWorker);
+        task.setResponseTimeoutSeconds(taskModel.responseTimeoutSeconds);
+        task.setWorkflowInstanceId(taskModel.workflowInstanceId);
+        task.setWorkflowType(taskModel.workflowType);
+        task.setTaskId(taskModel.taskId);
+        task.setReasonForIncompletion(taskModel.reasonForIncompletion);
+        task.setCallbackAfterSeconds(taskModel.callbackAfterSeconds);
+        task.setWorkerId(taskModel.workerId);
+        task.setOutputData(taskModel.outputData);
+        task.setWorkflowTask(taskModel.workflowTask);
+        task.setDomain(taskModel.domain);
+        task.setInputMessage(taskModel.inputMessage);
+        task.setOutputMessage(taskModel.outputMessage);
+        task.setRateLimitPerFrequency(taskModel.rateLimitPerFrequency);
+        task.setRateLimitFrequencyInSeconds(taskModel.rateLimitFrequencyInSeconds);
+        task.setExternalInputPayloadStoragePath(taskModel.externalInputPayloadStoragePath);
+        task.setExternalOutputPayloadStoragePath(taskModel.externalOutputPayloadStoragePath);
+        task.setWorkflowPriority(taskModel.workflowPriority);
+        task.setExecutionNameSpace(taskModel.executionNameSpace);
+        task.setIsolationGroupId(taskModel.isolationGroupId);
+        task.setIteration(taskModel.iteration);
+        task.setSubWorkflowId(taskModel.subWorkflowId);
+        task.setSubworkflowChanged(taskModel.subworkflowChanged);
+
+        // ensure that input/output is properly represented
+        if (taskModel.externalInputPayloadStoragePath != null) {
+            task.setInputData(new HashMap<>());
+        }
+        if (taskModel.externalOutputPayloadStoragePath != null) {
+            task.setOutputData(new HashMap<>());
+        }
+
+        return task;
     }
 
     public Task toTask() {
-        Task task = new Task();
-        BeanUtils.copyProperties(this, task);
-        task.setStatus(Task.Status.valueOf(status.name()));
-
-        // ensure that input/output is properly represented
-        if (externalInputPayloadStoragePath != null) {
-            task.setInputData(new HashMap<>());
-        }
-        if (externalOutputPayloadStoragePath != null) {
-            task.setOutputData(new HashMap<>());
-        }
-        return task;
+        return toTask(this);
     }
 
     public static Task.Status mapToTaskStatus(TaskModel.Status status) {

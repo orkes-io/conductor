@@ -16,7 +16,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
@@ -473,80 +472,56 @@ public class WorkflowModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WorkflowModel that = (WorkflowModel) o;
-        return getEndTime() == that.getEndTime()
-                && getPriority() == that.getPriority()
-                && getLastRetriedTime() == that.getLastRetriedTime()
-                && getStatus() == that.getStatus()
-                && Objects.equals(getWorkflowId(), that.getWorkflowId())
-                && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId())
-                && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId())
-                && Objects.equals(getTasks(), that.getTasks())
-                && Objects.equals(getInput(), that.getInput())
-                && Objects.equals(getOutput(), that.getOutput())
-                && Objects.equals(getCorrelationId(), that.getCorrelationId())
-                && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId())
-                && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion())
-                && Objects.equals(getEvent(), that.getEvent())
-                && Objects.equals(getTaskToDomain(), that.getTaskToDomain())
-                && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames())
-                && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        that.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        that.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getVariables(), that.getVariables())
-                && Objects.equals(getOwnerApp(), that.getOwnerApp())
-                && Objects.equals(getCreateTime(), that.getCreateTime())
-                && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
-                && Objects.equals(getCreatedBy(), that.getCreatedBy())
-                && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
+        return workflowId.equals(that.workflowId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getStatus(),
-                getEndTime(),
-                getWorkflowId(),
-                getParentWorkflowId(),
-                getParentWorkflowTaskId(),
-                getTasks(),
-                getInput(),
-                getOutput(),
-                getCorrelationId(),
-                getReRunFromWorkflowId(),
-                getReasonForIncompletion(),
-                getEvent(),
-                getTaskToDomain(),
-                getFailedReferenceTaskNames(),
-                getWorkflowDefinition(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getPriority(),
-                getVariables(),
-                getLastRetriedTime(),
-                getOwnerApp(),
-                getCreateTime(),
-                getUpdatedTime(),
-                getCreatedBy(),
-                getUpdatedBy());
+        return Objects.hash(workflowId);
     }
 
-    public Workflow toWorkflow() {
+    private static Workflow toWorkflow(WorkflowModel workflowModel) {
         Workflow workflow = new Workflow();
-        BeanUtils.copyProperties(this, workflow);
-        workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
-        workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
+        workflow.setStatus(Workflow.WorkflowStatus.valueOf(workflowModel.status.name()));
+        workflow.setEndTime(workflowModel.endTime);
+        workflow.setWorkflowId(workflowModel.workflowId);
+        workflow.setParentWorkflowId(workflowModel.parentWorkflowId);
+        workflow.setParentWorkflowTaskId(workflowModel.parentWorkflowTaskId);
+        workflow.setTasks(
+                workflowModel.tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
+
+        workflow.setInput(workflowModel.input);
+        workflow.setOutput(workflowModel.output);
+        workflow.setCorrelationId(workflowModel.correlationId);
+        workflow.setReRunFromWorkflowId(workflowModel.reRunFromWorkflowId);
+        workflow.setReasonForIncompletion(workflowModel.reasonForIncompletion);
+        workflow.setEvent(workflowModel.event);
+        workflow.setTaskToDomain(workflowModel.taskToDomain);
+        workflow.setFailedReferenceTaskNames(workflowModel.failedReferenceTaskNames);
+        workflow.setWorkflowDefinition(workflowModel.workflowDefinition);
+        workflow.setExternalInputPayloadStoragePath(workflowModel.externalInputPayloadStoragePath);
+        workflow.setExternalOutputPayloadStoragePath(
+                workflowModel.externalOutputPayloadStoragePath);
+        workflow.setPriority(workflowModel.priority);
+        workflow.setVariables(workflowModel.variables);
+        workflow.setLastRetriedTime(workflowModel.lastRetriedTime);
+
+        workflow.setCreateTime(workflowModel.createTime);
+        workflow.setUpdateTime(workflowModel.updatedTime);
+        workflow.setCreatedBy(workflowModel.createdBy);
+        workflow.setUpdatedBy(workflowModel.updatedBy);
 
         // ensure that input/output is properly represented
-        if (externalInputPayloadStoragePath != null) {
+        if (workflowModel.externalInputPayloadStoragePath != null) {
             workflow.setInput(new HashMap<>());
         }
-        if (externalOutputPayloadStoragePath != null) {
+        if (workflowModel.externalOutputPayloadStoragePath != null) {
             workflow.setOutput(new HashMap<>());
         }
         return workflow;
+    }
+
+    public Workflow toWorkflow() {
+        return toWorkflow(this);
     }
 }
