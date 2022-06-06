@@ -13,6 +13,12 @@
 package com.netflix.conductor.core.execution.tasks;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -78,7 +84,18 @@ public class Inline extends WorkflowSystemTask {
             checkEvaluatorType(evaluatorType);
             checkExpression(expression);
             Evaluator evaluator = evaluators.get(evaluatorType);
-            Object evalResult = evaluator.evaluate(expression, taskInput);
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Object evalResult = null;
+            Future future = executor.submit(new EvaluatorTask(evaluator, expression, taskInput));
+            try {
+                evalResult = future.get(1, TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                future.cancel(true);
+            } catch (Exception e) {
+                // handle other exceptions
+            } finally {
+                executor.shutdownNow();
+            }
             taskOutput.put("result", evalResult);
             task.setStatus(TaskModel.Status.COMPLETED);
         } catch (Exception e) {
@@ -118,6 +135,23 @@ public class Inline extends WorkflowSystemTask {
                     "Empty '"
                             + QUERY_EXPRESSION_PARAMETER
                             + "' in Inline task's input parameters. A non-empty String value must be provided.");
+        }
+    }
+    private class EvaluatorTask implements Callable<Object> {
+
+        Evaluator evaluator;
+        String expression;
+        Map<String, Object> taskInput;
+
+        public EvaluatorTask(Evaluator evaluator, String expression, Map<String, Object> taskInput) {
+            this.evaluator =evaluator;
+            this.expression = expression;
+            this.taskInput = taskInput;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            return evaluator.evaluate(expression, taskInput);
         }
     }
 }
