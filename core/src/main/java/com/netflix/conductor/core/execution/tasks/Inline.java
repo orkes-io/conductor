@@ -137,14 +137,16 @@ public class Inline extends WorkflowSystemTask {
                             + "' in Inline task's input parameters. A non-empty String value must be provided.");
         }
     }
+
     private class EvaluatorTask implements Callable<Object> {
 
         Evaluator evaluator;
         String expression;
         Map<String, Object> taskInput;
 
-        public EvaluatorTask(Evaluator evaluator, String expression, Map<String, Object> taskInput) {
-            this.evaluator =evaluator;
+        public EvaluatorTask(
+                Evaluator evaluator, String expression, Map<String, Object> taskInput) {
+            this.evaluator = evaluator;
             this.expression = expression;
             this.taskInput = taskInput;
         }
