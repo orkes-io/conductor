@@ -95,7 +95,7 @@ public class Inline extends WorkflowSystemTask {
             } catch (TimeoutException e) {
                 future.cancel(true);
                 taskOutput.put("result", null);
-                task.setStatus(TaskModel.Status.FAILED);
+                task.setStatus(TaskModel.Status.FAILED_WITH_TERMINAL_ERROR);
                 task.setReasonForIncompletion(" Task " + task.getReferenceTaskName() + " exceeded allowed execution limit of 1 second");
             }
         } catch (Exception e) {
