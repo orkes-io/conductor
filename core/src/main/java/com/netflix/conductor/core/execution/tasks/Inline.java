@@ -66,10 +66,12 @@ public class Inline extends WorkflowSystemTask {
     public static final String NAME = "INLINE";
 
     private final Map<String, Evaluator> evaluators;
+    private final ExecutorService executor;
 
     public Inline(Map<String, Evaluator> evaluators) {
         super(TASK_TYPE_INLINE);
         this.evaluators = evaluators;
+        this.executor = Executors.newFixedThreadPool(5);
     }
 
     @Override
@@ -84,20 +86,18 @@ public class Inline extends WorkflowSystemTask {
             checkEvaluatorType(evaluatorType);
             checkExpression(expression);
             Evaluator evaluator = evaluators.get(evaluatorType);
-            ExecutorService executor = Executors.newSingleThreadExecutor();
             Object evalResult = null;
             Future future = executor.submit(new EvaluatorTask(evaluator, expression, taskInput));
             try {
                 evalResult = future.get(1, TimeUnit.SECONDS);
+                taskOutput.put("result", evalResult);
+                task.setStatus(TaskModel.Status.COMPLETED);
             } catch (TimeoutException e) {
                 future.cancel(true);
-            } catch (Exception e) {
-                // handle other exceptions
-            } finally {
-                executor.shutdownNow();
+                taskOutput.put("result", null);
+                task.setStatus(TaskModel.Status.FAILED);
+                task.setReasonForIncompletion(" Task " + task.getReferenceTaskName() + " exceeded allowed execution limit of 1 second");
             }
-            taskOutput.put("result", evalResult);
-            task.setStatus(TaskModel.Status.COMPLETED);
         } catch (Exception e) {
             LOGGER.error(
                     "Failed to execute Inline Task: {} in workflow: {}",
