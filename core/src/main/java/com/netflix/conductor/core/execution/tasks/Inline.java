@@ -13,12 +13,6 @@
 package com.netflix.conductor.core.execution.tasks;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -66,12 +60,10 @@ public class Inline extends WorkflowSystemTask {
     public static final String NAME = "INLINE";
 
     private final Map<String, Evaluator> evaluators;
-    private final ExecutorService executor;
 
     public Inline(Map<String, Evaluator> evaluators) {
         super(TASK_TYPE_INLINE);
         this.evaluators = evaluators;
-        this.executor = Executors.newFixedThreadPool(5);
     }
 
     @Override
@@ -86,18 +78,9 @@ public class Inline extends WorkflowSystemTask {
             checkEvaluatorType(evaluatorType);
             checkExpression(expression);
             Evaluator evaluator = evaluators.get(evaluatorType);
-            Object evalResult = null;
-            Future future = executor.submit(new EvaluatorTask(evaluator, expression, taskInput));
-            try {
-                evalResult = future.get(1, TimeUnit.SECONDS);
-                taskOutput.put("result", evalResult);
-                task.setStatus(TaskModel.Status.COMPLETED);
-            } catch (TimeoutException e) {
-                future.cancel(true);
-                taskOutput.put("result", null);
-                task.setStatus(TaskModel.Status.FAILED_WITH_TERMINAL_ERROR);
-                task.setReasonForIncompletion(" Task " + task.getReferenceTaskName() + " exceeded allowed execution limit of 1 second");
-            }
+            Object evalResult = evaluator.evaluate(expression, taskInput);
+            taskOutput.put("result", evalResult);
+            task.setStatus(TaskModel.Status.COMPLETED);
         } catch (Exception e) {
             LOGGER.error(
                     "Failed to execute Inline Task: {} in workflow: {}",
@@ -135,25 +118,6 @@ public class Inline extends WorkflowSystemTask {
                     "Empty '"
                             + QUERY_EXPRESSION_PARAMETER
                             + "' in Inline task's input parameters. A non-empty String value must be provided.");
-        }
-    }
-
-    private class EvaluatorTask implements Callable<Object> {
-
-        Evaluator evaluator;
-        String expression;
-        Map<String, Object> taskInput;
-
-        public EvaluatorTask(
-                Evaluator evaluator, String expression, Map<String, Object> taskInput) {
-            this.evaluator = evaluator;
-            this.expression = expression;
-            this.taskInput = taskInput;
-        }
-
-        @Override
-        public Object call() throws Exception {
-            return evaluator.evaluate(expression, taskInput);
         }
     }
 }
