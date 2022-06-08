@@ -1,7 +1,7 @@
 {
     "annotationProcessor": {
         "org.springframework.boot:spring-boot-configuration-processor": {
-            "locked": "2.3.12.RELEASE"
+            "locked": "2.6.7"
         }
     },
     "compileClasspath": {
@@ -100,7 +100,7 @@
             "locked": "1.46.0"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -110,7 +110,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2",
@@ -118,19 +118,19 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-buffer",
                 "io.netty:netty-codec",
@@ -142,21 +142,21 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler",
                 "io.netty:netty-transport"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -165,7 +165,7 @@
             ]
         },
         "org.apache.commons:commons-lang3": {
-            "locked": "3.10"
+            "locked": "3.12.0"
         },
         "org.apache.logging.log4j:log4j-api": {
             "locked": "2.17.1",
@@ -198,7 +198,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "org.apache.logging.log4j:log4j-slf4j-impl"
             ]
@@ -206,22 +206,30 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4",
+            "locked": "2.13.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.11.4",
+            "locked": "2.13.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.netflix.conductor:conductor-common"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.11.4",
+            "locked": "2.13.2.1",
             "transitive": [
                 "com.netflix.conductor:conductor-common"
+            ]
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.13.2.1",
+            "transitive": [
+                "com.fasterxml.jackson.core:jackson-annotations",
+                "com.fasterxml.jackson.core:jackson-core",
+                "com.fasterxml.jackson.core:jackson-databind"
             ]
         },
         "com.google.android:annotations": {
@@ -246,7 +254,7 @@
             ]
         },
         "com.google.code.gson:gson": {
-            "locked": "2.8.7",
+            "locked": "2.8.9",
             "transitive": [
                 "io.grpc:grpc-core"
             ]
@@ -357,7 +365,7 @@
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -369,7 +377,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2",
@@ -379,26 +387,26 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http2",
                 "io.netty:netty-handler-proxy"
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-codec-socks": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler-proxy"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-buffer",
                 "io.netty:netty-codec",
@@ -412,27 +420,27 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-handler-proxy": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler",
                 "io.netty:netty-transport"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -462,7 +470,7 @@
             ]
         },
         "org.apache.commons:commons-lang3": {
-            "locked": "3.10",
+            "locked": "3.12.0",
             "transitive": [
                 "com.netflix.conductor:conductor-common"
             ]
@@ -526,7 +534,7 @@
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "org.apache.logging.log4j:log4j-slf4j-impl"
             ]
@@ -586,7 +594,7 @@
             ]
         },
         "com.jayway.jsonpath:json-path": {
-            "locked": "2.4.0",
+            "locked": "2.6.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
@@ -640,7 +648,7 @@
             "locked": "1.46.0"
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -650,7 +658,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2",
@@ -658,19 +666,19 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-buffer",
                 "io.netty:netty-codec",
@@ -682,21 +690,21 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler",
                 "io.netty:netty-transport"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -723,37 +731,34 @@
             ]
         },
         "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.junit.vintage:junit-vintage-engine"
-            ]
+            "locked": "4.13.2"
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.10.22",
+            "locked": "1.11.22",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.10.22",
+            "locked": "1.11.22",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.minidev:accessors-smart": {
-            "locked": "2.3.1",
+            "locked": "2.4.8",
             "transitive": [
                 "net.minidev:json-smart"
             ]
         },
         "net.minidev:json-smart": {
-            "locked": "2.3.1",
+            "locked": "2.4.8",
             "transitive": [
                 "com.jayway.jsonpath:json-path"
             ]
         },
         "org.apache.commons:commons-lang3": {
-            "locked": "3.10"
+            "locked": "3.12.0"
         },
         "org.apache.logging.log4j:log4j-api": {
             "locked": "2.17.1",
@@ -787,17 +792,15 @@
             "locked": "2.17.1"
         },
         "org.apiguardian:apiguardian-api": {
-            "locked": "1.1.0",
+            "locked": "1.1.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-params",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.vintage:junit-vintage-engine"
+                "org.junit.platform:junit-platform-commons"
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.16.1",
+            "locked": "3.21.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
@@ -811,86 +814,71 @@
         "org.hamcrest:hamcrest": {
             "locked": "2.2",
             "transitive": [
+                "org.hamcrest:hamcrest-core",
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
+        "org.hamcrest:hamcrest-core": {
+            "locked": "2.2",
+            "transitive": [
+                "junit:junit"
+            ]
+        },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.6.3",
+            "locked": "1.8.2",
             "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine"
-            ]
-        },
-        "org.junit.platform:junit-platform-engine": {
-            "locked": "1.6.3",
-            "transitive": [
-                "org.junit.vintage:junit-vintage-engine"
-            ]
-        },
-        "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.6.3",
-            "transitive": [
-                "org.springframework.boot:spring-boot-starter-test"
+                "org.junit.jupiter:junit-jupiter-api"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-params",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.vintage:junit-vintage-engine"
+                "org.junit.platform:junit-platform-commons"
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "4.0.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter",
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "3.3.3",
+            "locked": "4.0.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
-            ]
-        },
-        "org.objenesis:objenesis": {
-            "locked": "2.6",
-            "transitive": [
-                "org.mockito:mockito-core"
             ]
         },
         "org.opentest4j:opentest4j": {
             "locked": "1.2.0",
             "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.platform:junit-platform-engine"
+                "org.junit.jupiter:junit-jupiter-api"
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "5.0.4",
+            "locked": "9.1",
             "transitive": [
                 "net.minidev:accessors-smart"
             ]
@@ -902,14 +890,14 @@
             ]
         },
         "org.slf4j:jul-to-slf4j": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-log4j2",
                 "org.springframework.boot:spring-boot-starter-logging"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "org.apache.logging.log4j:log4j-slf4j-impl",
@@ -917,7 +905,7 @@
             ]
         },
         "org.springframework.boot:spring-boot": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-autoconfigure",
                 "org.springframework.boot:spring-boot-starter",
@@ -926,64 +914,64 @@
             ]
         },
         "org.springframework.boot:spring-boot-autoconfigure": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter",
                 "org.springframework.boot:spring-boot-test-autoconfigure"
             ]
         },
         "org.springframework.boot:spring-boot-starter": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
-            "locked": "2.3.12.RELEASE"
+            "locked": "2.6.7"
         },
         "org.springframework.boot:spring-boot-starter-logging": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter"
             ]
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "2.3.12.RELEASE"
+            "locked": "2.6.7"
         },
         "org.springframework.boot:spring-boot-test": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test",
                 "org.springframework.boot:spring-boot-test-autoconfigure"
             ]
         },
         "org.springframework.boot:spring-boot-test-autoconfigure": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.springframework:spring-aop": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-beans": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-aop",
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-context": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot"
             ]
         },
         "org.springframework:spring-core": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot",
                 "org.springframework.boot:spring-boot-starter",
@@ -996,31 +984,31 @@
             ]
         },
         "org.springframework:spring-expression": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-jcl": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-core"
             ]
         },
         "org.springframework:spring-test": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.xmlunit:xmlunit-core": {
-            "locked": "2.7.0",
+            "locked": "2.8.4",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.yaml:snakeyaml": {
-            "locked": "1.26",
+            "locked": "1.29",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter"
             ]
@@ -1028,22 +1016,30 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4",
+            "locked": "2.13.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.11.4",
+            "locked": "2.13.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.netflix.conductor:conductor-common"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.11.4",
+            "locked": "2.13.2.1",
             "transitive": [
                 "com.netflix.conductor:conductor-common"
+            ]
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.13.2.1",
+            "transitive": [
+                "com.fasterxml.jackson.core:jackson-annotations",
+                "com.fasterxml.jackson.core:jackson-core",
+                "com.fasterxml.jackson.core:jackson-databind"
             ]
         },
         "com.google.android:annotations": {
@@ -1068,7 +1064,7 @@
             ]
         },
         "com.google.code.gson:gson": {
-            "locked": "2.8.7",
+            "locked": "2.8.9",
             "transitive": [
                 "io.grpc:grpc-core"
             ]
@@ -1122,7 +1118,7 @@
             ]
         },
         "com.jayway.jsonpath:json-path": {
-            "locked": "2.4.0",
+            "locked": "2.6.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
@@ -1191,7 +1187,7 @@
             ]
         },
         "io.netty:netty-buffer": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -1203,7 +1199,7 @@
             ]
         },
         "io.netty:netty-codec": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2",
@@ -1213,26 +1209,26 @@
             ]
         },
         "io.netty:netty-codec-http": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http2",
                 "io.netty:netty-handler-proxy"
             ]
         },
         "io.netty:netty-codec-http2": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-codec-socks": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler-proxy"
             ]
         },
         "io.netty:netty-common": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-buffer",
                 "io.netty:netty-codec",
@@ -1246,27 +1242,27 @@
             ]
         },
         "io.netty:netty-handler": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec-http",
                 "io.netty:netty-codec-http2"
             ]
         },
         "io.netty:netty-handler-proxy": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.grpc:grpc-netty"
             ]
         },
         "io.netty:netty-resolver": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-handler",
                 "io.netty:netty-transport"
             ]
         },
         "io.netty:netty-transport": {
-            "locked": "4.1.65.Final",
+            "locked": "4.1.76.Final",
             "transitive": [
                 "io.netty:netty-codec",
                 "io.netty:netty-codec-http",
@@ -1308,31 +1304,28 @@
             ]
         },
         "junit:junit": {
-            "locked": "4.13.2",
-            "transitive": [
-                "org.junit.vintage:junit-vintage-engine"
-            ]
+            "locked": "4.13.2"
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.10.22",
+            "locked": "1.11.22",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.bytebuddy:byte-buddy-agent": {
-            "locked": "1.10.22",
+            "locked": "1.11.22",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
         },
         "net.minidev:accessors-smart": {
-            "locked": "2.3.1",
+            "locked": "2.4.8",
             "transitive": [
                 "net.minidev:json-smart"
             ]
         },
         "net.minidev:json-smart": {
-            "locked": "2.3.1",
+            "locked": "2.4.8",
             "transitive": [
                 "com.jayway.jsonpath:json-path"
             ]
@@ -1344,7 +1337,7 @@
             ]
         },
         "org.apache.commons:commons-lang3": {
-            "locked": "3.10",
+            "locked": "3.12.0",
             "transitive": [
                 "com.netflix.conductor:conductor-common"
             ]
@@ -1398,19 +1391,8 @@
                 "com.netflix.conductor:conductor-grpc"
             ]
         },
-        "org.apiguardian:apiguardian-api": {
-            "locked": "1.1.0",
-            "transitive": [
-                "org.junit.jupiter:junit-jupiter-api",
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.jupiter:junit-jupiter-params",
-                "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.vintage:junit-vintage-engine"
-            ]
-        },
         "org.assertj:assertj-core": {
-            "locked": "3.16.1",
+            "locked": "3.21.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
@@ -1430,17 +1412,24 @@
         "org.hamcrest:hamcrest": {
             "locked": "2.2",
             "transitive": [
+                "org.hamcrest:hamcrest-core",
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
+        "org.hamcrest:hamcrest-core": {
+            "locked": "2.2",
+            "transitive": [
+                "junit:junit"
+            ]
+        },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1449,64 +1438,56 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.6.3",
+            "locked": "1.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine"
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.6.3",
+            "locked": "1.8.2",
             "transitive": [
-                "org.junit.jupiter:junit-jupiter-engine",
-                "org.junit.vintage:junit-vintage-engine"
-            ]
-        },
-        "org.junit.vintage:junit-vintage-engine": {
-            "locked": "5.6.3",
-            "transitive": [
-                "org.springframework.boot:spring-boot-starter-test"
+                "org.junit.jupiter:junit-jupiter-engine"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.6.3",
+            "locked": "5.8.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
                 "org.junit.platform:junit-platform-commons",
-                "org.junit.platform:junit-platform-engine",
-                "org.junit.vintage:junit-vintage-engine"
+                "org.junit.platform:junit-platform-engine"
             ]
         },
         "org.mockito:mockito-core": {
-            "locked": "3.3.3",
+            "locked": "4.0.0",
             "transitive": [
                 "org.mockito:mockito-junit-jupiter",
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.mockito:mockito-junit-jupiter": {
-            "locked": "3.3.3",
+            "locked": "4.0.0",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.objenesis:objenesis": {
-            "locked": "2.6",
+            "locked": "3.2",
             "transitive": [
                 "org.mockito:mockito-core"
             ]
@@ -1519,7 +1500,7 @@
             ]
         },
         "org.ow2.asm:asm": {
-            "locked": "5.0.4",
+            "locked": "9.1",
             "transitive": [
                 "net.minidev:accessors-smart"
             ]
@@ -1531,14 +1512,14 @@
             ]
         },
         "org.slf4j:jul-to-slf4j": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-log4j2",
                 "org.springframework.boot:spring-boot-starter-logging"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.30",
+            "locked": "1.7.36",
             "transitive": [
                 "com.jayway.jsonpath:json-path",
                 "org.apache.logging.log4j:log4j-slf4j-impl",
@@ -1546,7 +1527,7 @@
             ]
         },
         "org.springframework.boot:spring-boot": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-autoconfigure",
                 "org.springframework.boot:spring-boot-starter",
@@ -1555,64 +1536,64 @@
             ]
         },
         "org.springframework.boot:spring-boot-autoconfigure": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter",
                 "org.springframework.boot:spring-boot-test-autoconfigure"
             ]
         },
         "org.springframework.boot:spring-boot-starter": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.springframework.boot:spring-boot-starter-log4j2": {
-            "locked": "2.3.12.RELEASE"
+            "locked": "2.6.7"
         },
         "org.springframework.boot:spring-boot-starter-logging": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter"
             ]
         },
         "org.springframework.boot:spring-boot-starter-test": {
-            "locked": "2.3.12.RELEASE"
+            "locked": "2.6.7"
         },
         "org.springframework.boot:spring-boot-test": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test",
                 "org.springframework.boot:spring-boot-test-autoconfigure"
             ]
         },
         "org.springframework.boot:spring-boot-test-autoconfigure": {
-            "locked": "2.3.12.RELEASE",
+            "locked": "2.6.7",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.springframework:spring-aop": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-beans": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-aop",
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-context": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot"
             ]
         },
         "org.springframework:spring-core": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot",
                 "org.springframework.boot:spring-boot-starter",
@@ -1625,31 +1606,31 @@
             ]
         },
         "org.springframework:spring-expression": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-context"
             ]
         },
         "org.springframework:spring-jcl": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework:spring-core"
             ]
         },
         "org.springframework:spring-test": {
-            "locked": "5.2.15.RELEASE",
+            "locked": "5.3.19",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.xmlunit:xmlunit-core": {
-            "locked": "2.7.0",
+            "locked": "2.8.4",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter-test"
             ]
         },
         "org.yaml:snakeyaml": {
-            "locked": "1.26",
+            "locked": "1.29",
             "transitive": [
                 "org.springframework.boot:spring-boot-starter"
             ]
