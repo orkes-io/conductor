@@ -12,12 +12,11 @@
  */
 package com.netflix.conductor.core.events;
 
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
-
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
+import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 public class ScriptEvaluator {
 
@@ -58,9 +57,7 @@ public class ScriptEvaluator {
     private static ScriptEngine createEngine() {
         NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
         return factory.getScriptEngine(
-                new String[] {
-                        "-strict", "--no-java", "--no-syntax-extensions", "--verify-code"
-                });
+                new String[] {"-strict", "--no-java", "--no-syntax-extensions", "--verify-code"});
     }
 
     /**
