@@ -764,6 +764,12 @@ public class WorkflowExecutor {
             // update parent's sub workflow task
             TaskModel subWorkflowTask =
                     executionDAOFacade.getTaskModel(workflow.getParentWorkflowTaskId());
+            if (subWorkflowTask.getWorkflowTask().isOptional()) {
+                // break out
+                LOGGER.info(
+                        "Sub workflow task {} is optional, skip updating parents", subWorkflowTask);
+                break;
+            }
             subWorkflowTask.setSubworkflowChanged(true);
             subWorkflowTask.setStatus(IN_PROGRESS);
             executionDAOFacade.updateTask(subWorkflowTask);
@@ -1095,7 +1101,7 @@ public class WorkflowExecutor {
             workflowStatusListener.onWorkflowTerminatedIfEnabled(workflow);
             Monitors.recordWorkflowTermination(
                     workflow.getWorkflowName(), workflow.getStatus(), workflow.getOwnerApp());
-
+            LOGGER.info("Workflow {} is terminated because of {}", workflowId, reason);
             List<TaskModel> tasks = workflow.getTasks();
             try {
                 // Remove from the task queue if they were there
@@ -1931,6 +1937,13 @@ public class WorkflowExecutor {
 
         // Get the workflow
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
+        if (!workflow.getStatus().isTerminal()) {
+            String errorMsg =
+                    String.format(
+                            "Workflow: %s is not in terminal state, unable to rerun.", workflow);
+            LOGGER.error(errorMsg);
+            throw new ApplicationException(CONFLICT, errorMsg);
+        }
         updateAndPushParents(workflow, "reran");
 
         // If the task Id is null it implies that the entire workflow has to be rerun
