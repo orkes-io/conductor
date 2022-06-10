@@ -764,7 +764,8 @@ public class WorkflowExecutor {
             // update parent's sub workflow task
             TaskModel subWorkflowTask =
                     executionDAOFacade.getTaskModel(workflow.getParentWorkflowTaskId());
-            if (subWorkflowTask.getWorkflowTask().isOptional()) {
+            if (subWorkflowTask.getWorkflowTask() != null
+                    && subWorkflowTask.getWorkflowTask().isOptional()) {
                 // break out
                 LOGGER.info(
                         "Sub workflow task {} is optional, skip updating parents", subWorkflowTask);
