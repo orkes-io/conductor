@@ -71,7 +71,7 @@ public class DeciderService {
 
     private final Predicate<WorkflowModel> containsSuccessfulTerminateTask =
             workflow ->
-                    workflow.getTasks().stream()
+                    workflow.getTasks().stream().parallel()
                             .anyMatch(
                                     task ->
                                             TERMINATE.name().equals(task.getTaskType())
@@ -415,6 +415,12 @@ public class DeciderService {
         workflow.getTasks()
                 .forEach(task -> taskStatusMap.put(task.getReferenceTaskName(), task.getStatus()));
 
+        boolean noPendingTasks =
+                taskStatusMap.values().stream().allMatch(TaskModel.Status::isTerminal);
+        if(!noPendingTasks) {
+            return false;
+        }
+
         List<WorkflowTask> workflowTasks = workflow.getWorkflowDefinition().getTasks();
         boolean allCompletedSuccessfully =
                 workflowTasks.stream()
@@ -428,8 +434,9 @@ public class DeciderService {
                                             && status.isTerminal();
                                 });
 
-        boolean noPendingTasks =
-                taskStatusMap.values().stream().allMatch(TaskModel.Status::isTerminal);
+        if(!allCompletedSuccessfully) {
+            return false;
+        }
 
         boolean noPendingSchedule =
                 workflow.getTasks().stream()
@@ -440,7 +447,7 @@ public class DeciderService {
                                     return next != null && !taskStatusMap.containsKey(next);
                                 });
 
-        return allCompletedSuccessfully && noPendingTasks && noPendingSchedule;
+        return noPendingSchedule;
     }
 
     List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
