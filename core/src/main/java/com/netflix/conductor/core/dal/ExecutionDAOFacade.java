@@ -678,7 +678,7 @@ public class ExecutionDAOFacade {
         workflowModel.getTasks().forEach(this::populateTaskData);
     }
 
-    private void populateTaskData(TaskModel taskModel) {
+    public void populateTaskData(TaskModel taskModel) {
         if (StringUtils.isNotBlank(taskModel.getExternalOutputPayloadStoragePath())) {
             Map<String, Object> outputData =
                     externalPayloadStorageUtils.downloadPayload(
