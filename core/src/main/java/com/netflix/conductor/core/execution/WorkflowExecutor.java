@@ -415,6 +415,7 @@ public class WorkflowExecutor {
 
         try {
             createWorkflow(workflow);
+            executionDAOFacade.populateWorkflowAndTaskPayloadData(workflow);
             // then decide to see if anything needs to be done as part of the workflow
             decide(workflow);
             Monitors.recordWorkflowStartSuccess(
@@ -1272,12 +1273,21 @@ public class WorkflowExecutor {
     }
 
     public WorkflowModel decide(String workflowId) {
-        WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
-        // FIXME Backwards compatibility for legacy workflows already running.
-        // This code will be removed in a future version.
-        workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
+        if (!executionLockService.acquireLock(workflowId)) {
+            return null;
+        }
+        try {
 
-        return decide(workflow);
+            WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
+            // FIXME Backwards compatibility for legacy workflows already running.
+            // This code will be removed in a future version.
+            workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
+
+            return decide(workflow);
+
+        } finally {
+            executionLockService.releaseLock(workflowId);
+        }
     }
 
     /**

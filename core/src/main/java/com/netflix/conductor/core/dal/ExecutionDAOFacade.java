@@ -652,7 +652,7 @@ public class ExecutionDAOFacade {
      * @param workflowModel the workflowModel for which the payload data needs to be populated from
      *     external storage (if applicable)
      */
-    private void populateWorkflowAndTaskPayloadData(WorkflowModel workflowModel) {
+    public void populateWorkflowAndTaskPayloadData(WorkflowModel workflowModel) {
         if (StringUtils.isNotBlank(workflowModel.getExternalInputPayloadStoragePath())) {
             Map<String, Object> workflowInputParams =
                     externalPayloadStorageUtils.downloadPayload(
