@@ -149,6 +149,7 @@ public class DeciderService {
                     && task.getStatus().isTerminal()
                     && task.getStatus().isSuccessful()) {
                 hasSuccessfulTerminateTask = true;
+                outcome.terminateTask = Optional.of(task);
             }
         }
 
@@ -891,6 +892,7 @@ public class DeciderService {
         List<TaskModel> tasksToBeScheduled = new LinkedList<>();
         List<TaskModel> tasksToBeUpdated = new LinkedList<>();
         boolean isComplete;
+        Optional<TaskModel> terminateTask = Optional.empty();
 
         private DeciderOutcome() {}
     }

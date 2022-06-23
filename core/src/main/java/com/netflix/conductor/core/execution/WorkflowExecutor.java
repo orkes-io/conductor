@@ -820,15 +820,7 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
-    private void endExecution(WorkflowModel workflow) {
-        Optional<TaskModel> terminateTask =
-                workflow.getTasks().stream()
-                        .filter(
-                                t ->
-                                        TaskType.TERMINATE.name().equals(t.getTaskType())
-                                                && t.getStatus().isTerminal()
-                                                && t.getStatus().isSuccessful())
-                        .findFirst();
+    private void endExecution(WorkflowModel workflow, Optional<TaskModel> terminateTask) {
         if (terminateTask.isPresent()) {
             String terminationStatus =
                     (String)
@@ -1311,7 +1303,7 @@ public class WorkflowExecutor {
         try {
             DeciderService.DeciderOutcome outcome = deciderService.decide(workflow);
             if (outcome.isComplete) {
-                endExecution(workflow);
+                endExecution(workflow, outcome.terminateTask);
                 return workflow;
             }
 
