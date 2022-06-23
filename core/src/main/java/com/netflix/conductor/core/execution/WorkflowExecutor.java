@@ -1509,7 +1509,7 @@ public class WorkflowExecutor {
      * @throws IllegalStateException if the workflow is not in PAUSED state
      */
     public void resumeWorkflow(String workflowId) {
-        WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
+        WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, false);
         if (!workflow.getStatus().equals(WorkflowModel.Status.PAUSED)) {
             throw new IllegalStateException(
                     "The workflow "
@@ -1527,7 +1527,7 @@ public class WorkflowExecutor {
                 workflow.getPriority(),
                 properties.getWorkflowOffsetTimeout().getSeconds());
         executionDAOFacade.updateWorkflow(workflow);
-        decide(workflow);
+        decide(workflowId);
     }
 
     /**
@@ -1957,7 +1957,7 @@ public class WorkflowExecutor {
             }
             executionDAOFacade.updateTask(rerunFromTask);
 
-            decide(workflow);
+            decide(workflow.getWorkflowId());
             return true;
         }
         return false;
