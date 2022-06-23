@@ -614,7 +614,7 @@ public class WorkflowExecutor {
         }
 
         metadataMapperService.populateWorkflowWithDefinitions(workflow);
-        decide(workflow);
+        decide(workflow.getWorkflowId());
 
         updateAndPushParents(workflow, "restarted");
     }
@@ -1339,11 +1339,14 @@ public class WorkflowExecutor {
 
             if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
                 executionDAOFacade.updateTasks(tasksToBeUpdated);
-                executionDAOFacade.updateWorkflow(workflow);
             }
 
             if (stateChanged) {
                 return decide(workflow);
+            }
+
+            if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
+                executionDAOFacade.updateWorkflow(workflow);
             }
 
             return workflow;
@@ -1872,7 +1875,7 @@ public class WorkflowExecutor {
                     properties.getWorkflowOffsetTimeout().getSeconds());
             executionDAOFacade.updateWorkflow(workflow);
 
-            decide(workflow);
+            decide(workflowId);
             return true;
         }
 
