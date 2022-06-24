@@ -13,12 +13,14 @@
 package com.netflix.conductor.test.integration.grpc;
 
 import org.junit.Before;
+import org.junit.Ignore;
 
 import com.netflix.conductor.client.grpc.EventClient;
 import com.netflix.conductor.client.grpc.MetadataClient;
 import com.netflix.conductor.client.grpc.TaskClient;
 import com.netflix.conductor.client.grpc.WorkflowClient;
 
+@Ignore
 public class GrpcEndToEndTest extends AbstractGrpcEndToEndTest {
 
     @Before

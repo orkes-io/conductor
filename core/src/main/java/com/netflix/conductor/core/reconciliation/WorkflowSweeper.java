@@ -75,7 +75,7 @@ public class WorkflowSweeper {
             }
 
             WorkflowModel workflow = workflowExecutor.decide(workflowId);
-            if (workflow.getStatus().isTerminal()) {
+            if (workflow != null && workflow.getStatus().isTerminal()) {
                 queueDAO.remove(DECIDER_QUEUE, workflowId);
                 return;
             }
