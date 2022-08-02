@@ -34,7 +34,6 @@ import org.springframework.retry.backoff.NoBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
-import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.utils.ExternalPayloadStorage;
 import com.netflix.conductor.core.events.EventQueueProvider;
 import com.netflix.conductor.core.execution.mapper.TaskMapper;
@@ -98,8 +97,9 @@ public class ConductorCoreConfiguration {
 
     @Bean
     @Qualifier("taskMappersByTaskType")
-    public Map<TaskType, TaskMapper> getTaskMappers(List<TaskMapper> taskMappers) {
-        return taskMappers.stream().collect(Collectors.toMap(TaskMapper::getTaskType, identity()));
+    public Map<String, TaskMapper> getTaskMappers(List<TaskMapper> taskMappers) {
+        return taskMappers.stream()
+                .collect(Collectors.toMap(t -> t.getTaskType().name(), identity()));
     }
 
     @Bean
