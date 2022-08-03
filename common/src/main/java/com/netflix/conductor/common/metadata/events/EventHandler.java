@@ -252,7 +252,7 @@ public class EventHandler {
         }
 
         /**
-         * @param terminate_workflow the fail_task to set
+         * @param terminate_workflow the terminate_workflow to set
          */
         public void setTerminate_workflow(TerminateWorkflow terminate_workflow) {
             this.terminate_workflow = terminate_workflow;
@@ -266,7 +266,7 @@ public class EventHandler {
         }
 
         /**
-         * @param update_workflow_variables the fail_task to set
+         * @param update_workflow_variables the update_workflow_variables to set
          */
         public void setUpdate_workflow_variables(
                 UpdateWorkflowVariables update_workflow_variables) {
