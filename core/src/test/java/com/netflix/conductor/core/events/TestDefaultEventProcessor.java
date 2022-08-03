@@ -37,6 +37,7 @@ import com.netflix.conductor.common.metadata.events.EventHandler.StartWorkflow;
 import com.netflix.conductor.common.metadata.events.EventHandler.TaskDetails;
 import com.netflix.conductor.core.config.ConductorCoreConfiguration;
 import com.netflix.conductor.core.config.ConductorProperties;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.events.queue.Message;
 import com.netflix.conductor.core.events.queue.ObservableQueue;
 import com.netflix.conductor.core.exception.ApplicationException;
@@ -70,6 +71,7 @@ public class TestDefaultEventProcessor {
     private ObservableQueue queue;
     private MetadataService metadataService;
     private ExecutionService executionService;
+    private ExecutionDAOFacade executionDAOFacade;
     private WorkflowExecutor workflowExecutor;
     private ExternalPayloadStorageUtils externalPayloadStorageUtils;
     private SimpleActionProcessor actionProcessor;
@@ -96,6 +98,7 @@ public class TestDefaultEventProcessor {
 
         metadataService = mock(MetadataService.class);
         executionService = mock(ExecutionService.class);
+        executionDAOFacade = mock(ExecutionDAOFacade.class);
         workflowExecutor = mock(WorkflowExecutor.class);
         externalPayloadStorageUtils = mock(ExternalPayloadStorageUtils.class);
         actionProcessor = mock(SimpleActionProcessor.class);
@@ -189,7 +192,8 @@ public class TestDefaultEventProcessor {
         doNothing().when(externalPayloadStorageUtils).verifyAndUpload(any(), any());
 
         SimpleActionProcessor actionProcessor =
-                new SimpleActionProcessor(workflowExecutor, parametersUtils, jsonUtils);
+                new SimpleActionProcessor(
+                        workflowExecutor, parametersUtils, jsonUtils, executionDAOFacade);
 
         DefaultEventProcessor eventProcessor =
                 new DefaultEventProcessor(
@@ -256,7 +260,8 @@ public class TestDefaultEventProcessor {
                         eq(null));
 
         SimpleActionProcessor actionProcessor =
-                new SimpleActionProcessor(workflowExecutor, parametersUtils, jsonUtils);
+                new SimpleActionProcessor(
+                        workflowExecutor, parametersUtils, jsonUtils, executionDAOFacade);
 
         DefaultEventProcessor eventProcessor =
                 new DefaultEventProcessor(
@@ -321,7 +326,8 @@ public class TestDefaultEventProcessor {
                         eq(null));
 
         SimpleActionProcessor actionProcessor =
-                new SimpleActionProcessor(workflowExecutor, parametersUtils, jsonUtils);
+                new SimpleActionProcessor(
+                        workflowExecutor, parametersUtils, jsonUtils, executionDAOFacade);
 
         DefaultEventProcessor eventProcessor =
                 new DefaultEventProcessor(
