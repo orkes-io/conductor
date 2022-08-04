@@ -45,6 +45,7 @@ import com.netflix.conductor.model.WorkflowModel;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.SIMPLE;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TERMINATE;
+import static com.netflix.conductor.common.metadata.tasks.TaskType.USER_DEFINED;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 
 /**
@@ -861,7 +862,7 @@ public class DeciderService {
         // A new task must only be scheduled if a task, with the same reference name is not already
         // in this workflow instance
         return taskMappers
-                .getOrDefault(type, taskMappers.get(SIMPLE.name()))
+                .getOrDefault(type, taskMappers.get(USER_DEFINED.name()))
                 .getMappedTasks(taskMapperContext)
                 .stream()
                 .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
