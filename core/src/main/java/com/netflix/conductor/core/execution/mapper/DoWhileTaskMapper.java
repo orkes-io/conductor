@@ -45,8 +45,8 @@ public class DoWhileTaskMapper implements TaskMapper {
     }
 
     @Override
-    public TaskType getTaskType() {
-        return TaskType.DO_WHILE;
+    public String getTaskType() {
+        return TaskType.DO_WHILE.name();
     }
 
     /**
