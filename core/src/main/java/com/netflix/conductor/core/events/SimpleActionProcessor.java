@@ -12,11 +12,7 @@
  */
 package com.netflix.conductor.core.events;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +30,8 @@ import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+
+import static java.util.Objects.isNull;
 
 /**
  * Action Processor subscribes to the Event Actions queue and processes the actions (e.g. start
@@ -298,7 +296,24 @@ public class SimpleActionProcessor implements ActionProcessor {
             String workflowId = (String) replaced.get("workflowId");
             Map<String, Object> variables = (Map<String, Object>) replaced.get("variables");
             WorkflowModel workflow = workflowExecutor.getWorkflow(workflowId, false);
-            variables.forEach((k, v) -> workflow.getVariables().put(k, v));
+            boolean appendArray = isNull(params.getAppendArray()) || params.getAppendArray();
+            if (appendArray) {
+                variables.forEach(
+                        (k, v) -> {
+                            Object variable = workflow.getVariables().get(k);
+                            if (variable instanceof List) {
+                                ((List<Object>) variable).add(v);
+                            } else {
+                                List<Object> valueList = new ArrayList<>();
+                                valueList.add(variable);
+                                valueList.add(v);
+                                workflow.getVariables().put(k, valueList);
+                            }
+                        });
+            } else {
+                variables.forEach((k, v) -> workflow.getVariables().put(k, v));
+            }
+
             executionDAOFacade.updateWorkflow(workflow);
             workflowExecutor.decide(workflowId);
 
