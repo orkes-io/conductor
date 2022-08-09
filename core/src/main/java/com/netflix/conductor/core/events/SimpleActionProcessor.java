@@ -297,18 +297,19 @@ public class SimpleActionProcessor implements ActionProcessor {
             Map<String, Object> variables = (Map<String, Object>) replaced.get("variables");
             WorkflowModel workflow = workflowExecutor.getWorkflow(workflowId, false);
             boolean appendArray = isNull(params.getAppendArray()) || params.getAppendArray();
-            if(appendArray) {
-                variables.forEach((k, v) -> {
-                    Object variable = workflow.getVariables().get(k);
-                    if(variable instanceof List) {
-                        ((List<Object>) variable).add(v);
-                    } else {
-                        List<Object> valueList = new ArrayList<>();
-                        valueList.add(variable);
-                        valueList.add(v);
-                        workflow.getVariables().put(k, valueList);
-                    }
-                });
+            if (appendArray) {
+                variables.forEach(
+                        (k, v) -> {
+                            Object variable = workflow.getVariables().get(k);
+                            if (variable instanceof List) {
+                                ((List<Object>) variable).add(v);
+                            } else {
+                                List<Object> valueList = new ArrayList<>();
+                                valueList.add(variable);
+                                valueList.add(v);
+                                workflow.getVariables().put(k, valueList);
+                            }
+                        });
             } else {
                 variables.forEach((k, v) -> workflow.getVariables().put(k, v));
             }
