@@ -354,6 +354,7 @@ public class TestSimpleActionProcessor {
         Map<String, Object> updateVariablesMap = new HashMap<>();
         updateVariablesMap.put("variable1", "${key}");
         updateWorkflowVariables.setVariables(updateVariablesMap);
+        updateWorkflowVariables.setAppendArray(true);
 
         Action action = new Action();
         action.setAction(Type.update_workflow_variables);

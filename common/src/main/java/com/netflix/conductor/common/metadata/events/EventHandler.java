@@ -500,6 +500,9 @@ public class EventHandler {
         @ProtoField(id = 2)
         private Map<String, Object> variables;
 
+        @ProtoField(id = 3)
+        private Boolean appendArray;
+
         /**
          * @return the workflowId
          */
@@ -526,6 +529,20 @@ public class EventHandler {
          */
         public void setVariables(Map<String, Object> variables) {
             this.variables = variables;
+        }
+
+        /**
+         * @return appendArray
+         */
+        public Boolean getAppendArray() {
+            return appendArray;
+        }
+
+        /**
+         * @param appendArray the appendArray to set
+         */
+        public void setAppendArray(Boolean appendArray) {
+            this.appendArray = appendArray;
         }
     }
 }
