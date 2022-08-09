@@ -534,7 +534,7 @@ public class EventHandler {
         /**
          * @return appendArray
          */
-        public Boolean getAppendArray() {
+        public Boolean isAppendArray() {
             return appendArray;
         }
 

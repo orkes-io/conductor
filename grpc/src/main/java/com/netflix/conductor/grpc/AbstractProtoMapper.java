@@ -200,6 +200,54 @@ public abstract class AbstractProtoMapper {
         return to;
     }
 
+    public EventHandlerPb.EventHandler.UpdateWorkflowVariables toProto(
+            EventHandler.UpdateWorkflowVariables from) {
+        EventHandlerPb.EventHandler.UpdateWorkflowVariables.Builder to = EventHandlerPb.EventHandler.UpdateWorkflowVariables.newBuilder();
+        if (from.getWorkflowId() != null) {
+            to.setWorkflowId( from.getWorkflowId() );
+        }
+        for (Map.Entry<String, Object> pair : from.getVariables().entrySet()) {
+            to.putVariables( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        if (from.isAppendArray() != null) {
+            to.setAppendArray( from.isAppendArray() );
+        }
+        return to.build();
+    }
+
+    public EventHandler.UpdateWorkflowVariables fromProto(
+            EventHandlerPb.EventHandler.UpdateWorkflowVariables from) {
+        EventHandler.UpdateWorkflowVariables to = new EventHandler.UpdateWorkflowVariables();
+        to.setWorkflowId( from.getWorkflowId() );
+        Map<String, Object> variablesMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getVariablesMap().entrySet()) {
+            variablesMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setVariables(variablesMap);
+        to.setAppendArray( from.getAppendArray() );
+        return to;
+    }
+
+    public EventHandlerPb.EventHandler.TerminateWorkflow toProto(
+            EventHandler.TerminateWorkflow from) {
+        EventHandlerPb.EventHandler.TerminateWorkflow.Builder to = EventHandlerPb.EventHandler.TerminateWorkflow.newBuilder();
+        if (from.getWorkflowId() != null) {
+            to.setWorkflowId( from.getWorkflowId() );
+        }
+        if (from.getTerminationReason() != null) {
+            to.setTerminationReason( from.getTerminationReason() );
+        }
+        return to.build();
+    }
+
+    public EventHandler.TerminateWorkflow fromProto(
+            EventHandlerPb.EventHandler.TerminateWorkflow from) {
+        EventHandler.TerminateWorkflow to = new EventHandler.TerminateWorkflow();
+        to.setWorkflowId( from.getWorkflowId() );
+        to.setTerminationReason( from.getTerminationReason() );
+        return to;
+    }
+
     public EventHandlerPb.EventHandler.StartWorkflow toProto(EventHandler.StartWorkflow from) {
         EventHandlerPb.EventHandler.StartWorkflow.Builder to = EventHandlerPb.EventHandler.StartWorkflow.newBuilder();
         if (from.getName() != null) {
@@ -289,6 +337,12 @@ public abstract class AbstractProtoMapper {
             to.setFailTask( toProto( from.getFail_task() ) );
         }
         to.setExpandInlineJson( from.isExpandInlineJSON() );
+        if (from.getTerminate_workflow() != null) {
+            to.setTerminateWorkflow( toProto( from.getTerminate_workflow() ) );
+        }
+        if (from.getUpdate_workflow_variables() != null) {
+            to.setUpdateWorkflowVariables( toProto( from.getUpdate_workflow_variables() ) );
+        }
         return to.build();
     }
 
@@ -305,6 +359,12 @@ public abstract class AbstractProtoMapper {
             to.setFail_task( fromProto( from.getFailTask() ) );
         }
         to.setExpandInlineJSON( from.getExpandInlineJson() );
+        if (from.hasTerminateWorkflow()) {
+            to.setTerminate_workflow( fromProto( from.getTerminateWorkflow() ) );
+        }
+        if (from.hasUpdateWorkflowVariables()) {
+            to.setUpdate_workflow_variables( fromProto( from.getUpdateWorkflowVariables() ) );
+        }
         return to;
     }
 
@@ -314,6 +374,8 @@ public abstract class AbstractProtoMapper {
             case start_workflow: to = EventHandlerPb.EventHandler.Action.Type.START_WORKFLOW; break;
             case complete_task: to = EventHandlerPb.EventHandler.Action.Type.COMPLETE_TASK; break;
             case fail_task: to = EventHandlerPb.EventHandler.Action.Type.FAIL_TASK; break;
+            case terminate_workflow: to = EventHandlerPb.EventHandler.Action.Type.TERMINATE_WORKFLOW; break;
+            case update_workflow_variables: to = EventHandlerPb.EventHandler.Action.Type.UPDATE_WORKFLOW_VARIABLES; break;
             default: throw new IllegalArgumentException("Unexpected enum constant: " + from);
         }
         return to;
@@ -325,6 +387,8 @@ public abstract class AbstractProtoMapper {
             case START_WORKFLOW: to = EventHandler.Action.Type.start_workflow; break;
             case COMPLETE_TASK: to = EventHandler.Action.Type.complete_task; break;
             case FAIL_TASK: to = EventHandler.Action.Type.fail_task; break;
+            case TERMINATE_WORKFLOW: to = EventHandler.Action.Type.terminate_workflow; break;
+            case UPDATE_WORKFLOW_VARIABLES: to = EventHandler.Action.Type.update_workflow_variables; break;
             default: throw new IllegalArgumentException("Unexpected enum constant: " + from);
         }
         return to;

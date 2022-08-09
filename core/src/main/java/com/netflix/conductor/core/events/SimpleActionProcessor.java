@@ -296,7 +296,7 @@ public class SimpleActionProcessor implements ActionProcessor {
             String workflowId = (String) replaced.get("workflowId");
             Map<String, Object> variables = (Map<String, Object>) replaced.get("variables");
             WorkflowModel workflow = workflowExecutor.getWorkflow(workflowId, false);
-            boolean appendArray = isNull(params.getAppendArray()) || params.getAppendArray();
+            boolean appendArray = isNull(params.isAppendArray()) || params.isAppendArray();
             if (appendArray) {
                 variables.forEach(
                         (k, v) -> {
