@@ -27,6 +27,16 @@ public class PostgresProperties {
 
     private Integer deadlockRetryMax = 3;
 
+    public String schema="public";
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
+    }
+
     public Duration getTaskDefCacheRefreshInterval() {
         return taskDefCacheRefreshInterval;
     }
