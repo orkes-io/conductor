@@ -27,7 +27,7 @@ public class PostgresProperties {
 
     private Integer deadlockRetryMax = 3;
 
-    public String schema;
+    public String schema="public";
 
     public String getSchema() {
         return schema;
