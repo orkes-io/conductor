@@ -14,6 +14,7 @@ package com.netflix.conductor.core.events;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,13 +25,12 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.netflix.conductor.common.config.TestObjectMapperConfiguration;
-import com.netflix.conductor.common.metadata.events.EventHandler.Action;
+import com.netflix.conductor.common.metadata.events.EventHandler.*;
 import com.netflix.conductor.common.metadata.events.EventHandler.Action.Type;
-import com.netflix.conductor.common.metadata.events.EventHandler.StartWorkflow;
-import com.netflix.conductor.common.metadata.events.EventHandler.TaskDetails;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.metadata.tasks.TaskResult.Status;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.core.utils.ExternalPayloadStorageUtils;
 import com.netflix.conductor.core.utils.JsonUtils;
@@ -51,6 +51,7 @@ public class TestSimpleActionProcessor {
     private WorkflowExecutor workflowExecutor;
     private ExternalPayloadStorageUtils externalPayloadStorageUtils;
     private SimpleActionProcessor actionProcessor;
+    private ExecutionDAOFacade executionDAOFacade;
 
     @Autowired private ObjectMapper objectMapper;
 
@@ -60,11 +61,14 @@ public class TestSimpleActionProcessor {
 
         workflowExecutor = mock(WorkflowExecutor.class);
 
+        executionDAOFacade = mock(ExecutionDAOFacade.class);
+
         actionProcessor =
                 new SimpleActionProcessor(
                         workflowExecutor,
                         new ParametersUtils(objectMapper),
-                        new JsonUtils(objectMapper));
+                        new JsonUtils(objectMapper),
+                        executionDAOFacade);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -308,5 +312,66 @@ public class TestSimpleActionProcessor {
                 "testEvent", argumentCaptor.getValue().getOutputData().get("conductor.event.name"));
         assertEquals("workflow_1", argumentCaptor.getValue().getOutputData().get("workflowId"));
         assertEquals("task_1", argumentCaptor.getValue().getOutputData().get("taskId"));
+    }
+
+    @Test
+    public void testTerminateWorkflow() throws Exception {
+        TerminateWorkflow terminateWorkflow = new TerminateWorkflow();
+        terminateWorkflow.setWorkflowId(UUID.randomUUID().toString());
+        terminateWorkflow.setTerminationReason("${reason}");
+
+        Action action = new Action();
+        action.setAction(Type.terminate_workflow);
+        action.setTerminate_workflow(terminateWorkflow);
+
+        Object payload = objectMapper.readValue("{\"reason\":\"terminated\"}", Object.class);
+
+        Map<String, Object> output =
+                actionProcessor.execute(action, payload, "testEvent", "testMessage");
+
+        assertNotNull(output);
+        assertEquals(terminateWorkflow.getWorkflowId(), output.get("workflowId"));
+        assertEquals("terminated", output.get("terminationReason"));
+
+        verify(workflowExecutor)
+                .terminateWorkflow(eq(terminateWorkflow.getWorkflowId()), eq("terminated"));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testUpdateWorkflowVariables() throws Exception {
+        UpdateWorkflowVariables updateWorkflowVariables = new UpdateWorkflowVariables();
+        updateWorkflowVariables.setWorkflowId(UUID.randomUUID().toString());
+        Map<String, Object> updateVariablesMap = new HashMap<>();
+        updateVariablesMap.put("variable1", "${key}");
+        updateWorkflowVariables.setVariables(updateVariablesMap);
+        updateWorkflowVariables.setAppendArray(true);
+
+        Action action = new Action();
+        action.setAction(Type.update_workflow_variables);
+        action.setUpdate_workflow_variables(updateWorkflowVariables);
+
+        Object payload = objectMapper.readValue("{\"key\":\"value\"}", Object.class);
+        WorkflowModel workflowModel = new WorkflowModel();
+        workflowModel.getVariables().put("variable1", "test");
+        WorkflowDef workflowDef = new WorkflowDef();
+        workflowDef.setName("testWorkflow");
+        workflowDef.setVersion(1);
+        workflowModel.setWorkflowDefinition(workflowDef);
+
+        when(workflowExecutor.getWorkflow(eq(updateWorkflowVariables.getWorkflowId()), eq(false)))
+                .thenReturn(workflowModel);
+
+        Map<String, Object> output =
+                actionProcessor.execute(action, payload, "testEvent", "testMessage");
+
+        assertNotNull(output);
+        assertEquals(updateWorkflowVariables.getWorkflowId(), output.get("workflowId"));
+        assertNotNull(output.get("variables"));
+        Map<String, Object> outputVariables = (Map<String, Object>) output.get("variables");
+        assertEquals("value", outputVariables.get("variable1"));
+
+        verify(executionDAOFacade).updateWorkflow(eq(workflowModel));
+        verify(workflowExecutor).decide(eq(updateWorkflowVariables.getWorkflowId()));
     }
 }

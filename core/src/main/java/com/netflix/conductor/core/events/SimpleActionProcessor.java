@@ -20,17 +20,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.netflix.conductor.common.metadata.events.EventHandler.Action;
-import com.netflix.conductor.common.metadata.events.EventHandler.StartWorkflow;
-import com.netflix.conductor.common.metadata.events.EventHandler.TaskDetails;
+import com.netflix.conductor.common.metadata.events.EventHandler.*;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.utils.TaskUtils;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.core.utils.JsonUtils;
 import com.netflix.conductor.core.utils.ParametersUtils;
 import com.netflix.conductor.metrics.Monitors;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
+
+import static java.util.Objects.isNull;
 
 /**
  * Action Processor subscribes to the Event Actions queue and processes the actions (e.g. start
@@ -44,14 +45,17 @@ public class SimpleActionProcessor implements ActionProcessor {
     private final WorkflowExecutor workflowExecutor;
     private final ParametersUtils parametersUtils;
     private final JsonUtils jsonUtils;
+    private final ExecutionDAOFacade executionDAOFacade;
 
     public SimpleActionProcessor(
             WorkflowExecutor workflowExecutor,
             ParametersUtils parametersUtils,
-            JsonUtils jsonUtils) {
+            JsonUtils jsonUtils,
+            ExecutionDAOFacade executionDAOFacade) {
         this.workflowExecutor = workflowExecutor;
         this.parametersUtils = parametersUtils;
         this.jsonUtils = jsonUtils;
+        this.executionDAOFacade = executionDAOFacade;
     }
 
     public Map<String, Object> execute(
@@ -87,6 +91,10 @@ public class SimpleActionProcessor implements ActionProcessor {
                         TaskModel.Status.FAILED,
                         event,
                         messageId);
+            case terminate_workflow:
+                return terminateWorkflow(action, jsonObject, event, messageId);
+            case update_workflow_variables:
+                return updateWorkflowVariables(action, jsonObject, event, messageId);
             default:
                 break;
         }
@@ -228,6 +236,103 @@ public class SimpleActionProcessor implements ActionProcessor {
                     "Error starting workflow: {}, version: {}, for event: {} for message: {}",
                     params.getName(),
                     params.getVersion(),
+                    event,
+                    messageId,
+                    e);
+            output.put("error", e.getMessage());
+            throw e;
+        }
+        return output;
+    }
+
+    private Map<String, Object> terminateWorkflow(
+            Action action, Object payload, String event, String messageId) {
+        TerminateWorkflow params = action.getTerminate_workflow();
+        Map<String, Object> output = new HashMap<>();
+        try {
+            Map<String, Object> input = new HashMap<>();
+            input.put("workflowId", params.getWorkflowId());
+            input.put("terminationReason", params.getTerminationReason());
+
+            Map<String, Object> replaced = parametersUtils.replace(input, payload);
+            String workflowId = (String) replaced.get("workflowId");
+            String reasonForTermination = (String) replaced.get("terminationReason");
+
+            workflowExecutor.terminateWorkflow(workflowId, reasonForTermination);
+            output.put("workflowId", workflowId);
+            output.put("terminationReason", reasonForTermination);
+            LOGGER.debug(
+                    "Terminated workflow: {} for event: {} for message:{}",
+                    workflowId,
+                    event,
+                    messageId);
+
+        } catch (RuntimeException e) {
+            Monitors.recordEventActionError(
+                    action.getAction().name(), params.getWorkflowId(), event);
+            LOGGER.error(
+                    "Error terminating workflow: {}, for event: {} for message: {}",
+                    params.getWorkflowId(),
+                    event,
+                    messageId,
+                    e);
+            output.put("error", e.getMessage());
+            throw e;
+        }
+        return output;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> updateWorkflowVariables(
+            Action action, Object payload, String event, String messageId) {
+        UpdateWorkflowVariables params = action.getUpdate_workflow_variables();
+        Map<String, Object> output = new HashMap<>();
+        try {
+            Map<String, Object> input = new HashMap<>();
+            input.put("workflowId", params.getWorkflowId());
+            input.put("variables", params.getVariables());
+
+            Map<String, Object> replaced = parametersUtils.replace(input, payload);
+            String workflowId = (String) replaced.get("workflowId");
+            Map<String, Object> variables = (Map<String, Object>) replaced.get("variables");
+            WorkflowModel workflow = workflowExecutor.getWorkflow(workflowId, false);
+            boolean appendArray = isNull(params.isAppendArray()) || params.isAppendArray();
+            if (appendArray) {
+                variables.forEach(
+                        (k, v) -> {
+                            Object variable = workflow.getVariables().get(k);
+                            if (variable instanceof List) {
+                                ((List<Object>) variable).add(v);
+                            } else {
+                                List<Object> valueList = new ArrayList<>();
+                                valueList.add(variable);
+                                valueList.add(v);
+                                workflow.getVariables().put(k, valueList);
+                            }
+                        });
+            } else {
+                variables.forEach((k, v) -> workflow.getVariables().put(k, v));
+            }
+
+            executionDAOFacade.updateWorkflow(workflow);
+            workflowExecutor.decide(workflowId);
+
+            output.put("workflowId", workflowId);
+            output.put("variables", variables);
+            LOGGER.debug(
+                    "Updated variables for workflow: {}/{}/{} for event: {} for message: {}",
+                    workflow.getWorkflowName(),
+                    workflow.getWorkflowVersion(),
+                    workflowId,
+                    event,
+                    messageId);
+
+        } catch (RuntimeException e) {
+            Monitors.recordEventActionError(
+                    action.getAction().name(), params.getWorkflowId(), event);
+            LOGGER.error(
+                    "Error updating variables for workflow: {}, for event: {} for message: {}",
+                    params.getWorkflowId(),
                     event,
                     messageId,
                     e);
