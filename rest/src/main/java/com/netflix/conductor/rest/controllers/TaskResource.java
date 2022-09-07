@@ -85,10 +85,11 @@ public class TaskResource {
 
     @PostMapping(value = "/{workflowId}/{taskRefName}/{status}", produces = TEXT_PLAIN_VALUE)
     @Operation(summary = "Update a task By Ref Name")
-    public String updateTask(@PathVariable("workflowId") String workflowId,
-                             @PathVariable("taskRefName") String taskRefName,
-                             @PathVariable("status") TaskResult.Status status,
-                             @RequestBody Map<String, Object> output) {
+    public String updateTask(
+            @PathVariable("workflowId") String workflowId,
+            @PathVariable("taskRefName") String taskRefName,
+            @PathVariable("status") TaskResult.Status status,
+            @RequestBody Map<String, Object> output) {
 
         Task pending = taskService.getPendingTaskForWorkflow(workflowId, taskRefName);
         if (pending == null) {
