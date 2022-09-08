@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -33,9 +34,7 @@ import com.netflix.conductor.common.utils.TaskUtils;
 import com.netflix.conductor.core.WorkflowContext;
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.core.dal.ExecutionDAOFacade;
-import com.netflix.conductor.core.exception.ApplicationException;
-import com.netflix.conductor.core.exception.ApplicationException.Code;
-import com.netflix.conductor.core.exception.TerminateWorkflowException;
+import com.netflix.conductor.core.exception.*;
 import com.netflix.conductor.core.execution.tasks.SystemTaskRegistry;
 import com.netflix.conductor.core.execution.tasks.Terminate;
 import com.netflix.conductor.core.execution.tasks.WorkflowSystemTask;
@@ -52,7 +51,6 @@ import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
 import com.netflix.conductor.service.ExecutionLockService;
 
-import static com.netflix.conductor.core.exception.ApplicationException.Code.*;
 import static com.netflix.conductor.core.utils.Utils.DECIDER_QUEUE;
 import static com.netflix.conductor.model.TaskModel.Status.*;
 
@@ -62,7 +60,7 @@ import static com.netflix.conductor.model.TaskModel.Status.*;
 public class WorkflowExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WorkflowExecutor.class);
-    private static final int PARENT_WF_PRIORITY = 10;
+    private static final int EXPEDITED_PRIORITY = 10;
 
     private final MetadataDAO metadataDAO;
     private final QueueDAO queueDAO;
@@ -119,9 +117,6 @@ public class WorkflowExecutor {
         this.systemTaskRegistry = systemTaskRegistry;
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -132,9 +127,6 @@ public class WorkflowExecutor {
                 name, version, correlationId, input, externalInputPayloadStoragePath, null);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -152,9 +144,6 @@ public class WorkflowExecutor {
                 null);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -173,9 +162,6 @@ public class WorkflowExecutor {
                 event);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -197,9 +183,6 @@ public class WorkflowExecutor {
                 null);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -219,9 +202,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -244,36 +224,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException
-     */
-    public String startWorkflow(
-            String name,
-            Integer version,
-            String correlationId,
-            Integer priority,
-            Map<String, Object> input,
-            String externalInputPayloadStoragePath,
-            String event,
-            Map<String, String> taskToDomain,
-            String createdBy) {
-        return startWorkflow(
-                name,
-                version,
-                input,
-                externalInputPayloadStoragePath,
-                correlationId,
-                priority,
-                null,
-                null,
-                event,
-                taskToDomain,
-                createdBy);
-    }
-
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -295,9 +245,6 @@ public class WorkflowExecutor {
                 null);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             WorkflowDef workflowDefinition,
             Map<String, Object> workflowInput,
@@ -315,9 +262,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             WorkflowDef workflowDefinition,
             Map<String, Object> workflowInput,
@@ -338,34 +282,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException
-     */
-    public String startWorkflow(
-            WorkflowDef workflowDefinition,
-            Map<String, Object> workflowInput,
-            String externalInputPayloadStoragePath,
-            String correlationId,
-            Integer priority,
-            String event,
-            Map<String, String> taskToDomain,
-            String createdBy) {
-        return startWorkflow(
-                workflowDefinition,
-                workflowInput,
-                externalInputPayloadStoragePath,
-                correlationId,
-                priority,
-                null,
-                null,
-                event,
-                taskToDomain,
-                createdBy);
-    }
-
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -389,9 +305,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException
-     */
     public String startWorkflow(
             String name,
             Integer version,
@@ -418,40 +331,6 @@ public class WorkflowExecutor {
                 taskToDomain);
     }
 
-    /**
-     * @throws ApplicationException if validation fails
-     */
-    public String startWorkflow(
-            String name,
-            Integer version,
-            Map<String, Object> workflowInput,
-            String externalInputPayloadStoragePath,
-            String correlationId,
-            Integer priority,
-            String parentWorkflowId,
-            String parentWorkflowTaskId,
-            String event,
-            Map<String, String> taskToDomain,
-            String createdBy) {
-        WorkflowDef workflowDefinition =
-                metadataMapperService.lookupForWorkflowDefinition(name, version);
-
-        return startWorkflow(
-                workflowDefinition,
-                workflowInput,
-                externalInputPayloadStoragePath,
-                correlationId,
-                priority,
-                parentWorkflowId,
-                parentWorkflowTaskId,
-                event,
-                taskToDomain,
-                createdBy);
-    }
-
-    /**
-     * @throws ApplicationException if validation fails
-     */
     public String startWorkflow(
             WorkflowDef workflowDefinition,
             Map<String, Object> workflowInput,
@@ -462,33 +341,6 @@ public class WorkflowExecutor {
             String parentWorkflowTaskId,
             String event,
             Map<String, String> taskToDomain) {
-        return startWorkflow(
-                workflowDefinition,
-                workflowInput,
-                externalInputPayloadStoragePath,
-                correlationId,
-                priority,
-                parentWorkflowId,
-                parentWorkflowTaskId,
-                event,
-                taskToDomain,
-                null);
-    }
-
-    /**
-     * @throws ApplicationException if validation fails
-     */
-    public String startWorkflow(
-            WorkflowDef workflowDefinition,
-            Map<String, Object> workflowInput,
-            String externalInputPayloadStoragePath,
-            String correlationId,
-            Integer priority,
-            String parentWorkflowId,
-            String parentWorkflowTaskId,
-            String event,
-            Map<String, String> taskToDomain,
-            String createdBy) {
 
         workflowDefinition = metadataMapperService.populateTaskDefinitions(workflowDefinition);
 
@@ -509,7 +361,6 @@ public class WorkflowExecutor {
         workflow.setParentWorkflowTaskId(parentWorkflowTaskId);
         workflow.setOwnerApp(WorkflowContext.get().getClientApp());
         workflow.setCreateTime(System.currentTimeMillis());
-        workflow.setCreatedBy(createdBy);
         workflow.setUpdatedBy(null);
         workflow.setUpdatedTime(null);
         workflow.setEvent(event);
@@ -525,10 +376,7 @@ public class WorkflowExecutor {
         }
 
         try {
-            createWorkflow(workflow);
-            executionDAOFacade.populateWorkflowAndTaskPayloadData(workflow);
-            // then decide to see if anything needs to be done as part of the workflow
-            decide(workflow);
+            createAndDecide(workflow);
             Monitors.recordWorkflowStartSuccess(
                     workflow.getWorkflowName(),
                     String.valueOf(workflow.getWorkflowVersion()),
@@ -554,10 +402,9 @@ public class WorkflowExecutor {
      * Acquire and hold the lock till the workflow creation action is completed (in primary and secondary datastores).
      * This is to ensure that workflow creation action precedes any other action on a given workflow.
      */
-    private void createWorkflow(WorkflowModel workflow) {
+    private void createAndDecide(WorkflowModel workflow) {
         if (!executionLockService.acquireLock(workflow.getWorkflowId())) {
-            throw new ApplicationException(
-                    BACKEND_ERROR, "Error acquiring lock when creating workflow: {}");
+            throw new TransientException("Error acquiring lock when creating workflow: {}");
         }
         try {
             executionDAOFacade.createWorkflow(workflow);
@@ -565,6 +412,14 @@ public class WorkflowExecutor {
                     "A new instance of workflow: {} created with id: {}",
                     workflow.getWorkflowName(),
                     workflow.getWorkflowId());
+            executionDAOFacade.populateWorkflowAndTaskPayloadData(workflow);
+            int hashCode = workflow.hashCode();
+            WorkflowModel workflowModel = decide(workflow);
+            int hashCodeAfterDecider = workflowModel.hashCode();
+            if (hashCodeAfterDecider != hashCode) {
+                // Since hashCode is different there has been some update which needs to be saved.
+                executionDAOFacade.updateWorkflow(workflowModel);
+            }
         } finally {
             executionLockService.releaseLock(workflow.getWorkflowId());
         }
@@ -573,7 +428,7 @@ public class WorkflowExecutor {
     /**
      * Performs validations for starting a workflow
      *
-     * @throws ApplicationException if the validation fails
+     * @throws IllegalArgumentException if the validation fails.
      */
     private void validateWorkflow(
             WorkflowDef workflowDef,
@@ -584,8 +439,7 @@ public class WorkflowExecutor {
             if (workflowInput == null && StringUtils.isBlank(externalStoragePath)) {
                 LOGGER.error(
                         "The input for the workflow '{}' cannot be NULL", workflowDef.getName());
-                throw new ApplicationException(
-                        INVALID_INPUT, "NULL input passed when starting workflow");
+                throw new IllegalArgumentException("NULL input passed when starting workflow");
             }
         } catch (Exception e) {
             Monitors.recordWorkflowStartError(
@@ -596,13 +450,13 @@ public class WorkflowExecutor {
 
     /**
      * @param workflowId the id of the workflow for which task callbacks are to be reset
-     * @throws ApplicationException if the workflow is in terminal state
+     * @throws ConflictException if the workflow is in terminal state
      */
     public void resetCallbacksForWorkflow(String workflowId) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         if (workflow.getStatus().isTerminal()) {
-            throw new ApplicationException(
-                    CONFLICT, "Workflow is in terminal state. Status =" + workflow.getStatus());
+            throw new ConflictException(
+                    "Workflow is in terminal state. Status = %s", workflow.getStatus());
         }
 
         // Get SIMPLE tasks in SCHEDULED state that have callbackAfterSeconds > 0 and set the
@@ -631,8 +485,8 @@ public class WorkflowExecutor {
                 request.getTaskInput(),
                 request.getWorkflowInput(),
                 request.getCorrelationId())) {
-            throw new ApplicationException(
-                    INVALID_INPUT, "Task " + request.getReRunFromTaskId() + " not found");
+            throw new IllegalArgumentException(
+                    "Task " + request.getReRunFromTaskId() + " not found");
         }
         return request.getReRunFromWorkflowId();
     }
@@ -641,12 +495,9 @@ public class WorkflowExecutor {
      * @param workflowId the id of the workflow to be restarted
      * @param useLatestDefinitions if true, use the latest workflow and task definitions upon
      *     restart
-     * @throws ApplicationException in the following cases:
-     *     <ul>
-     *       <li>Workflow is not in a terminal state
-     *       <li>Workflow definition is not found
-     *       <li>Workflow is deemed non-restartable as per workflow definition
-     *     </ul>
+     * @throws ConflictException Workflow is not in a terminal state.
+     * @throws NotFoundException Workflow definition is not found or Workflow is deemed
+     *     non-restartable as per workflow definition.
      */
     public void restart(String workflowId, boolean useLatestDefinitions) {
         final WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
@@ -656,7 +507,7 @@ public class WorkflowExecutor {
                     String.format(
                             "Workflow: %s is not in terminal state, unable to restart.", workflow);
             LOGGER.error(errorMsg);
-            throw new ApplicationException(CONFLICT, errorMsg);
+            throw new ConflictException(errorMsg);
         }
 
         WorkflowDef workflowDef;
@@ -666,12 +517,11 @@ public class WorkflowExecutor {
                             .getLatestWorkflowDef(workflow.getWorkflowName())
                             .orElseThrow(
                                     () ->
-                                            new ApplicationException(
-                                                    NOT_FOUND,
-                                                    String.format(
-                                                            "Unable to find latest definition for %s",
-                                                            workflowId)));
+                                            new NotFoundException(
+                                                    "Unable to find latest definition for %s",
+                                                    workflowId));
             workflow.setWorkflowDefinition(workflowDef);
+            workflowDef = metadataMapperService.populateTaskDefinitions(workflowDef);
         } else {
             workflowDef =
                     Optional.ofNullable(workflow.getWorkflowDefinition())
@@ -683,11 +533,9 @@ public class WorkflowExecutor {
                                                             workflow.getWorkflowVersion())
                                                     .orElseThrow(
                                                             () ->
-                                                                    new ApplicationException(
-                                                                            NOT_FOUND,
-                                                                            String.format(
-                                                                                    "Unable to find definition for %s",
-                                                                                    workflowId))));
+                                                                    new NotFoundException(
+                                                                            "Unable to find definition for %s",
+                                                                            workflowId)));
         }
 
         if (!workflowDef.isRestartable()
@@ -696,8 +544,7 @@ public class WorkflowExecutor {
                                 WorkflowModel.Status
                                         .COMPLETED)) { // Can only restart non-completed workflows
             // when the configuration is set to false
-            throw new ApplicationException(
-                    CONFLICT, String.format("Workflow: %s is non-restartable", workflow));
+            throw new NotFoundException("Workflow: %s is non-restartable", workflow);
         }
 
         // Reset the workflow in the primary datastore and remove from indexer; then re-create it
@@ -725,7 +572,7 @@ public class WorkflowExecutor {
         }
 
         metadataMapperService.populateWorkflowWithDefinitions(workflow);
-        decide(workflow.getWorkflowId());
+        decide(workflowId);
 
         updateAndPushParents(workflow, "restarted");
     }
@@ -740,11 +587,11 @@ public class WorkflowExecutor {
     public void retry(String workflowId, boolean resumeSubworkflowTasks) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         if (!workflow.getStatus().isTerminal()) {
-            throw new ApplicationException(
-                    CONFLICT, "Workflow is still running.  status=" + workflow.getStatus());
+            throw new NotFoundException(
+                    "Workflow is still running.  status=%s", workflow.getStatus());
         }
         if (workflow.getTasks().isEmpty()) {
-            throw new ApplicationException(CONFLICT, "Workflow has not started yet");
+            throw new ConflictException("Workflow has not started yet");
         }
 
         if (resumeSubworkflowTasks) {
@@ -798,7 +645,7 @@ public class WorkflowExecutor {
             parentWorkflow.setStatus(WorkflowModel.Status.RUNNING);
             parentWorkflow.setLastRetriedTime(System.currentTimeMillis());
             executionDAOFacade.updateWorkflow(parentWorkflow);
-            pushParentWorkflow(parentWorkflowId);
+            expediteLazyWorkflowEvaluation(parentWorkflowId);
 
             workflow = parentWorkflow;
         }
@@ -838,8 +685,7 @@ public class WorkflowExecutor {
         // it may not have any unsuccessful tasks that can be retried
         if (retriableMap.values().size() == 0
                 && workflow.getStatus() != WorkflowModel.Status.TIMED_OUT) {
-            throw new ApplicationException(
-                    CONFLICT,
+            throw new ConflictException(
                     "There are no retryable tasks! Use restart if you want to attempt entire workflow execution again.");
         }
 
@@ -931,19 +777,17 @@ public class WorkflowExecutor {
         return taskToBeRetried;
     }
 
-    private void endExecution(WorkflowModel workflow, Optional<TaskModel> terminateTask) {
-        if (terminateTask.isPresent()) {
+    private void endExecution(WorkflowModel workflow, TaskModel terminateTask) {
+        if (terminateTask != null) {
             String terminationStatus =
                     (String)
                             terminateTask
-                                    .get()
                                     .getWorkflowTask()
                                     .getInputParameters()
                                     .get(Terminate.getTerminationStatusParameter());
             String reason =
                     (String)
                             terminateTask
-                                    .get()
                                     .getWorkflowTask()
                                     .getInputParameters()
                                     .get(Terminate.getTerminationReasonParameter());
@@ -951,7 +795,7 @@ public class WorkflowExecutor {
                 reason =
                         String.format(
                                 "Workflow is %s by TERMINATE task: %s",
-                                terminationStatus, terminateTask.get().getTaskId());
+                                terminationStatus, terminateTask.getTaskId());
             }
             if (WorkflowModel.Status.FAILED.name().equals(terminationStatus)) {
                 workflow.setStatus(WorkflowModel.Status.FAILED);
@@ -959,7 +803,7 @@ public class WorkflowExecutor {
                         terminate(
                                 workflow,
                                 new TerminateWorkflowException(
-                                        reason, workflow.getStatus(), terminateTask.get()));
+                                        reason, workflow.getStatus(), terminateTask));
             } else {
                 workflow.setReasonForIncompletion(reason);
                 workflow = completeWorkflow(workflow);
@@ -972,7 +816,7 @@ public class WorkflowExecutor {
 
     /**
      * @param workflow the workflow to be completed
-     * @throws ApplicationException if workflow is not in terminal state
+     * @throws ConflictException if workflow is already in terminal state.
      */
     @VisibleForTesting
     WorkflowModel completeWorkflow(WorkflowModel workflow) {
@@ -990,28 +834,32 @@ public class WorkflowExecutor {
             String msg =
                     "Workflow is already in terminal state. Current status: "
                             + workflow.getStatus();
-            throw new ApplicationException(CONFLICT, msg);
+            throw new ConflictException(msg);
         }
 
-        // FIXME Backwards compatibility for legacy workflows already running.
-        // This code will be removed in a future version.
-        if (workflow.getWorkflowDefinition() == null) {
-            workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
-        }
         deciderService.updateWorkflowOutput(workflow, null);
 
         workflow.setStatus(WorkflowModel.Status.COMPLETED);
 
         // update the failed reference task names
+        List<TaskModel> failedTasks =
+                workflow.getTasks().stream()
+                        .filter(
+                                t ->
+                                        FAILED.equals(t.getStatus())
+                                                || FAILED_WITH_TERMINAL_ERROR.equals(t.getStatus()))
+                        .collect(Collectors.toList());
+
         workflow.getFailedReferenceTaskNames()
                 .addAll(
-                        workflow.getTasks().stream()
-                                .filter(
-                                        t ->
-                                                FAILED.equals(t.getStatus())
-                                                        || FAILED_WITH_TERMINAL_ERROR.equals(
-                                                                t.getStatus()))
+                        failedTasks.stream()
                                 .map(TaskModel::getReferenceTaskName)
+                                .collect(Collectors.toSet()));
+
+        workflow.getFailedTaskNames()
+                .addAll(
+                        failedTasks.stream()
+                                .map(TaskModel::getTaskDefName)
                                 .collect(Collectors.toSet()));
 
         executionDAOFacade.updateWorkflow(workflow);
@@ -1029,7 +877,7 @@ public class WorkflowExecutor {
                     workflow.toShortString(),
                     workflow.getParentWorkflowId(),
                     workflow.getParentWorkflowTaskId());
-            pushParentWorkflow(workflow.getParentWorkflowId());
+            expediteLazyWorkflowEvaluation(workflow.getParentWorkflowId());
         }
 
         executionLockService.releaseLock(workflow.getWorkflowId());
@@ -1040,7 +888,7 @@ public class WorkflowExecutor {
     public void terminateWorkflow(String workflowId, String reason) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         if (WorkflowModel.Status.COMPLETED.equals(workflow.getStatus())) {
-            throw new ApplicationException(CONFLICT, "Cannot terminate a COMPLETED workflow.");
+            throw new ConflictException("Cannot terminate a COMPLETED workflow.");
         }
         workflow.setStatus(WorkflowModel.Status.TERMINATED);
         terminateWorkflow(workflow, reason, null);
@@ -1061,12 +909,6 @@ public class WorkflowExecutor {
                 workflow.setStatus(WorkflowModel.Status.TERMINATED);
             }
 
-            // FIXME Backwards compatibility for legacy workflows already running.
-            // This code will be removed in a future version.
-            if (workflow.getWorkflowDefinition() == null) {
-                workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
-            }
-
             try {
                 deciderService.updateWorkflowOutput(workflow, null);
             } catch (Exception e) {
@@ -1079,15 +921,25 @@ public class WorkflowExecutor {
             }
 
             // update the failed reference task names
+            List<TaskModel> failedTasks =
+                    workflow.getTasks().stream()
+                            .filter(
+                                    t ->
+                                            FAILED.equals(t.getStatus())
+                                                    || FAILED_WITH_TERMINAL_ERROR.equals(
+                                                            t.getStatus()))
+                            .collect(Collectors.toList());
+
             workflow.getFailedReferenceTaskNames()
                     .addAll(
-                            workflow.getTasks().stream()
-                                    .filter(
-                                            t ->
-                                                    FAILED.equals(t.getStatus())
-                                                            || FAILED_WITH_TERMINAL_ERROR.equals(
-                                                                    t.getStatus()))
+                            failedTasks.stream()
                                     .map(TaskModel::getReferenceTaskName)
+                                    .collect(Collectors.toSet()));
+
+            workflow.getFailedTaskNames()
+                    .addAll(
+                            failedTasks.stream()
+                                    .map(TaskModel::getTaskDefName)
                                     .collect(Collectors.toSet()));
 
             String workflowId = workflow.getWorkflowId();
@@ -1116,7 +968,7 @@ public class WorkflowExecutor {
                         workflow.toShortString(),
                         workflow.getParentWorkflowId(),
                         workflow.getParentWorkflowTaskId());
-                pushParentWorkflow(workflow.getParentWorkflowId());
+                expediteLazyWorkflowEvaluation(workflow.getParentWorkflowId());
             }
 
             if (!StringUtils.isBlank(failureWorkflow)) {
@@ -1167,8 +1019,7 @@ public class WorkflowExecutor {
 
             List<String> erroredTasks = cancelNonTerminalTasks(workflow);
             if (!erroredTasks.isEmpty()) {
-                throw new ApplicationException(
-                        Code.INTERNAL_ERROR,
+                throw new NonTransientException(
                         String.format(
                                 "Error canceling system tasks: %s",
                                 String.join(",", erroredTasks)));
@@ -1181,33 +1032,28 @@ public class WorkflowExecutor {
     }
 
     /**
-     * @param taskResult the task result to be updated
-     * @throws ApplicationException
+     * @param taskResult the task result to be updated.
+     * @throws IllegalArgumentException if the {@link TaskResult} is null.
+     * @throws NotFoundException if the Task is not found.
      */
     public void updateTask(TaskResult taskResult) {
         if (taskResult == null) {
-            throw new ApplicationException(
-                    ApplicationException.Code.INVALID_INPUT, "Task object is null");
+            throw new IllegalArgumentException("Task object is null");
+        } else if (taskResult.isExtendLease()) {
+            extendLease(taskResult);
+            return;
         }
 
         String workflowId = taskResult.getWorkflowInstanceId();
-        WorkflowModel workflowInstance = executionDAOFacade.getWorkflowModel(workflowId, true);
-
-        // FIXME Backwards compatibility for legacy workflows already running.
-        // This code will be removed in a future version.
-        if (workflowInstance.getWorkflowDefinition() == null) {
-            workflowInstance =
-                    metadataMapperService.populateWorkflowWithDefinitions(workflowInstance);
-        }
+        WorkflowModel workflowInstance = executionDAOFacade.getWorkflowModel(workflowId, false);
 
         TaskModel task =
                 Optional.ofNullable(executionDAOFacade.getTaskModel(taskResult.getTaskId()))
                         .orElseThrow(
                                 () ->
-                                        new ApplicationException(
-                                                ApplicationException.Code.NOT_FOUND,
-                                                "No such task found by id: "
-                                                        + taskResult.getTaskId()));
+                                        new NotFoundException(
+                                                "No such task found by id: %s",
+                                                taskResult.getTaskId()));
 
         LOGGER.debug("Task: {} belonging to Workflow {} being updated", task, workflowInstance);
 
@@ -1314,14 +1160,14 @@ public class WorkflowExecutor {
                     LOGGER.error(errorMsg, e);
                     Monitors.recordTaskQueueOpError(
                             task.getTaskType(), workflowInstance.getWorkflowName());
-                    throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, e);
+                    throw new TransientException(errorMsg, e);
                 }
                 break;
             default:
                 break;
         }
 
-        // Throw an ApplicationException if below operations fail to avoid workflow inconsistencies.
+        // Throw a TransientException if below operations fail to avoid workflow inconsistencies.
         try {
             executionDAOFacade.updateTask(task);
         } catch (Exception e) {
@@ -1331,7 +1177,7 @@ public class WorkflowExecutor {
                             task.getTaskId(), workflowId);
             LOGGER.error(errorMsg, e);
             Monitors.recordTaskUpdateError(task.getTaskType(), workflowInstance.getWorkflowName());
-            throw new ApplicationException(ApplicationException.Code.BACKEND_ERROR, e);
+            throw new TransientException(errorMsg, e);
         }
 
         taskResult.getLogs().forEach(taskExecLog -> taskExecLog.setTaskId(task.getTaskId()));
@@ -1345,7 +1191,81 @@ public class WorkflowExecutor {
             Monitors.recordTaskExecutionTime(
                     task.getTaskDefName(), lastDuration, false, task.getStatus());
         }
-        decide(workflowId);
+
+        // sync evaluate workflow only if the task is not within a forked branch
+        if (isLazyEvaluateWorkflow(workflowInstance.getWorkflowDefinition(), task)) {
+            expediteLazyWorkflowEvaluation(workflowId);
+        } else {
+            decide(workflowId);
+        }
+    }
+
+    private void extendLease(TaskResult taskResult) {
+        TaskModel task =
+                Optional.ofNullable(executionDAOFacade.getTaskModel(taskResult.getTaskId()))
+                        .orElseThrow(
+                                () ->
+                                        new NotFoundException(
+                                                "No such task found by id: %s",
+                                                taskResult.getTaskId()));
+
+        LOGGER.debug(
+                "Extend lease for Task: {} belonging to Workflow: {}",
+                task,
+                task.getWorkflowInstanceId());
+        if (!task.getStatus().isTerminal()) {
+            try {
+                executionDAOFacade.extendLease(task);
+            } catch (Exception e) {
+                String errorMsg =
+                        String.format(
+                                "Error extend lease for Task: %s belonging to Workflow: %s",
+                                task.getTaskId(), task.getWorkflowInstanceId());
+                LOGGER.error(errorMsg, e);
+                Monitors.recordTaskExtendLeaseError(task.getTaskType(), task.getWorkflowType());
+                throw new TransientException(errorMsg, e);
+            }
+        }
+    }
+
+    /**
+     * Determines if a workflow can be lazily evaluated, if it meets any of these criteria
+     *
+     * <ul>
+     *   <li>The task is NOT a loop task within DO_WHILE
+     *   <li>The task is one of the intermediate tasks in a branch within a FORK_JOIN
+     *   <li>The task is forked from a FORK_JOIN_DYNAMIC
+     * </ul>
+     *
+     * @param workflowDef The workflow definition of the workflow for which evaluation decision is
+     *     to be made
+     * @param task The task which is attempting to trigger the evaluation
+     * @return true if workflow can be lazily evaluated, false otherwise
+     */
+    @VisibleForTesting
+    boolean isLazyEvaluateWorkflow(WorkflowDef workflowDef, TaskModel task) {
+        if (task.isLoopOverTask()) {
+            return false;
+        }
+
+        String taskRefName = task.getReferenceTaskName();
+        List<WorkflowTask> workflowTasks = workflowDef.collectTasks();
+
+        List<WorkflowTask> forkTasks =
+                workflowTasks.stream()
+                        .filter(t -> t.getType().equals(TaskType.FORK_JOIN.name()))
+                        .collect(Collectors.toList());
+
+        List<WorkflowTask> joinTasks =
+                workflowTasks.stream()
+                        .filter(t -> t.getType().equals(TaskType.JOIN.name()))
+                        .collect(Collectors.toList());
+
+        if (forkTasks.stream().anyMatch(fork -> fork.has(taskRefName))) {
+            return joinTasks.stream().anyMatch(join -> join.getJoinOn().contains(taskRefName));
+        }
+
+        return workflowTasks.stream().noneMatch(t -> t.getTaskReferenceName().equals(taskRefName));
     }
 
     public TaskModel getTask(String taskId) {
@@ -1375,7 +1295,10 @@ public class WorkflowExecutor {
         return executionDAOFacade.getRunningWorkflowIds(workflowName, version);
     }
 
+    /** Records a metric for the "decide" process. */
     public WorkflowModel decide(String workflowId) {
+        StopWatch watch = new StopWatch();
+        watch.start();
         if (!executionLockService.acquireLock(workflowId)) {
             return null;
         }
@@ -1386,24 +1309,22 @@ public class WorkflowExecutor {
                 // This can happen if the workflowId is incorrect
                 return null;
             }
-            // FIXME Backwards compatibility for legacy workflows already running.
-            // This code will be removed in a future version.
-            workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
-
             return decide(workflow);
 
         } finally {
             executionLockService.releaseLock(workflowId);
+            watch.stop();
+            Monitors.recordWorkflowDecisionTime(watch.getTime());
         }
     }
 
     /**
      * @param workflow the workflow to evaluate the state for
-     * @return true if the workflow has completed (success or failed), false otherwise.
-     * @throws ApplicationException If there was an error - caller should retry in this case.
+     * @return true if the workflow has completed (success or failed), false otherwise. Note: This
+     *     method does not acquire the lock on the workflow and should ony be called / overridden if
+     *     No locking is required or lock is acquired externally
      */
-    public WorkflowModel decide(WorkflowModel workflow) {
-
+    WorkflowModel decide(WorkflowModel workflow) {
         if (workflow.getStatus().isTerminal()) {
             if (!workflow.getStatus().isSuccessful()) {
                 cancelNonTerminalTasks(workflow);
@@ -1452,15 +1373,10 @@ public class WorkflowExecutor {
                 return decide(workflow);
             }
 
-            if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
-                executionDAOFacade.updateWorkflow(workflow);
-            }
-            // Update the workflow to save workflow attributes.
-            executionDAOFacade.updateWorkflow(workflow);
             return workflow;
 
         } catch (TerminateWorkflowException twe) {
-            LOGGER.info("Execution terminated of workflow: {}", workflow.getWorkflowId(), twe);
+            LOGGER.info("Execution terminated of workflow: {}", workflow, twe);
             terminate(workflow, twe);
             return workflow;
         } catch (RuntimeException e) {
@@ -1508,8 +1424,7 @@ public class WorkflowExecutor {
                                                         workflow.getWorkflowVersion())
                                                 .orElseThrow(
                                                         () ->
-                                                                new ApplicationException(
-                                                                        BACKEND_ERROR,
+                                                                new TransientException(
                                                                         "Workflow Definition is not found")));
         if (workflowDef.containsType(TaskType.TASK_TYPE_SUB_WORKFLOW)
                 || workflow.getWorkflowDefinition()
@@ -1587,7 +1502,7 @@ public class WorkflowExecutor {
     }
 
     /**
-     * @throws ApplicationException if the workflow cannot be paused
+     * @throws ConflictException if the workflow is in terminal state.
      */
     public void pauseWorkflow(String workflowId) {
         try {
@@ -1595,9 +1510,9 @@ public class WorkflowExecutor {
             WorkflowModel.Status status = WorkflowModel.Status.PAUSED;
             WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, false);
             if (workflow.getStatus().isTerminal()) {
-                throw new ApplicationException(
-                        CONFLICT,
-                        "Workflow id " + workflowId + " has ended, status cannot be updated.");
+                throw new ConflictException(
+                        "Workflow %s has ended, status cannot be updated.",
+                        workflow.toShortString());
             }
             if (workflow.getStatus().equals(status)) {
                 return; // Already paused!
@@ -1657,10 +1572,6 @@ public class WorkflowExecutor {
 
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
 
-        // FIXME Backwards compatibility for legacy workflows already running.
-        // This code will be removed in a future version.
-        workflow = metadataMapperService.populateWorkflowWithDefinitions(workflow);
-
         // If the workflow is not running then cannot skip any task
         if (!workflow.getStatus().equals(WorkflowModel.Status.RUNNING)) {
             String errorMsg =
@@ -1710,7 +1621,7 @@ public class WorkflowExecutor {
             taskToBeSkipped.setOutputMessage(skipTaskRequest.getTaskOutputMessage());
         }
         executionDAOFacade.createTasks(Collections.singletonList(taskToBeSkipped));
-        decide(workflow);
+        decide(workflow.getWorkflowId());
     }
 
     public WorkflowModel getWorkflow(String workflowId, boolean includeTasks) {
@@ -1852,8 +1763,8 @@ public class WorkflowExecutor {
             for (TaskModel task : systemTasks) {
                 WorkflowSystemTask workflowSystemTask = systemTaskRegistry.get(task.getTaskType());
                 if (workflowSystemTask == null) {
-                    throw new ApplicationException(
-                            NOT_FOUND, "No system task found by name " + task.getTaskType());
+                    throw new NotFoundException(
+                            "No system task found by name %s", task.getTaskType());
                 }
                 if (task.getStatus() != null
                         && !task.getStatus().isTerminal()
@@ -1862,6 +1773,7 @@ public class WorkflowExecutor {
                 }
                 if (!workflowSystemTask.isAsync()) {
                     try {
+                        // start execution of synchronous system tasks
                         workflowSystemTask.start(workflow, task, this);
                     } catch (Exception e) {
                         String errorMsg =
@@ -1870,8 +1782,7 @@ public class WorkflowExecutor {
                                         task.getTaskType(),
                                         task.getTaskId(),
                                         task.getTaskDefName());
-                        throw new ApplicationException(
-                                ApplicationException.Code.INTERNAL_ERROR, errorMsg, e);
+                        throw new NonTransientException(errorMsg, e);
                     }
                     startedSystemTasks = true;
                     executionDAOFacade.updateTask(task);
@@ -1954,7 +1865,7 @@ public class WorkflowExecutor {
                     String.format(
                             "Workflow: %s is not in terminal state, unable to rerun.", workflow);
             LOGGER.error(errorMsg);
-            throw new ApplicationException(CONFLICT, errorMsg);
+            throw new ConflictException(errorMsg);
         }
         updateAndPushParents(workflow, "reran");
 
@@ -1969,6 +1880,8 @@ public class WorkflowExecutor {
             workflow.setReasonForIncompletion(null);
             workflow.setFailedTaskId(null);
             workflow.setFailedReferenceTaskNames(new HashSet<>());
+            workflow.setFailedTaskNames(new HashSet<>());
+
             if (correlationId != null) {
                 workflow.setCorrelationId(correlationId);
             }
@@ -2016,6 +1929,8 @@ public class WorkflowExecutor {
             workflow.setReasonForIncompletion(null);
             workflow.setFailedTaskId(null);
             workflow.setFailedReferenceTaskNames(new HashSet<>());
+            workflow.setFailedTaskNames(new HashSet<>());
+
             if (correlationId != null) {
                 workflow.setCorrelationId(correlationId);
             }
@@ -2072,7 +1987,6 @@ public class WorkflowExecutor {
                 }
             }
             executionDAOFacade.updateTask(rerunFromTask);
-
             decide(workflow.getWorkflowId());
             return true;
         }
@@ -2133,14 +2047,18 @@ public class WorkflowExecutor {
         subWorkflowSystemTask.execute(subWorkflow, subWorkflowTask, this);
     }
 
-    /** Pushes parent workflow id into the decider queue with a priority. */
-    private void pushParentWorkflow(String parentWorkflowId) {
-        if (queueDAO.containsMessage(DECIDER_QUEUE, parentWorkflowId)) {
-            queueDAO.postpone(DECIDER_QUEUE, parentWorkflowId, PARENT_WF_PRIORITY, 0);
+    /**
+     * Pushes workflow id into the decider queue with a higher priority to expedite evaluation.
+     *
+     * @param workflowId The workflow to be evaluated at higher priority
+     */
+    private void expediteLazyWorkflowEvaluation(String workflowId) {
+        if (queueDAO.containsMessage(DECIDER_QUEUE, workflowId)) {
+            queueDAO.postpone(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
         } else {
-            queueDAO.push(DECIDER_QUEUE, parentWorkflowId, PARENT_WF_PRIORITY, 0);
+            queueDAO.push(DECIDER_QUEUE, workflowId, EXPEDITED_PRIORITY, 0);
         }
 
-        LOGGER.info("Pushed parent workflow {} to {}", parentWorkflowId, DECIDER_QUEUE);
+        LOGGER.info("Pushed workflow {} to {} for expedited evaluation", workflowId, DECIDER_QUEUE);
     }
 }
