@@ -1458,10 +1458,6 @@ public class WorkflowExecutor {
                 return decide(workflow);
             }
 
-            if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
-                executionDAOFacade.updateWorkflow(workflow);
-            }
-
             return workflow;
 
         } catch (TerminateWorkflowException twe) {
