@@ -528,7 +528,13 @@ public class WorkflowExecutor {
             createWorkflow(workflow);
             executionDAOFacade.populateWorkflowAndTaskPayloadData(workflow);
             // then decide to see if anything needs to be done as part of the workflow
-            decide(workflow);
+            int hashCodeBeforeDecider = workflow.hashCode();
+            WorkflowModel workflowModel = decide(workflow);
+            int hashCodeAfterDecider = workflowModel.hashCode();
+            if (hashCodeAfterDecider != hashCodeBeforeDecider) {
+                // Since hashCode is different there has been some update which needs to be saved.
+                executionDAOFacade.updateWorkflow(workflowModel);
+            }
             Monitors.recordWorkflowStartSuccess(
                     workflow.getWorkflowName(),
                     String.valueOf(workflow.getWorkflowVersion()),
