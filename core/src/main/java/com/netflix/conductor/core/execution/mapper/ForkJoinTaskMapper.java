@@ -15,6 +15,7 @@ package com.netflix.conductor.core.execution.mapper;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +84,7 @@ public class ForkJoinTaskMapper implements TaskMapper {
         List<List<WorkflowTask>> forkTasks = workflowTask.getForkTasks();
         for (List<WorkflowTask> wfts : forkTasks) {
             WorkflowTask wft = wfts.get(0);
-            List<TaskModel> tasks2 =
+            Set<TaskModel> tasks2 =
                     taskMapperContext
                             .getDeciderService()
                             .getTasksToBeScheduled(workflowModel, wft, retryCount);
@@ -99,7 +100,7 @@ public class ForkJoinTaskMapper implements TaskMapper {
             throw new TerminateWorkflowException(
                     "Fork task definition is not followed by a join task.  Check the blueprint");
         }
-        List<TaskModel> joinTask =
+        Set<TaskModel> joinTask =
                 taskMapperContext
                         .getDeciderService()
                         .getTasksToBeScheduled(workflowModel, joinWorkflowTask, retryCount);

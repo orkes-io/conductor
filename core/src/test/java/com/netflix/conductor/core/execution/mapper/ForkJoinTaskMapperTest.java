@@ -12,11 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -113,9 +109,9 @@ public class ForkJoinTaskMapperTest {
         task3.setReferenceTaskName(wft3.getTaskReferenceName());
 
         Mockito.when(deciderService.getTasksToBeScheduled(workflow, wft1, 0))
-                .thenReturn(Collections.singletonList(task1));
+                .thenReturn(Set.of(task1));
         Mockito.when(deciderService.getTasksToBeScheduled(workflow, wft2, 0))
-                .thenReturn(Collections.singletonList(task3));
+                .thenReturn(Set.of(task3));
 
         String taskId = idGenerator.generate();
         TaskMapperContext taskMapperContext =
@@ -193,9 +189,9 @@ public class ForkJoinTaskMapperTest {
         task3.setReferenceTaskName(wft3.getTaskReferenceName());
 
         Mockito.when(deciderService.getTasksToBeScheduled(workflow, wft1, 0))
-                .thenReturn(Collections.singletonList(task1));
+                .thenReturn(Set.of(task1));
         Mockito.when(deciderService.getTasksToBeScheduled(workflow, wft2, 0))
-                .thenReturn(Collections.singletonList(task3));
+                .thenReturn(Set.of(task3));
 
         String taskId = idGenerator.generate();
 

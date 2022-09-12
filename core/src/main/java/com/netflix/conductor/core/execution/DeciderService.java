@@ -97,18 +97,18 @@ public class DeciderService {
                         .filter(t -> !t.getStatus().equals(SKIPPED) && !t.isExecuted())
                         .collect(Collectors.toList());
 
-        List<TaskModel> tasksToBeScheduled = new LinkedList<>();
+        Set<TaskModel> tasksToBeScheduled = new HashSet<>();
         if (unprocessedTasks.isEmpty()) {
             // this is the flow that the new workflow will go through
             tasksToBeScheduled = startWorkflow(workflow);
             if (tasksToBeScheduled == null) {
-                tasksToBeScheduled = new LinkedList<>();
+                tasksToBeScheduled = new HashSet<>();
             }
         }
         return decide(workflow, tasksToBeScheduled);
     }
 
-    private DeciderOutcome decide(final WorkflowModel workflow, List<TaskModel> preScheduledTasks)
+    private DeciderOutcome decide(final WorkflowModel workflow, Set<TaskModel> preScheduledTasks)
             throws TerminateWorkflowException {
 
         DeciderOutcome outcome = new DeciderOutcome();
@@ -215,7 +215,7 @@ public class DeciderService {
                     && !pendingTask.isRetried()
                     && pendingTask.getStatus().isTerminal()) {
                 pendingTask.setExecuted(true);
-                List<TaskModel> nextTasks = getNextTask(workflow, pendingTask);
+                Set<TaskModel> nextTasks = getNextTask(workflow, pendingTask);
                 if (pendingTask.isLoopOverTask()
                         && !TaskType.DO_WHILE.name().equals(pendingTask.getTaskType())
                         && !nextTasks.isEmpty()) {
@@ -260,8 +260,8 @@ public class DeciderService {
     }
 
     @VisibleForTesting
-    List<TaskModel> filterNextLoopOverTasks(
-            List<TaskModel> tasks, TaskModel pendingTask, WorkflowModel workflow) {
+    Set<TaskModel> filterNextLoopOverTasks(
+            Set<TaskModel> tasks, TaskModel pendingTask, WorkflowModel workflow) {
 
         // Update the task reference name and iteration
         tasks.forEach(
@@ -272,23 +272,23 @@ public class DeciderService {
                     nextTask.setIteration(pendingTask.getIteration());
                 });
 
-        List<String> tasksInWorkflow =
+        Set<String> tasksInWorkflow =
                 workflow.getTasks().stream()
                         .filter(
                                 runningTask ->
                                         runningTask.getStatus().equals(TaskModel.Status.IN_PROGRESS)
                                                 || runningTask.getStatus().isTerminal())
                         .map(TaskModel::getReferenceTaskName)
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
         return tasks.stream()
                 .filter(
                         runningTask ->
                                 !tasksInWorkflow.contains(runningTask.getReferenceTaskName()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
-    private List<TaskModel> startWorkflow(WorkflowModel workflow)
+    private Set<TaskModel> startWorkflow(WorkflowModel workflow)
             throws TerminateWorkflowException {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
@@ -338,7 +338,7 @@ public class DeciderService {
                                     return new TerminateWorkflowException(reason);
                                 });
 
-        return Collections.singletonList(rerunFromTask);
+        return Set.of(rerunFromTask);
     }
 
     /**
@@ -455,7 +455,7 @@ public class DeciderService {
         return noPendingSchedule;
     }
 
-    List<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
+    Set<TaskModel> getNextTask(WorkflowModel workflow, TaskModel task) {
         final WorkflowDef workflowDef = workflow.getWorkflowDefinition();
 
         // Get the following task after the last completed task
@@ -463,7 +463,7 @@ public class DeciderService {
                 && (TaskType.TASK_TYPE_DECISION.equals(task.getTaskType())
                         || TaskType.TASK_TYPE_SWITCH.equals(task.getTaskType()))) {
             if (task.getInputData().get("hasChildren") != null) {
-                return Collections.emptyList();
+                return Collections.emptySet();
             }
         }
 
@@ -484,14 +484,14 @@ public class DeciderService {
                                     runningTask
                                             .getReferenceTaskName()
                                             .equals(nextTaskReferenceName))) {
-                return Collections.emptyList();
+                return Collections.emptySet();
             }
         }
         if (taskToSchedule != null) {
             return getTasksToBeScheduled(workflow, taskToSchedule, 0);
         }
 
-        return Collections.emptyList();
+        return Collections.emptySet();
     }
 
     private String getNextTasksToBeScheduled(WorkflowModel workflow, TaskModel task) {
@@ -817,12 +817,12 @@ public class DeciderService {
         task.setReasonForIncompletion(reason);
     }
 
-    public List<TaskModel> getTasksToBeScheduled(
+    public Set<TaskModel> getTasksToBeScheduled(
             WorkflowModel workflow, WorkflowTask taskToSchedule, int retryCount) {
         return getTasksToBeScheduled(workflow, taskToSchedule, retryCount, null);
     }
 
-    public List<TaskModel> getTasksToBeScheduled(
+    public Set<TaskModel> getTasksToBeScheduled(
             WorkflowModel workflow,
             WorkflowTask taskToSchedule,
             int retryCount,
@@ -864,7 +864,7 @@ public class DeciderService {
         // in this workflow instance
         return taskMappers.get(taskType).getMappedTasks(taskMapperContext).stream()
                 .filter(task -> !tasksInWorkflow.contains(task.getReferenceTaskName()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     private boolean isTaskSkipped(WorkflowTask taskToSchedule, WorkflowModel workflow) {
@@ -891,8 +891,8 @@ public class DeciderService {
 
     public static class DeciderOutcome {
 
-        List<TaskModel> tasksToBeScheduled = new LinkedList<>();
-        List<TaskModel> tasksToBeUpdated = new LinkedList<>();
+        Set<TaskModel> tasksToBeScheduled = new HashSet<>();
+        Set<TaskModel> tasksToBeUpdated = new HashSet<>();
         boolean isComplete;
         TaskModel terminateTask;
 

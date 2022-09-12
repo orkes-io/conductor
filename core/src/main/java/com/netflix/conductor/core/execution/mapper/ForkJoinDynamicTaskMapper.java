@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -152,10 +147,12 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
         for (WorkflowTask dynForkTask :
                 dynForkTasks) { // TODO this is a cyclic dependency, break it out using function
             // composition
-            List<TaskModel> forkedTasks =
+            Set<TaskModel> forkedTasks =
                     taskMapperContext
                             .getDeciderService()
                             .getTasksToBeScheduled(workflowModel, dynForkTask, retryCount);
+
+            List<TaskModel> forkedTasksList = forkedTasks.stream().collect(Collectors.toList());
 
             // It's an error state if no forkedTasks can be decided upon. In the cases where we've
             // seen
@@ -202,7 +199,7 @@ public class ForkJoinDynamicTaskMapper implements TaskMapper {
             mappedTasks.addAll(forkedTasks);
             // Get the last of the dynamic tasks so that the join can be performed once this task is
             // done
-            TaskModel last = forkedTasks.get(forkedTasks.size() - 1);
+            TaskModel last = forkedTasksList.get(forkedTasksList.size() - 1);
             joinOnTaskRefs.add(last.getReferenceTaskName());
         }
 

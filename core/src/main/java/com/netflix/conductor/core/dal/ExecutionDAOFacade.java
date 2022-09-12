@@ -13,10 +13,7 @@
 package com.netflix.conductor.core.dal;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -409,9 +406,9 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public List<TaskModel> createTasks(List<TaskModel> tasks) {
+    public List<TaskModel> createTasks(Set<TaskModel> tasks) {
         tasks.forEach(this::externalizeTaskData);
-        return executionDAO.createTasks(tasks);
+        return executionDAO.createTasks(tasks.stream().collect(Collectors.toList()));
     }
 
     public List<Task> getTasksForWorkflow(String workflowId) {
@@ -501,7 +498,7 @@ public class ExecutionDAOFacade {
         }
     }
 
-    public void updateTasks(List<TaskModel> tasks) {
+    public void updateTasks(Set<TaskModel> tasks) {
         tasks.forEach(this::updateTask);
     }
 

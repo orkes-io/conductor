@@ -12,11 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -154,7 +150,7 @@ public class SwitchTaskMapperTest {
         theTask.setTaskId(idGenerator.generate());
 
         when(deciderService.getTasksToBeScheduled(workflowModel, task2, 0, null))
-                .thenReturn(Collections.singletonList(theTask));
+                .thenReturn(Set.of(theTask));
 
         TaskMapperContext taskMapperContext =
                 TaskMapperContext.newBuilder()
@@ -222,7 +218,7 @@ public class SwitchTaskMapperTest {
         theTask.setTaskId(idGenerator.generate());
 
         when(deciderService.getTasksToBeScheduled(workflowModel, task2, 0, null))
-                .thenReturn(Collections.singletonList(theTask));
+                .thenReturn(Set.of(theTask));
 
         TaskMapperContext taskMapperContext =
                 TaskMapperContext.newBuilder()

@@ -134,9 +134,9 @@ public class ForkJoinDynamicTaskMapperTest {
         simpleTask2.setReferenceTaskName("xdt2");
 
         when(deciderService.getTasksToBeScheduled(workflowModel, wt2, 0))
-                .thenReturn(Collections.singletonList(simpleTask1));
+                .thenReturn(Set.of(simpleTask1));
         when(deciderService.getTasksToBeScheduled(workflowModel, wt3, 0))
-                .thenReturn(Collections.singletonList(simpleTask2));
+                .thenReturn(Set.of(simpleTask2));
 
         String taskId = idGenerator.generate();
 
@@ -217,9 +217,9 @@ public class ForkJoinDynamicTaskMapperTest {
         simpleTask2.setReferenceTaskName("xdt2");
 
         when(deciderService.getTasksToBeScheduled(workflowModel, wt2, 0))
-                .thenReturn(Collections.singletonList(simpleTask1));
+                .thenReturn(Set.of(simpleTask1));
         when(deciderService.getTasksToBeScheduled(workflowModel, wt3, 0))
-                .thenReturn(Collections.singletonList(simpleTask2));
+                .thenReturn(Set.of(simpleTask2));
 
         String taskId = idGenerator.generate();
         TaskMapperContext taskMapperContext =
@@ -482,7 +482,7 @@ public class ForkJoinDynamicTaskMapperTest {
 
         // Empty list, this is a bad state, workflow should terminate
         when(deciderService.getTasksToBeScheduled(workflowModel, wt2, 0))
-                .thenReturn(new ArrayList<>());
+                .thenReturn(new HashSet<>());
 
         String taskId = idGenerator.generate();
         TaskMapperContext taskMapperContext =

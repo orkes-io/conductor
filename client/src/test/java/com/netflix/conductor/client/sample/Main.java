@@ -30,11 +30,11 @@ public class Main {
         // same or more than number of workers
 
         Worker worker1 = new SampleWorker("task_1");
-        Worker worker2 = new SampleWorker("task_5");
+//        Worker worker2 = new SampleWorker("task_5");
 
         // Create TaskRunnerConfigurer
         TaskRunnerConfigurer configurer =
-                new TaskRunnerConfigurer.Builder(taskClient, Arrays.asList(worker1, worker2))
+                new TaskRunnerConfigurer.Builder(taskClient, Arrays.asList(worker1))
                         .withThreadCount(threadCount)
                         .build();
 

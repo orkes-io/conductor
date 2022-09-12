@@ -704,16 +704,16 @@ public class WorkflowExecutor {
         // taskToBeRescheduled would set task `retried` to true, and hence it's important to
         // updateTasks after obtaining task copy from taskToBeRescheduled.
         final WorkflowModel finalWorkflow = workflow;
-        List<TaskModel> retriableTasks =
+        Set<TaskModel> retriableTasks =
                 retriableMap.values().stream()
                         .sorted(Comparator.comparingInt(TaskModel::getSeq))
                         .map(task -> taskToBeRescheduled(finalWorkflow, task))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
         dedupAndAddTasks(workflow, retriableTasks);
         // Note: updateTasks before updateWorkflow might fail when Workflow is archived and doesn't
         // exist in primary store.
-        executionDAOFacade.updateTasks(workflow.getTasks());
+        executionDAOFacade.updateTasks(workflow.getTasks().stream().collect(Collectors.toSet()));
         scheduleTask(workflow, retriableTasks);
     }
 
@@ -1337,9 +1337,9 @@ public class WorkflowExecutor {
                 return workflow;
             }
 
-            List<TaskModel> tasksToBeScheduled = outcome.tasksToBeScheduled;
+            Set<TaskModel> tasksToBeScheduled = outcome.tasksToBeScheduled;
             setTaskDomains(tasksToBeScheduled, workflow);
-            List<TaskModel> tasksToBeUpdated = outcome.tasksToBeUpdated;
+            Set<TaskModel> tasksToBeUpdated = outcome.tasksToBeUpdated;
 
             tasksToBeScheduled = dedupAndAddTasks(workflow, tasksToBeScheduled);
 
@@ -1365,10 +1365,6 @@ public class WorkflowExecutor {
 
             if (stateChanged) {
                 return decide(workflow);
-            }
-
-            if (!outcome.tasksToBeUpdated.isEmpty() || !tasksToBeScheduled.isEmpty()) {
-                executionDAOFacade.updateWorkflow(workflow);
             }
 
             return workflow;
@@ -1479,13 +1475,13 @@ public class WorkflowExecutor {
     }
 
     @VisibleForTesting
-    List<TaskModel> dedupAndAddTasks(WorkflowModel workflow, List<TaskModel> tasks) {
+    Set<TaskModel> dedupAndAddTasks(WorkflowModel workflow, Set<TaskModel> tasks) {
         Set<String> tasksInWorkflow =
                 workflow.getTasks().stream()
                         .map(task -> task.getReferenceTaskName() + "_" + task.getRetryCount())
                         .collect(Collectors.toSet());
 
-        List<TaskModel> dedupedTasks =
+        Set<TaskModel> dedupedTasks =
                 tasks.stream()
                         .filter(
                                 task ->
@@ -1493,7 +1489,7 @@ public class WorkflowExecutor {
                                                 task.getReferenceTaskName()
                                                         + "_"
                                                         + task.getRetryCount()))
-                        .collect(Collectors.toList());
+                        .collect(Collectors.toSet());
 
         workflow.getTasks().addAll(dedupedTasks);
         return dedupedTasks;
@@ -1618,7 +1614,7 @@ public class WorkflowExecutor {
             taskToBeSkipped.setInputMessage(skipTaskRequest.getTaskInputMessage());
             taskToBeSkipped.setOutputMessage(skipTaskRequest.getTaskOutputMessage());
         }
-        executionDAOFacade.createTasks(Collections.singletonList(taskToBeSkipped));
+        executionDAOFacade.createTasks(Set.of(taskToBeSkipped));
         decide(workflow.getWorkflowId());
     }
 
@@ -1647,7 +1643,7 @@ public class WorkflowExecutor {
     }
 
     @VisibleForTesting
-    void setTaskDomains(List<TaskModel> tasks, WorkflowModel workflow) {
+    void setTaskDomains(Set<TaskModel> tasks, WorkflowModel workflow) {
         Map<String, String> taskToDomain = workflow.getTaskToDomain();
         if (taskToDomain != null) {
             // Step 1: Apply * mapping to all tasks, if present.
@@ -1719,7 +1715,7 @@ public class WorkflowExecutor {
     }
 
     @VisibleForTesting
-    boolean scheduleTask(WorkflowModel workflow, List<TaskModel> tasks) {
+    boolean scheduleTask(WorkflowModel workflow, Set<TaskModel> tasks) {
         List<TaskModel> tasksToBeQueued;
         boolean startedSystemTasks = false;
 
@@ -1944,7 +1940,7 @@ public class WorkflowExecutor {
             executionDAOFacade.updateWorkflow(workflow);
             // update tasks in datastore to update workflow-tasks relationship for archived
             // workflows
-            executionDAOFacade.updateTasks(workflow.getTasks());
+            executionDAOFacade.updateTasks(workflow.getTasks().stream().collect(Collectors.toSet()));
             // Remove all tasks after the "rerunFromTask"
             List<TaskModel> filteredTasks = new ArrayList<>();
             for (TaskModel task : workflow.getTasks()) {
@@ -1994,7 +1990,7 @@ public class WorkflowExecutor {
     public void scheduleNextIteration(TaskModel loopTask, WorkflowModel workflow) {
         // Schedule only first loop over task. Rest will be taken care in Decider Service when this
         // task will get completed.
-        List<TaskModel> scheduledLoopOverTasks =
+        Set<TaskModel> scheduledLoopOverTasks =
                 deciderService.getTasksToBeScheduled(
                         workflow,
                         loopTask.getWorkflowTask().getLoopOver().get(0),

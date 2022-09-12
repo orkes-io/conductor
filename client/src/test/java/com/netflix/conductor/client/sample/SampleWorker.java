@@ -34,12 +34,12 @@ public class SampleWorker implements Worker {
     public TaskResult execute(Task task) {
         TaskResult result = new TaskResult(task);
         result.setStatus(Status.COMPLETED);
+        if (task.getPollCount() < 6) {
+            result.setCallbackAfterSeconds(60);
+        }
 
         // Register the output of the task
-        result.getOutputData().put("outputKey1", "value");
-        result.getOutputData().put("oddEven", 1);
-        result.getOutputData().put("mod", 4);
-
+        result.getOutputData().put("pollCount", task.getPollCount());
         return result;
     }
 }

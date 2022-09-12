@@ -12,10 +12,7 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.script.ScriptException;
 
@@ -106,7 +103,7 @@ public class DecisionTaskMapper implements TaskMapper {
                     selectedTasks.get(0); // Schedule the first task to be executed...
             // TODO break out this recursive call using function composition of what needs to be
             // done and then walk back the condition tree
-            List<TaskModel> caseTasks =
+            Set<TaskModel> caseTasks =
                     taskMapperContext
                             .getDeciderService()
                             .getTasksToBeScheduled(
