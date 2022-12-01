@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.common.metadata.tasks.TaskType;
 import org.springframework.stereotype.Component;
 
 /**
@@ -48,6 +49,6 @@ public class SystemTaskRegistry {
     }
 
     public boolean isSystemTask(String taskType) {
-        return registry.containsKey(taskType);
+        return registry.containsKey(taskType) && TaskType.TASK_TYPE_HTTP.equals(taskType);
     }
 }

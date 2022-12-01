@@ -68,8 +68,8 @@ public class WorkflowMonitor {
     }
 
     @Scheduled(
-            initialDelayString = "${conductor.workflow-monitor.stats.initial-delay:120000}",
-            fixedDelayString = "${conductor.workflow-monitor.stats.delay:60000}")
+            initialDelayString = "${conductor.workflow-monitor.stats.initial-delay:120}",
+            fixedDelayString = "${conductor.workflow-monitor.stats.delay:60}")
     public void reportMetrics() {
         try {
             if (refreshCounter <= 0) {

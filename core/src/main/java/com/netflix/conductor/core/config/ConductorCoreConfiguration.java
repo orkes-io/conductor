@@ -20,9 +20,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.dao.ExecutionDAO;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -76,8 +78,8 @@ public class ConductorCoreConfiguration {
             havingValue = "stub",
             matchIfMissing = true)
     @Bean
-    public WorkflowStatusListener workflowStatusListener() {
-        return new WorkflowStatusListenerStub();
+    public WorkflowStatusListener workflowStatusListener(ExecutionDAO executionDAO) {
+        return new WorkflowStatusListenerStub(executionDAO);
     }
 
     @Bean

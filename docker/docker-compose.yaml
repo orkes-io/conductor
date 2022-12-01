@@ -44,7 +44,7 @@ services:
     stdin_open: true
 
   elasticsearch:
-    image: elasticsearch:6.8.15
+    image: elasticsearch:7.6.12
     environment:
       - "ES_JAVA_OPTS=-Xms512m -Xmx1024m"
       - transport.host=0.0.0.0
@@ -67,6 +67,19 @@ services:
       options:
         max-size: "1k"
         max-file: "3"
+  rabbitmq:
+    image: rabbitmq:3.8.27
+    container_name: rabbitmq
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - 5672:5672
+      - 15672:15672
 
 volumes:
   esdata-conductor:

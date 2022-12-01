@@ -13,8 +13,11 @@
 package com.netflix.conductor.service;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.codahale.metrics.Metric;
+import com.netflix.conductor.metrics.MetricsCollector;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +60,11 @@ public class ExecutionService {
     private static final int POLL_COUNT_ONE = 1;
     private static final int POLLING_TIMEOUT_IN_MS = 100;
 
+    private final MetricsCollector metricsCollector;
+
     public ExecutionService(
             WorkflowExecutor workflowExecutor,
+            MetricsCollector metricsCollector,
             ExecutionDAOFacade executionDAOFacade,
             QueueDAO queueDAO,
             ConductorProperties properties,
@@ -68,6 +74,7 @@ public class ExecutionService {
         this.executionDAOFacade = executionDAOFacade;
         this.queueDAO = queueDAO;
         this.externalPayloadStorage = externalPayloadStorage;
+        this.metricsCollector = metricsCollector;
 
         this.queueTaskMessagePostponeSecs =
                 properties.getTaskExecutionPostponeDuration().getSeconds();
@@ -102,7 +109,7 @@ public class ExecutionService {
         List<String> taskIds = new LinkedList<>();
         List<Task> tasks = new LinkedList<>();
         try {
-            taskIds = queueDAO.pop(queueName, count, timeoutInMilliSecond);
+            taskIds =  metricsCollector.getTimer("batch_poll_pop").record(() -> queueDAO.pop(queueName, count, timeoutInMilliSecond));
         } catch (Exception e) {
             LOGGER.error(
                     "Error polling for task: {} from worker: {} in domain: {}, count: {}",
@@ -115,6 +122,7 @@ public class ExecutionService {
             Monitors.recordTaskPollError(taskType, domain, e.getClass().getSimpleName());
         }
 
+        long start = System.currentTimeMillis();
         for (String taskId : taskIds) {
             try {
                 TaskModel taskModel = executionDAOFacade.getTaskModel(taskId);
@@ -181,7 +189,8 @@ public class ExecutionService {
         }
         executionDAOFacade.updateTaskLastPoll(taskType, domain, workerId);
         Monitors.recordTaskPoll(queueName);
-        tasks.forEach(this::ackTaskReceived);
+        metricsCollector.getTimer("batch_poll_logic").record(System.currentTimeMillis() - start, TimeUnit.MILLISECONDS);
+        metricsCollector.getTimer("batch_poll_ack").record(() -> tasks.forEach(this::ackTaskReceived));
         return tasks;
     }
 

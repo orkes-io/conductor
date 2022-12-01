@@ -41,6 +41,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     implementation "org.springdoc:springdoc-openapi-ui:${revOpenapi}"
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.9.4'
+    implementation 'io.micrometer:micrometer-core:1.9.4'
+    implementation 'io.orkes.queues:orkes-conductor-queues:1.0.2'
 
     runtimeOnly "org.glassfish.jaxb:jaxb-runtime:${revJAXB}"
 
@@ -63,4 +66,8 @@ bootJar {
 
 springBoot {
     buildInfo()
+}
+
+repositories {
+    mavenCentral()
 }
