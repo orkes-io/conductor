@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.netflix.conductor.common.config.ObjectMapperProvider;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -240,9 +241,11 @@ public class RedisExecutionDAO extends BaseDynoDAO
                 task.getWorkflowType());
 
         recordRedisDaoRequests("updateTask", task.getTaskType(), task.getWorkflowType());
-
-        //jedisProxy.set(nsKey(TASK, task.getTaskId()), payload);
-        updateTaskIfLatest(nsKey(TASK, task.getTaskId()), payload);
+        if(isAsyncComplete(task)) {
+            updateTaskIfLatest(nsKey(TASK, task.getTaskId()), payload);
+        } else {
+            jedisProxy.set(nsKey(TASK, task.getTaskId()), payload);
+        }
 
         LOGGER.debug(
                 "Workflow task payload saved to TASK with taskKey: {}, workflowId: {}, taskId: {}, taskType: {} during updateTask",
@@ -810,6 +813,18 @@ public class RedisExecutionDAO extends BaseDynoDAO
 
     private Object updateTaskIfLatest(String key, String payload) {
         return jedisProxy.evalsha(scriptSha, Arrays.asList(key), Arrays.asList(payload));
+    }
+
+    private boolean isAsyncComplete(TaskModel task) {
+        if (task.getInputData().containsKey("asyncComplete")) {
+            return Optional.ofNullable(task.getInputData().get("asyncComplete"))
+                    .map(result -> (Boolean) result)
+                    .orElse(false);
+        } else {
+            return Optional.ofNullable(task.getWorkflowTask())
+                    .map(WorkflowTask::isAsyncComplete)
+                    .orElse(false);
+        }
     }
 
 }

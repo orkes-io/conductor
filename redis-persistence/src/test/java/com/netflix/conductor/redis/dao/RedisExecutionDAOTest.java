@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.redis.jedis.JedisStandalone;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,6 +91,8 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
         task.setReferenceTaskName("ref_name");
         task.setTaskDefName(taskDefName);
         task.setTaskType(taskDefName);
+        task.setWorkflowTask(new WorkflowTask());
+        task.getWorkflowTask().setAsyncComplete(false);
         task.setStatus(TaskModel.Status.IN_PROGRESS);
         List<TaskModel> tasks = executionDAO.createTasks(Collections.singletonList(task));
         assertEquals(1, tasks.size());
@@ -111,7 +114,27 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
         fromDAO = executionDAO.getTask(taskId);
         assertNotNull(fromDAO);
         assertEquals(task.getTaskId(), fromDAO.getTaskId());
+        assertEquals(task.getStatus(), fromDAO.getStatus());
+        //The task moves back to in progress since its not async complete
+        assertEquals(TaskModel.Status.IN_PROGRESS, fromDAO.getStatus());
+
+        task.setStatus(TaskModel.Status.COMPLETED);
+        task.getWorkflowTask().setAsyncComplete(true);
+        executionDAO.updateTask(task);
+
+        fromDAO = executionDAO.getTask(taskId);
+        assertNotNull(fromDAO);
+        assertEquals(task.getTaskId(), fromDAO.getTaskId());
+        assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
+
+        //Now, let's mark the task as in progress while its marked as async omplete
+        task.setStatus(TaskModel.Status.IN_PROGRESS);
+        executionDAO.updateTask(task);
+        fromDAO = executionDAO.getTask(taskId);
+        assertNotNull(fromDAO);
+        assertEquals(task.getTaskId(), fromDAO.getTaskId());
         assertNotEquals(task.getStatus(), fromDAO.getStatus());
+        //The task status does not change
         assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
 
     }
