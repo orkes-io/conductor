@@ -18,6 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -373,6 +374,26 @@ public class WorkflowDef extends BaseDef {
             tasks.addAll(workflowTask.collectTasks());
         }
         return tasks;
+    }
+
+    public Map<String, Integer> buildTaskLevelMap() {
+        Map<String, Integer> map = new HashMap<>();
+        AtomicInteger level= new AtomicInteger(1);
+        this.tasks.forEach(workflowTask -> {
+            map.put(workflowTask.getTaskReferenceName(), level.get());
+            fillMapFurther(workflowTask, map, level.get() +1);
+            level.getAndIncrement();
+        });
+        return map;
+    }
+
+    private void fillMapFurther(WorkflowTask workflowTask, Map<String, Integer> map, int level) {
+        workflowTask.children().forEach(workflowTasks -> {
+            workflowTasks.forEach(workflowTask1 -> {
+                map.put(workflowTask1.getTaskReferenceName(), level);
+                fillMapFurther(workflowTask1, map, level+1);
+            });
+        });
     }
 
     @Override
