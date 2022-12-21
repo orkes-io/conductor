@@ -17,9 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.netflix.conductor.common.config.ObjectMapperProvider;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Conditional;
@@ -27,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.core.exception.TransientException;
 import com.netflix.conductor.dao.ConcurrentExecutionLimitDAO;
@@ -241,7 +239,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
                 task.getWorkflowType());
 
         recordRedisDaoRequests("updateTask", task.getTaskType(), task.getWorkflowType());
-        if(isAsyncComplete(task)) {
+        if (isAsyncComplete(task)) {
             updateTaskIfLatest(nsKey(TASK, task.getTaskId()), payload);
         } else {
             jedisProxy.set(nsKey(TASK, task.getTaskId()), payload);
@@ -799,7 +797,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
             LOGGER.info("script stream {}", new String(script));
             System.out.println(new String(script));
             byte[] response = jedisProxy.scriptLoad(script);
-            if(response == null || response.length == 0) {
+            if (response == null || response.length == 0) {
                 throw new RuntimeException("Unable to load script ");
             }
             String sha = new String(response);
@@ -826,5 +824,4 @@ public class RedisExecutionDAO extends BaseDynoDAO
                     .orElse(false);
         }
     }
-
 }

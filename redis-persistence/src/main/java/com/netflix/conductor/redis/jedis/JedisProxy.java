@@ -231,7 +231,8 @@ public class JedisProxy {
     }
 
     public byte[] scriptLoad(byte[] script) {
-        LOGGER.info("scriptLoad, jedisCommands is {} - {}", jedisCommands, jedisCommands.getClass());
+        LOGGER.info(
+                "scriptLoad, jedisCommands is {} - {}", jedisCommands, jedisCommands.getClass());
         if (jedisCommands instanceof JedisStandalone) {
             JedisStandalone jedis = (JedisStandalone) jedisCommands;
             return jedis.scriptLoad(script);

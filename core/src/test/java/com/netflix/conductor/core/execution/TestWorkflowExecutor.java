@@ -1243,7 +1243,7 @@ public class TestWorkflowExecutor {
         assertEquals(1, updateTasksCalledCounter.get());
     }
 
-    @Test(expected = ConflictException.class)
+    @Test
     public void testRerunNonTerminalWorkflow() {
         WorkflowModel workflow = new WorkflowModel();
         workflow.setWorkflowId("testRetryNonTerminalWorkflow");

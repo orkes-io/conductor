@@ -1858,6 +1858,9 @@ public class WorkflowExecutor {
 
         // Get the workflow
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
+
+        /*
+         You should be able to re-run completed workflows
         if (!workflow.getStatus().isTerminal()) {
             String errorMsg =
                     String.format(
@@ -1865,6 +1868,7 @@ public class WorkflowExecutor {
             LOGGER.error(errorMsg);
             throw new ConflictException(errorMsg);
         }
+         */
         updateAndPushParents(workflow, "reran");
 
         // If the task Id is null it implies that the entire workflow has to be rerun

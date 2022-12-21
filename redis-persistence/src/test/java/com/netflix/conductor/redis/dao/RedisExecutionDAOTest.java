@@ -17,32 +17,29 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
-import com.netflix.conductor.redis.jedis.JedisStandalone;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import com.netflix.conductor.common.config.TestObjectMapperConfiguration;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.config.ConductorProperties;
 import com.netflix.conductor.dao.ExecutionDAO;
 import com.netflix.conductor.dao.ExecutionDAOTest;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.redis.config.RedisProperties;
-import com.netflix.conductor.redis.jedis.JedisMock;
 import com.netflix.conductor.redis.jedis.JedisProxy;
+import com.netflix.conductor.redis.jedis.JedisStandalone;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.commands.JedisCommands;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -55,7 +52,6 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
     private static GenericContainer redis =
             new GenericContainer(DockerImageName.parse("redis:6.2.6-alpine"))
                     .withExposedPorts(6379);
-
 
     private RedisExecutionDAO executionDAO;
 
@@ -76,7 +72,9 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
         RedisProperties properties = mock(RedisProperties.class);
         when(properties.getEventExecutionPersistenceTTL()).thenReturn(Duration.ofSeconds(5));
         JedisStandalone standalone = new JedisStandalone(jedisPool);
-        executionDAO = new RedisExecutionDAO(new JedisProxy(standalone), objectMapper, conductorProperties, properties);
+        executionDAO =
+                new RedisExecutionDAO(
+                        new JedisProxy(standalone), objectMapper, conductorProperties, properties);
     }
 
     @Test
@@ -108,14 +106,14 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
         assertEquals(task.getStatus(), fromDAO.getStatus());
         assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
 
-        //Let's try to update the task back to in progress
+        // Let's try to update the task back to in progress
         task.setStatus(TaskModel.Status.IN_PROGRESS);
         executionDAO.updateTask(task);
         fromDAO = executionDAO.getTask(taskId);
         assertNotNull(fromDAO);
         assertEquals(task.getTaskId(), fromDAO.getTaskId());
         assertEquals(task.getStatus(), fromDAO.getStatus());
-        //The task moves back to in progress since its not async complete
+        // The task moves back to in progress since its not async complete
         assertEquals(TaskModel.Status.IN_PROGRESS, fromDAO.getStatus());
 
         task.setStatus(TaskModel.Status.COMPLETED);
@@ -127,16 +125,15 @@ public class RedisExecutionDAOTest extends ExecutionDAOTest {
         assertEquals(task.getTaskId(), fromDAO.getTaskId());
         assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
 
-        //Now, let's mark the task as in progress while its marked as async omplete
+        // Now, let's mark the task as in progress while its marked as async omplete
         task.setStatus(TaskModel.Status.IN_PROGRESS);
         executionDAO.updateTask(task);
         fromDAO = executionDAO.getTask(taskId);
         assertNotNull(fromDAO);
         assertEquals(task.getTaskId(), fromDAO.getTaskId());
         assertNotEquals(task.getStatus(), fromDAO.getStatus());
-        //The task status does not change
+        // The task status does not change
         assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
-
     }
 
     @Test
