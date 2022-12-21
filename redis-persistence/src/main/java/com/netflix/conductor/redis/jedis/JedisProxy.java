@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.redis.config.AnyRedisCondition;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
@@ -227,5 +228,26 @@ public class JedisProxy {
 
     public Long scard(String key) {
         return jedisCommands.scard(key);
+    }
+
+    public byte[] scriptLoad(byte[] script) {
+        LOGGER.info("scriptLoad, jedisCommands is {} - {}", jedisCommands, jedisCommands.getClass());
+        if (jedisCommands instanceof JedisStandalone) {
+            JedisStandalone jedis = (JedisStandalone) jedisCommands;
+            return jedis.scriptLoad(script);
+        }
+        if (jedisCommands instanceof Jedis) {
+            Jedis jedis = (Jedis) jedisCommands;
+            return jedis.scriptLoad(script);
+        }
+        return null;
+    }
+
+    public Object evalsha(String scriptSha, List<String> keys, List<String> args) {
+        if (jedisCommands instanceof JedisStandalone) {
+            JedisStandalone jedis = (JedisStandalone) jedisCommands;
+            return jedis.evalSha(scriptSha, keys, args);
+        }
+        return null;
     }
 }

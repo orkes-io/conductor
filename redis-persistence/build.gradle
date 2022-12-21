@@ -25,4 +25,5 @@ dependencies {
 
     testImplementation project(':conductor-core').sourceSets.test.output
     testImplementation project(':conductor-common').sourceSets.test.output
+    testImplementation "org.testcontainers:testcontainers:${revTestContainer}"
 }

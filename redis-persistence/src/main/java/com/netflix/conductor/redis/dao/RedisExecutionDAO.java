@@ -12,10 +12,13 @@
  */
 package com.netflix.conductor.redis.dao;
 
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.common.config.ObjectMapperProvider;
+import lombok.SneakyThrows;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Conditional;
@@ -37,6 +40,7 @@ import com.netflix.conductor.redis.jedis.JedisProxy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import redis.clients.jedis.Jedis;
 
 @Component
 @Conditional(AnyRedisCondition.class)
@@ -59,6 +63,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
     private static final String CORR_ID_TO_WORKFLOWS = "CORR_ID_TO_WORKFLOWS";
     private static final String EVENT_EXECUTION = "EVENT_EXECUTION";
     private final int ttlEventExecutionSeconds;
+    private String scriptSha;
 
     public RedisExecutionDAO(
             JedisProxy jedisProxy,
@@ -66,7 +71,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
             ConductorProperties conductorProperties,
             RedisProperties properties) {
         super(jedisProxy, objectMapper, conductorProperties, properties);
-
+        this.scriptSha = loadScript();
         ttlEventExecutionSeconds = (int) properties.getEventExecutionPersistenceTTL().getSeconds();
     }
 
@@ -235,7 +240,10 @@ public class RedisExecutionDAO extends BaseDynoDAO
                 task.getWorkflowType());
 
         recordRedisDaoRequests("updateTask", task.getTaskType(), task.getWorkflowType());
-        jedisProxy.set(nsKey(TASK, task.getTaskId()), payload);
+
+        //jedisProxy.set(nsKey(TASK, task.getTaskId()), payload);
+        updateTaskIfLatest(nsKey(TASK, task.getTaskId()), payload);
+
         LOGGER.debug(
                 "Workflow task payload saved to TASK with taskKey: {}, workflowId: {}, taskId: {}, taskType: {} during updateTask",
                 nsKey(TASK, task.getTaskId()),
@@ -764,4 +772,44 @@ public class RedisExecutionDAO extends BaseDynoDAO
             throw new IllegalArgumentException(npe.getMessage(), npe);
         }
     }
+
+    private static String loadScript(Jedis jedis) {
+        try {
+
+            InputStream stream = RedisExecutionDAO.class.getResourceAsStream("/task_update.lua");
+            byte[] script = stream.readAllBytes();
+            byte[] response = jedis.scriptLoad(script);
+            String sha = new String(response);
+            return sha;
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String loadScript() {
+        try {
+
+            InputStream stream = getClass().getResourceAsStream("/task_update.lua");
+            byte[] script = stream.readAllBytes();
+            LOGGER.info("script stream {}", new String(script));
+            System.out.println(new String(script));
+            byte[] response = jedisProxy.scriptLoad(script);
+            if(response == null || response.length == 0) {
+                throw new RuntimeException("Unable to load script ");
+            }
+            String sha = new String(response);
+            return sha;
+
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object updateTaskIfLatest(String key, String payload) {
+        return jedisProxy.evalsha(scriptSha, Arrays.asList(key), Arrays.asList(payload));
+    }
+
 }

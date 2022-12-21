@@ -959,4 +959,12 @@ public class JedisStandalone implements JedisCommands {
     public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
         return executeInJedis(jedis -> jedis.xinfoConsumers(key, group));
     }
+
+    public byte[] scriptLoad(byte[] script) {
+        return executeInJedis(jedis -> jedis.scriptLoad(script));
+    }
+
+    public Object evalSha(String scriptSha, List<String> keys, List<String> args) {
+        return executeInJedis(jedis -> jedis.evalsha(scriptSha, keys, args));
+    }
 }

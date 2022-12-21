@@ -15,7 +15,9 @@ package com.netflix.conductor.redis.dao;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
+import com.netflix.conductor.redis.jedis.JedisStandalone;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,10 +36,14 @@ import com.netflix.conductor.redis.jedis.JedisMock;
 import com.netflix.conductor.redis.jedis.JedisProxy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.utility.DockerImageName;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.commands.JedisCommands;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,20 +51,69 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 public class RedisExecutionDAOTest extends ExecutionDAOTest {
 
+    private static GenericContainer redis =
+            new GenericContainer(DockerImageName.parse("redis:6.2.6-alpine"))
+                    .withExposedPorts(6379);
+
+
     private RedisExecutionDAO executionDAO;
 
     @Autowired private ObjectMapper objectMapper;
 
     @Before
     public void init() {
+
+        redis.start();
+
+        JedisPoolConfig config = new JedisPoolConfig();
+        config.setMinIdle(2);
+        config.setMaxTotal(10);
+
+        JedisPool jedisPool = new JedisPool(config, redis.getHost(), redis.getFirstMappedPort());
+
         ConductorProperties conductorProperties = mock(ConductorProperties.class);
         RedisProperties properties = mock(RedisProperties.class);
         when(properties.getEventExecutionPersistenceTTL()).thenReturn(Duration.ofSeconds(5));
-        JedisCommands jedisMock = new JedisMock();
-        JedisProxy jedisProxy = new JedisProxy(jedisMock);
+        JedisStandalone standalone = new JedisStandalone(jedisPool);
+        executionDAO = new RedisExecutionDAO(new JedisProxy(standalone), objectMapper, conductorProperties, properties);
+    }
 
-        executionDAO =
-                new RedisExecutionDAO(jedisProxy, objectMapper, conductorProperties, properties);
+    @Test
+    public void testTaskUpdate() {
+        String taskId = UUID.randomUUID().toString();
+        String workflowId = UUID.randomUUID().toString();
+        String taskDefName = "simple_task_0";
+
+        TaskModel task = new TaskModel();
+        task.setTaskId(taskId);
+        task.setWorkflowInstanceId(workflowId);
+        task.setReferenceTaskName("ref_name");
+        task.setTaskDefName(taskDefName);
+        task.setTaskType(taskDefName);
+        task.setStatus(TaskModel.Status.IN_PROGRESS);
+        List<TaskModel> tasks = executionDAO.createTasks(Collections.singletonList(task));
+        assertEquals(1, tasks.size());
+        TaskModel fromDAO = executionDAO.getTask(taskId);
+        assertNotNull(fromDAO);
+        assertEquals(task.getTaskId(), fromDAO.getTaskId());
+
+        task.setStatus(TaskModel.Status.COMPLETED);
+        executionDAO.updateTask(task);
+        fromDAO = executionDAO.getTask(taskId);
+        assertNotNull(fromDAO);
+        assertEquals(task.getTaskId(), fromDAO.getTaskId());
+        assertEquals(task.getStatus(), fromDAO.getStatus());
+        assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
+
+        //Let's try to update the task back to in progress
+        task.setStatus(TaskModel.Status.IN_PROGRESS);
+        executionDAO.updateTask(task);
+        fromDAO = executionDAO.getTask(taskId);
+        assertNotNull(fromDAO);
+        assertEquals(task.getTaskId(), fromDAO.getTaskId());
+        assertNotEquals(task.getStatus(), fromDAO.getStatus());
+        assertEquals(TaskModel.Status.COMPLETED, fromDAO.getStatus());
+
     }
 
     @Test
