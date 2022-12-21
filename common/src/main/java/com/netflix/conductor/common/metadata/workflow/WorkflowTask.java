@@ -548,7 +548,7 @@ public class WorkflowTask {
         this.expression = expression;
     }
 
-    private Collection<List<WorkflowTask>> children() {
+    public Collection<List<WorkflowTask>> children() {
         Collection<List<WorkflowTask>> workflowTaskLists = new LinkedList<>();
 
         switch (TaskType.of(type)) {

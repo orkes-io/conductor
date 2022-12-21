@@ -13,6 +13,7 @@
 package com.netflix.conductor.core.execution;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -1582,6 +1583,29 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
+            // Check if all the tasks to be added in the queue belong to same level
+            if (!tasksToBeQueued.isEmpty() && tasksToBeQueued.size() > 1) {
+                Map<String, Integer> taskNameToLevel = workflow.getWorkflowDefinition().buildTaskLevelMap();
+                int level = taskNameToLevel.get(tasksToBeQueued.get(0).getReferenceTaskName());
+                boolean allTasksAtSameLevel = tasksToBeQueued.stream().allMatch(taskModel -> taskNameToLevel.get(taskModel.getReferenceTaskName()) == level);
+                if (!allTasksAtSameLevel) {
+                    // Find tasks at minimum level and schedule them
+                    tasksToBeQueued = getTasksToBeQueued(taskNameToLevel, tasksToBeQueued);
+                }
+            }
+//            else if (!tasksToBeQueued.isEmpty()) {
+//                // Check any task is scheduled already which is lower in order compare to task is going to be scheduled.
+//                boolean noTaskInScheduleState = tasksToBeQueued.stream().noneMatch(taskModel -> {
+//                    return workflow.getTasks().stream().filter(taskModel1 -> {
+//                        return taskModel1.getReferenceTaskName().equals(taskModel.getReferenceTaskName()) &&
+//                        taskModel1.getSeq() > taskModel.getSeq();
+//                    }).collect(Collectors.toList()).size() > 0;
+//                });
+//                if (!noTaskInScheduleState) {
+//                    tasksToBeQueued = new ArrayList<>();
+//                }
+//            }
+
             addTaskToQueue(tasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
@@ -1594,6 +1618,22 @@ public class WorkflowExecutor {
             Monitors.error(CLASS_NAME, "scheduleTask");
         }
         return startedSystemTasks;
+    }
+
+    private List<TaskModel> getTasksToBeQueued(Map<String, Integer> taskNameToLevel, List<TaskModel> tasksToBeQueued) {
+        TreeMap<Integer, List<TaskModel>> tasksWithLevels = new TreeMap<>();
+        tasksToBeQueued.forEach(taskModel -> {
+            int level = taskNameToLevel.get(taskModel.getReferenceTaskName());
+            if (tasksWithLevels.get(level) == null) {
+                tasksWithLevels.put(level, List.of(taskModel));
+            } else {
+                List<TaskModel> tasks = tasksWithLevels.get(level);
+                tasks.add(taskModel);
+                tasksWithLevels.put(level, tasks);
+            }
+        });
+        Optional<List<TaskModel>> firstValue = tasksWithLevels.values().stream().findFirst();
+        return firstValue.orElse(tasksToBeQueued);
     }
 
     private void addTaskToQueue(final List<TaskModel> tasks) {
@@ -1835,5 +1875,31 @@ public class WorkflowExecutor {
         }
 
         LOGGER.info("Pushed workflow {} to {} for expedited evaluation", workflowId, DECIDER_QUEUE);
+    }
+
+    public void retryTaskForRunningWorkflow(WorkflowModel workflow, List<String> taskIds) {
+        workflow.setStatus(WorkflowModel.Status.RUNNING);
+        workflow.setLastRetriedTime(System.currentTimeMillis());
+        // Add to decider queue
+        queueDAO.push(
+                DECIDER_QUEUE,
+                workflow.getWorkflowId(),
+                workflow.getPriority(),
+                properties.getWorkflowOffsetTimeout().getSeconds());
+        executionDAOFacade.updateWorkflow(workflow);
+
+        // taskToBeRescheduled would set task `retried` to true, and hence it's important to
+        // updateTasks after obtaining task copy from taskToBeRescheduled.
+        final WorkflowModel finalWorkflow = workflow;
+        List<TaskModel> retriableMap = taskIds.stream().map(executionDAOFacade::getTaskModel).collect(Collectors.toList());
+        List<TaskModel> retriableTasks =
+                retriableMap.stream()
+                        .map(task -> taskToBeRescheduled(finalWorkflow, task)).collect(Collectors.toList());
+
+        dedupAndAddTasks(workflow, retriableTasks);
+        // Note: updateTasks before updateWorkflow might fail when Workflow is archived and doesn't
+        // exist in primary store.
+        executionDAOFacade.updateTasks(workflow.getTasks());
+        scheduleTask(workflow, retriableTasks);
     }
 }
