@@ -212,9 +212,9 @@ public class WorkflowExecutor {
 
         if (!workflowDef.isRestartable()
                 && workflow.getStatus()
-                        .equals(
-                                WorkflowModel.Status
-                                        .COMPLETED)) { // Can only restart non-completed workflows
+                .equals(
+                        WorkflowModel.Status
+                                .COMPLETED)) { // Can only restart non-completed workflows
             // when the configuration is set to false
             throw new NotFoundException("Workflow: %s is non-restartable", workflow);
         }
@@ -301,7 +301,7 @@ public class WorkflowExecutor {
             workflowIdentifier =
                     !workflowIdentifier.equals("")
                             ? String.format(
-                                    "%s -> %s", currentWorkflowIdentifier, workflowIdentifier)
+                            "%s -> %s", currentWorkflowIdentifier, workflowIdentifier)
                             : currentWorkflowIdentifier;
             TaskExecLog log =
                     new TaskExecLog(
@@ -600,7 +600,7 @@ public class WorkflowExecutor {
                                     t ->
                                             FAILED.equals(t.getStatus())
                                                     || FAILED_WITH_TERMINAL_ERROR.equals(
-                                                            t.getStatus()))
+                                                    t.getStatus()))
                             .collect(Collectors.toList());
 
             workflow.getFailedReferenceTaskNames()
@@ -1073,7 +1073,7 @@ public class WorkflowExecutor {
             // find all terminal and unsuccessful JOIN tasks and set them to IN_PROGRESS
             if (workflow.getWorkflowDefinition().containsType(TaskType.TASK_TYPE_JOIN)
                     || workflow.getWorkflowDefinition()
-                            .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+                    .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
                 // if we are here, then the SUB_WORKFLOW task could be part of a FORK_JOIN or
                 // FORK_JOIN_DYNAMIC
                 // and the JOIN task(s) needs to be evaluated again, set them to IN_PROGRESS
@@ -1104,7 +1104,7 @@ public class WorkflowExecutor {
                                                                         "Workflow Definition is not found")));
         if (workflowDef.containsType(TaskType.TASK_TYPE_SUB_WORKFLOW)
                 || workflow.getWorkflowDefinition()
-                        .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+                .containsType(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
             return workflow.getTasks().stream()
                     .filter(
                             t ->
@@ -1483,29 +1483,7 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
-            // Check if all the tasks to be added in the queue belong to same level
-            if (!tasksToBeQueued.isEmpty() && tasksToBeQueued.size() > 1) {
-                Map<String, Integer> taskNameToLevel = workflow.getWorkflowDefinition().buildTaskLevelMap();
-                int level = taskNameToLevel.get(tasksToBeQueued.get(0).getReferenceTaskName());
-                boolean allTasksAtSameLevel = tasksToBeQueued.stream().allMatch(taskModel -> taskNameToLevel.get(taskModel.getReferenceTaskName()) == level);
-                if (!allTasksAtSameLevel) {
-                    // Find tasks at minimum level and schedule them
-                    tasksToBeQueued = getTasksToBeQueued(taskNameToLevel, tasksToBeQueued);
-                }
-            }
-//            else if (!tasksToBeQueued.isEmpty()) {
-//                // Check any task is scheduled already which is lower in order compare to task is going to be scheduled.
-//                boolean noTaskInScheduleState = tasksToBeQueued.stream().noneMatch(taskModel -> {
-//                    return workflow.getTasks().stream().filter(taskModel1 -> {
-//                        return taskModel1.getReferenceTaskName().equals(taskModel.getReferenceTaskName()) &&
-//                        taskModel1.getSeq() > taskModel.getSeq();
-//                    }).collect(Collectors.toList()).size() > 0;
-//                });
-//                if (!noTaskInScheduleState) {
-//                    tasksToBeQueued = new ArrayList<>();
-//                }
-//            }
-
+            tasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued, workflow);
             addTaskToQueue(tasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
@@ -1518,6 +1496,68 @@ public class WorkflowExecutor {
             Monitors.error(CLASS_NAME, "scheduleTask");
         }
         return startedSystemTasks;
+    }
+
+    @VisibleForTesting
+    List<TaskModel> getActualTasksToBeQueued(List<TaskModel> tasksToBeQueued, WorkflowModel workflowModel) {
+        if (!tasksToBeQueued.isEmpty()) {
+            Map<String, Integer> taskNameToLevel = workflowModel.getWorkflowDefinition().buildTaskLevelMap();
+            List<TaskModel> scheduledTasks = workflowModel.getTasks().stream().
+                    filter(taskModel -> taskModel.getStatus().equals(SCHEDULED)).
+                    collect(Collectors.toList());
+
+            if (scheduledTasks.isEmpty()) {
+                // Check if all the tasks to be added in the queue belong to same level
+                // If at same level schedule all, If not schedule the ones with minimum level
+                int level = taskNameToLevel.get(tasksToBeQueued.get(0).getReferenceTaskName());
+                boolean allTasksAtSameLevel = tasksToBeQueued.stream().allMatch(taskModel -> taskNameToLevel.get(taskModel.getReferenceTaskName()) == level);
+                if (!allTasksAtSameLevel) {
+                    // Find tasks at minimum level and schedule them
+                    tasksToBeQueued = getTasksToBeQueued(taskNameToLevel, tasksToBeQueued);
+                }
+            } else {
+                // If ScheduledTasks are present, merge both scheduledTask and TasksToBeQueued and schedule with minimum level
+                // Remove remaining scheduled tasks from the queue.
+                TreeMap<Integer, List<TaskModel>> scheduledTasksWithLevels = getScheduledTaskWithLevels(tasksToBeQueued,
+                        scheduledTasks, taskNameToLevel);
+                // Edge case for null check.
+                if (scheduledTasksWithLevels.size() > 0) {
+                    tasksToBeQueued = scheduledTasksWithLevels.pollFirstEntry().getValue();
+                    // Remove all existing scheduled tasks from the queue which are at higher level
+                    scheduledTasksWithLevels.values().forEach(taskModels ->
+                            taskModels.forEach(taskModel ->
+                                    queueDAO.remove(QueueUtils.getQueueName(taskModel), taskModel.getTaskId())));
+                }
+            }
+        }
+        return tasksToBeQueued;
+    }
+
+    private TreeMap<Integer, List<TaskModel>> getScheduledTaskWithLevels(List<TaskModel> tasksToBeQueued,
+                                                                         List<TaskModel> scheduledTasks,
+                                                                         Map<String, Integer> taskNameToLevel) {
+        TreeMap<Integer, List<TaskModel>> scheduledTasksWithLevels = new TreeMap<>();
+        tasksToBeQueued.forEach(taskModel -> {
+            int level = taskNameToLevel.get(taskModel.getReferenceTaskName());
+            if (scheduledTasksWithLevels.get(level) == null) {
+                scheduledTasksWithLevels.put(level, List.of(taskModel));
+            } else {
+                List<TaskModel> tasks = scheduledTasksWithLevels.get(level);
+                tasks.add(taskModel);
+                scheduledTasksWithLevels.put(level, tasks);
+            }
+        });
+        scheduledTasks.forEach(taskName -> {
+            int level = taskNameToLevel.get(taskName.getReferenceTaskName());
+            if (scheduledTasksWithLevels.get(level) == null) {
+                scheduledTasksWithLevels.put(level, List.of(taskName));
+            } else {
+                List<TaskModel> tasks = scheduledTasksWithLevels.get(level);
+                tasks.add(taskName);
+                scheduledTasksWithLevels.put(level, tasks);
+            }
+        });
+        return scheduledTasksWithLevels;
     }
 
     private List<TaskModel> getTasksToBeQueued(Map<String, Integer> taskNameToLevel, List<TaskModel> tasksToBeQueued) {
