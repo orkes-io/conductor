@@ -1518,11 +1518,11 @@ public class WorkflowExecutor {
             } else {
                 // If ScheduledTasks are present, merge both scheduledTask and TasksToBeQueued and schedule with minimum level
                 // Remove remaining scheduled tasks from the queue.
-                TreeMap<Integer, List<TaskModel>> scheduledTasksWithLevels = getScheduledTaskWithLevels(tasksToBeQueued,
+                TreeMap<Integer, Set<TaskModel>> scheduledTasksWithLevels = getScheduledTaskWithLevels(tasksToBeQueued,
                         scheduledTasks, taskNameToLevel);
                 // Edge case for null check.
                 if (scheduledTasksWithLevels.size() > 0) {
-                    tasksToBeQueued = scheduledTasksWithLevels.pollFirstEntry().getValue();
+                    tasksToBeQueued = new ArrayList<>(scheduledTasksWithLevels.pollFirstEntry().getValue());
                     // Remove all existing scheduled tasks from the queue which are at higher level
                     scheduledTasksWithLevels.values().forEach(taskModels ->
                             taskModels.forEach(taskModel ->
@@ -1533,16 +1533,18 @@ public class WorkflowExecutor {
         return tasksToBeQueued;
     }
 
-    private TreeMap<Integer, List<TaskModel>> getScheduledTaskWithLevels(List<TaskModel> tasksToBeQueued,
+    private TreeMap<Integer, Set<TaskModel>> getScheduledTaskWithLevels(List<TaskModel> tasksToBeQueued,
                                                                          List<TaskModel> scheduledTasks,
                                                                          Map<String, Integer> taskNameToLevel) {
-        TreeMap<Integer, List<TaskModel>> scheduledTasksWithLevels = new TreeMap<>();
+        TreeMap<Integer, Set<TaskModel>> scheduledTasksWithLevels = new TreeMap<>();
         tasksToBeQueued.forEach(taskModel -> {
             int level = taskNameToLevel.get(taskModel.getReferenceTaskName());
             if (scheduledTasksWithLevels.get(level) == null) {
-                scheduledTasksWithLevels.put(level, List.of(taskModel));
+                Set<TaskModel> list = new HashSet<>();
+                list.add(taskModel);
+                scheduledTasksWithLevels.put(level, list);
             } else {
-                List<TaskModel> tasks = scheduledTasksWithLevels.get(level);
+                Set<TaskModel> tasks = scheduledTasksWithLevels.get(level);
                 tasks.add(taskModel);
                 scheduledTasksWithLevels.put(level, tasks);
             }
@@ -1550,9 +1552,11 @@ public class WorkflowExecutor {
         scheduledTasks.forEach(taskName -> {
             int level = taskNameToLevel.get(taskName.getReferenceTaskName());
             if (scheduledTasksWithLevels.get(level) == null) {
-                scheduledTasksWithLevels.put(level, List.of(taskName));
+                Set<TaskModel> list = new HashSet<>();
+                list.add(taskName);
+                scheduledTasksWithLevels.put(level, list);
             } else {
-                List<TaskModel> tasks = scheduledTasksWithLevels.get(level);
+                Set<TaskModel> tasks = scheduledTasksWithLevels.get(level);
                 tasks.add(taskName);
                 scheduledTasksWithLevels.put(level, tasks);
             }
@@ -1565,7 +1569,9 @@ public class WorkflowExecutor {
         tasksToBeQueued.forEach(taskModel -> {
             int level = taskNameToLevel.get(taskModel.getReferenceTaskName());
             if (tasksWithLevels.get(level) == null) {
-                tasksWithLevels.put(level, List.of(taskModel));
+                List<TaskModel> list = new ArrayList<>();
+                list.add(taskModel);
+                tasksWithLevels.put(level, list);
             } else {
                 List<TaskModel> tasks = tasksWithLevels.get(level);
                 tasks.add(taskModel);
