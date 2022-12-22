@@ -17,10 +17,13 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.common.run.Workflow;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -2541,6 +2544,81 @@ public class TestWorkflowExecutor {
         verify(executionDAOFacade, times(1)).extendLease(simpleTask);
         verify(queueDAO, times(0)).postpone(anyString(), anyString(), anyInt(), anyLong());
         verify(executionDAOFacade, times(0)).updateTask(any());
+    }
+
+    @Test
+    public void testScheduleTask1() {
+        TaskModel taskModel1 = new TaskModel();
+        taskModel1.setReferenceTaskName("t1");
+        taskModel1.setTaskType(SIMPLE.name());
+        taskModel1.setStatus(TaskModel.Status.SCHEDULED);
+        TaskModel taskModel2 = new TaskModel();
+        taskModel2.setReferenceTaskName("t2");
+        taskModel2.setTaskType(SIMPLE.name());
+        taskModel2.setStatus(TaskModel.Status.COMPLETED);
+        TaskModel taskModel3 = new TaskModel();
+        taskModel3.setReferenceTaskName("t3");
+        taskModel3.setTaskType(SIMPLE.name());
+        taskModel3.setStatus(TaskModel.Status.SCHEDULED);
+        TaskModel taskModel4 = new TaskModel();
+        taskModel4.setReferenceTaskName("t4");
+        taskModel4.setTaskType(SIMPLE.name());
+        taskModel4.setStatus(TaskModel.Status.SCHEDULED);
+        WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
+        AtomicInteger atomicInteger = new AtomicInteger(0);
+        doAnswer(
+                invocation -> {
+                    atomicInteger.incrementAndGet();
+                    return null;
+                })
+                .when(queueDAO)
+                .remove(anyString(), anyString());
+
+        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(workflowModel.getTasks().get(0),
+                workflowModel.getTasks().get(2)) , workflowModel);
+
+        Assert.assertEquals(taskModels.size(), 1);
+        Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
+        Assert.assertEquals(2, atomicInteger.get());
+    }
+
+    private WorkflowModel getWorkflow(List<TaskModel> taskModels) {
+        // setup
+        WorkflowTask t1  =new WorkflowTask();
+        t1.setType(SIMPLE.toString());
+        t1.setName("t1");
+        t1.setTaskReferenceName("t1");
+        WorkflowTask t2  =new WorkflowTask();
+        t2.setType(SIMPLE.toString());
+        t2.setName("t2");
+        t2.setTaskReferenceName("t2");
+        WorkflowTask t3  =new WorkflowTask();
+        t3.setType(SIMPLE.toString());
+        t3.setName("t3");
+        t3.setTaskReferenceName("t3");
+        WorkflowTask t4  =new WorkflowTask();
+        t4.setType(SIMPLE.toString());
+        t4.setName("t4");
+        t4.setTaskReferenceName("t4");
+        WorkflowTask t5  =new WorkflowTask();
+        t5.setType(SIMPLE.toString());
+        t5.setName("t5");
+        t5.setTaskReferenceName("t5");
+
+        WorkflowDef workflowDef = new WorkflowDef();
+        workflowDef.setName("test_workflow");
+        workflowDef.setVersion(1);
+        workflowDef.setTasks(Arrays.asList(t1,t2,t3,t4,t5));
+        WorkflowModel workflow = new WorkflowModel();
+        workflow.setWorkflowId("test_workflow");
+        workflow.setWorkflowDefinition(workflowDef);
+        workflow.setOwnerApp("junit_test_workflow");
+        workflow.setCreateTime(10L);
+        workflow.setEndTime(100L);
+        workflow.setTasks(taskModels);
+        workflow.setStatus(WorkflowModel.Status.RUNNING);
+
+        return workflow;
     }
 
     private WorkflowModel generateSampleWorkflow() {
