@@ -12,7 +12,6 @@
  */
 package com.netflix.conductor.redis.jedis;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -238,7 +237,7 @@ public class JedisProxy {
         // JedisMock is used for testing and does not support scripting
         // Any test that requires script, should use redis container
         if (jedisCommands instanceof JedisMock) {
-            return "mock_script".getBytes(StandardCharsets.UTF_8);
+            return null;
         }
 
         if (jedisCommands instanceof JedisStandalone) {

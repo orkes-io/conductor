@@ -39,7 +39,6 @@ import com.netflix.conductor.redis.jedis.JedisProxy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import redis.clients.jedis.Jedis;
 
 @Component
 @Conditional(AnyRedisCondition.class)
@@ -771,21 +770,6 @@ public class RedisExecutionDAO extends BaseDynoDAO
                     task.getReferenceTaskName(), "Task reference name cannot be null");
         } catch (NullPointerException npe) {
             throw new IllegalArgumentException(npe.getMessage(), npe);
-        }
-    }
-
-    private static String loadScript(Jedis jedis) {
-        try {
-
-            InputStream stream = RedisExecutionDAO.class.getResourceAsStream("/task_update.lua");
-            byte[] script = stream.readAllBytes();
-            byte[] response = jedis.scriptLoad(script);
-            String sha = new String(response);
-            return sha;
-
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage(), e);
-            throw new RuntimeException(e);
         }
     }
 
