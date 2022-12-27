@@ -235,8 +235,8 @@ public class JedisProxy {
         LOGGER.info(
                 "scriptLoad, jedisCommands is {} - {}", jedisCommands, jedisCommands.getClass());
 
-        //JedisMock is used for testing and does not support scripting
-        //Any test that requires script, should use redis container
+        // JedisMock is used for testing and does not support scripting
+        // Any test that requires script, should use redis container
         if (jedisCommands instanceof JedisMock) {
             return "mock_script".getBytes(StandardCharsets.UTF_8);
         }

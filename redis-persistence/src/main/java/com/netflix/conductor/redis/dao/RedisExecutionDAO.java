@@ -40,7 +40,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
 
 @Component
 @Conditional(AnyRedisCondition.class)
@@ -811,7 +810,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
     }
 
     private Object updateTaskIfLatest(String key, String payload) {
-        if(scriptSha == null) {
+        if (scriptSha == null) {
             return jedisProxy.set(key, payload);
         }
         return jedisProxy.evalsha(scriptSha, Arrays.asList(key), Arrays.asList(payload));
