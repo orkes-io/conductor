@@ -1175,4 +1175,8 @@ public class JedisMock extends Jedis {
             throw new JedisException(e);
         }
     }
+
+    public String scriptLoad(String script) {
+        return null;
+    }
 }

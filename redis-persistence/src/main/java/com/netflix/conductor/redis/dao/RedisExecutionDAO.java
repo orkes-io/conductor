@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 @Component
 @Conditional(AnyRedisCondition.class)
@@ -798,7 +799,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
             System.out.println(new String(script));
             byte[] response = jedisProxy.scriptLoad(script);
             if (response == null || response.length == 0) {
-                throw new RuntimeException("Unable to load script ");
+                return null;
             }
             String sha = new String(response);
             return sha;
@@ -810,6 +811,9 @@ public class RedisExecutionDAO extends BaseDynoDAO
     }
 
     private Object updateTaskIfLatest(String key, String payload) {
+        if(scriptSha == null) {
+            return jedisProxy.set(key, payload);
+        }
         return jedisProxy.evalsha(scriptSha, Arrays.asList(key), Arrays.asList(payload));
     }
 
