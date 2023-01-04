@@ -2537,14 +2537,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
@@ -2553,7 +2545,7 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(0)).remove(anyString(), anyString());
     }
 
     @Test
@@ -2564,14 +2556,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
@@ -2580,7 +2564,7 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(2)).remove(anyString(), anyString());
     }
 
     @Test
@@ -2591,14 +2575,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
         WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
@@ -2608,7 +2584,7 @@ public class TestWorkflowExecutor {
         Assert.assertEquals(taskModels.size(), 2);
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(0)).remove(anyString(), anyString());
     }
 
     @Test
@@ -2620,14 +2596,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel5 = getTaskModel("t5", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4, taskModel5));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
@@ -2637,7 +2605,8 @@ public class TestWorkflowExecutor {
         Assert.assertEquals(taskModels.size(), 2);
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(1)).remove(anyString(), anyString());
+
     }
 
     @Test
@@ -2649,14 +2618,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
@@ -2664,8 +2625,6 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t3");
-        Assert.assertEquals(2, atomicInteger.get());
-
         // Now T2 got reset so T3 (given it is still scheduled and worker has not polled) should be removed from queue
         // and T2 should get chance
         TaskModel taskModel22 = new TaskModel();
@@ -2676,7 +2635,8 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t2");
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(2)).remove(anyString(), anyString());
+
     }
 
     @Test
@@ -2688,14 +2648,6 @@ public class TestWorkflowExecutor {
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
         WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
-        AtomicInteger atomicInteger = new AtomicInteger(0);
-        doAnswer(
-                invocation -> {
-                    atomicInteger.incrementAndGet();
-                    return null;
-                })
-                .when(queueDAO)
-                .remove(anyString(), anyString());
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
@@ -2705,7 +2657,6 @@ public class TestWorkflowExecutor {
         Assert.assertEquals(taskModels.size(), 2);
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
-        Assert.assertEquals(2, atomicInteger.get());
 
         // Now T1 got reset, it should get chance and T2 and t3 should be removed from the queue.
         TaskModel taskModel21 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
@@ -2713,7 +2664,7 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t1".equals(taskModel.getReferenceTaskName())));
-        Assert.assertEquals(2, atomicInteger.get());
+        verify(queueDAO, times(0)).remove(anyString(), anyString());
     }
 
     private TaskModel getTaskModel(String name, String type, TaskModel.Status status) {
@@ -2721,6 +2672,7 @@ public class TestWorkflowExecutor {
         taskModel.setReferenceTaskName(name);
         taskModel.setTaskType(type);
         taskModel.setStatus(status);
+        taskModel.setTaskId(UUID.randomUUID().toString());
         return taskModel;
     }
 
