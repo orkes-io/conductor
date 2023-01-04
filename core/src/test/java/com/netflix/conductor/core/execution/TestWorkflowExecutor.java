@@ -17,13 +17,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.netflix.conductor.common.run.Workflow;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -2536,12 +2534,15 @@ public class TestWorkflowExecutor {
         TaskModel taskModel1 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
-        WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3));
+        WorkflowModel workflowModel =
+                getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3));
 
         TaskModel taskModel11 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(taskModel11, taskModel22) , workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(
+                        Arrays.asList(taskModel11, taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
@@ -2555,12 +2556,15 @@ public class TestWorkflowExecutor {
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", SIMPLE.name(), TaskModel.Status.SCHEDULED);
-        WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
+        WorkflowModel workflowModel =
+                getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
 
         TaskModel taskModel11 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(taskModel11, taskModel22) , workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(
+                        Arrays.asList(taskModel11, taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
@@ -2569,21 +2573,29 @@ public class TestWorkflowExecutor {
 
     @Test
     public void testScheduleTask3() {
-        // T2 and T3 get reset and at same level (part of fork) and no task is scheduled in the workflow.
+        // T2 and T3 get reset and at same level (part of fork) and no task is scheduled in the
+        // workflow.
         TaskModel taskModel1 = getTaskModel("t1", FORK_JOIN.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
-        WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
+        WorkflowModel workflowModel =
+                getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(taskModel11, taskModel22) , workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(
+                        Arrays.asList(taskModel11, taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 2);
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
         verify(queueDAO, times(0)).remove(anyString(), anyString());
     }
 
@@ -2595,18 +2607,25 @@ public class TestWorkflowExecutor {
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel5 = getTaskModel("t5", SIMPLE.name(), TaskModel.Status.SCHEDULED);
-        WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4, taskModel5));
+        WorkflowModel workflowModel =
+                getForkWorkflow(
+                        Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4, taskModel5));
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(taskModel11, taskModel22) , workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(
+                        Arrays.asList(taskModel11, taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 2);
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
         verify(queueDAO, times(1)).remove(anyString(), anyString());
-
     }
 
     @Test
@@ -2617,15 +2636,18 @@ public class TestWorkflowExecutor {
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", SIMPLE.name(), TaskModel.Status.SCHEDULED);
-        WorkflowModel workflowModel = getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
+        WorkflowModel workflowModel =
+                getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(List.of(taskModel11), workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(List.of(taskModel11), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t3");
-        // Now T2 got reset so T3 (given it is still scheduled and worker has not polled) should be removed from queue
+        // Now T2 got reset so T3 (given it is still scheduled and worker has not polled) should be
+        // removed from queue
         // and T2 should get chance
         TaskModel taskModel22 = new TaskModel();
         taskModel22.setReferenceTaskName("t2");
@@ -2636,34 +2658,43 @@ public class TestWorkflowExecutor {
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t2");
         verify(queueDAO, times(2)).remove(anyString(), anyString());
-
     }
 
     @Test
     public void testScheduleTask6() {
-        // T2 get reset at same level and T3 is scheduled in the workflow. so T3 and T4 both scheduled.
+        // T2 get reset at same level and T3 is scheduled in the workflow. so T2 and T3 both
+        // scheduled.
         // T1 got reset after that so T1 should get chance. and T2 and T3 should get removed.
         TaskModel taskModel1 = getTaskModel("t1", FORK_JOIN.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED);
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED);
-        WorkflowModel workflowModel = getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
+        WorkflowModel workflowModel =
+                getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
 
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED);
 
-        List<TaskModel> taskModels = workflowExecutor.getActualTasksToBeQueued(Arrays.asList(taskModel11, taskModel22) , workflowModel);
+        List<TaskModel> taskModels =
+                workflowExecutor.getActualTasksToBeQueued(
+                        Arrays.asList(taskModel11, taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 2);
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t2".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t3".equals(taskModel.getReferenceTaskName())));
 
         // Now T1 got reset, it should get chance and T2 and t3 should be removed from the queue.
         TaskModel taskModel21 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED);
         taskModels = workflowExecutor.getActualTasksToBeQueued(List.of(taskModel21), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
-        Assert.assertTrue(taskModels.stream().anyMatch(taskModel -> "t1".equals(taskModel.getReferenceTaskName())));
+        Assert.assertTrue(
+                taskModels.stream()
+                        .anyMatch(taskModel -> "t1".equals(taskModel.getReferenceTaskName())));
         verify(queueDAO, times(0)).remove(anyString(), anyString());
     }
 
@@ -2686,17 +2717,17 @@ public class TestWorkflowExecutor {
 
     private WorkflowModel getForkWorkflow(List<TaskModel> taskModels) {
         // setup
-        WorkflowTask t1  = getWorkflowTask("t1", FORK_JOIN.name());
-        WorkflowTask t2  = getWorkflowTask("t2", SIMPLE.name());
-        WorkflowTask t3  = getWorkflowTask("t3", SIMPLE.name());
+        WorkflowTask t1 = getWorkflowTask("t1", FORK_JOIN.name());
+        WorkflowTask t2 = getWorkflowTask("t2", SIMPLE.name());
+        WorkflowTask t3 = getWorkflowTask("t3", SIMPLE.name());
         t1.setForkTasks(List.of(Arrays.asList(t2, t3)));
-        WorkflowTask t4  = getWorkflowTask("t4", JOIN.name());
-        WorkflowTask t5  = getWorkflowTask("t5", SIMPLE.name());
+        WorkflowTask t4 = getWorkflowTask("t4", JOIN.name());
+        WorkflowTask t5 = getWorkflowTask("t5", SIMPLE.name());
 
         WorkflowDef workflowDef = new WorkflowDef();
         workflowDef.setName("test_workflow");
         workflowDef.setVersion(1);
-        workflowDef.setTasks(Arrays.asList(t1,t4,t5));
+        workflowDef.setTasks(Arrays.asList(t1, t4, t5));
         WorkflowModel workflow = new WorkflowModel();
         workflow.setWorkflowId("test_workflow");
         workflow.setWorkflowDefinition(workflowDef);
@@ -2713,14 +2744,14 @@ public class TestWorkflowExecutor {
         // setup
         WorkflowTask t1 = getWorkflowTask("t1", SIMPLE.name());
         WorkflowTask t2 = getWorkflowTask("t2", SIMPLE.name());
-        WorkflowTask t3  =getWorkflowTask("t3", SIMPLE.name());
-        WorkflowTask t4  =getWorkflowTask("t4", SIMPLE.name());
-        WorkflowTask t5  =getWorkflowTask("t5", SIMPLE.name());
+        WorkflowTask t3 = getWorkflowTask("t3", SIMPLE.name());
+        WorkflowTask t4 = getWorkflowTask("t4", SIMPLE.name());
+        WorkflowTask t5 = getWorkflowTask("t5", SIMPLE.name());
 
         WorkflowDef workflowDef = new WorkflowDef();
         workflowDef.setName("test_workflow");
         workflowDef.setVersion(1);
-        workflowDef.setTasks(Arrays.asList(t1,t2,t3,t4,t5));
+        workflowDef.setTasks(Arrays.asList(t1, t2, t3, t4, t5));
         WorkflowModel workflow = new WorkflowModel();
         workflow.setWorkflowId("test_workflow");
         workflow.setWorkflowDefinition(workflowDef);

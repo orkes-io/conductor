@@ -19,10 +19,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
-import com.netflix.conductor.core.exception.ConflictException;
-import com.netflix.conductor.model.TaskModel;
-import com.netflix.conductor.model.WorkflowModel;
 import org.springframework.stereotype.Service;
 
 import com.netflix.conductor.annotations.Audit;
@@ -35,11 +31,15 @@ import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.run.WorkflowSummary;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
+import com.netflix.conductor.core.exception.ConflictException;
 import com.netflix.conductor.core.exception.NotFoundException;
 import com.netflix.conductor.core.execution.StartWorkflowInput;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.core.operation.StartWorkflowOperation;
 import com.netflix.conductor.core.utils.Utils;
+import com.netflix.conductor.model.TaskModel;
+import com.netflix.conductor.model.WorkflowModel;
 
 @Audit
 @Trace
@@ -63,7 +63,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         this.executionService = executionService;
         this.metadataService = metadataService;
         this.startWorkflowOperation = startWorkflowOperation;
-        this.executionDAOFacade  =executionDAOFacade;
+        this.executionDAOFacade = executionDAOFacade;
     }
 
     /**
@@ -473,17 +473,24 @@ public class WorkflowServiceImpl implements WorkflowService {
     public void resetTasks(String workflowId, List<String> taskIds) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
         final TaskModel[] firstTask = {null};
-        Map<String, TaskModel> taskIdMap = workflow.getTasks().stream().collect(Collectors.toMap(TaskModel::getTaskId, Function.identity()));
-        taskIds.forEach(taskId -> {
-            TaskModel task = taskIdMap.get(taskId);
-            if(task == null) {
-                throw new NotFoundException("Task with id " + taskId + " does not exist in the workflow " + workflowId);
-            }
-            if (!task.getStatus().isTerminal()) {
-                throw new ConflictException("Can not reset non terminal task " + taskId);
-            }
-            task.setStatus(TaskModel.Status.SCHEDULED);
-        });
+        Map<String, TaskModel> taskIdMap =
+                workflow.getTasks().stream()
+                        .collect(Collectors.toMap(TaskModel::getTaskId, Function.identity()));
+        taskIds.forEach(
+                taskId -> {
+                    TaskModel task = taskIdMap.get(taskId);
+                    if (task == null) {
+                        throw new NotFoundException(
+                                "Task with id "
+                                        + taskId
+                                        + " does not exist in the workflow "
+                                        + workflowId);
+                    }
+                    if (!task.getStatus().isTerminal()) {
+                        throw new ConflictException("Can not reset non terminal task " + taskId);
+                    }
+                    task.setStatus(TaskModel.Status.SCHEDULED);
+                });
         workflowExecutor.retryTaskForRunningWorkflow(workflow, taskIds);
     }
 }

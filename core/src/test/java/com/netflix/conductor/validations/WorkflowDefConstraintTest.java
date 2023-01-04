@@ -19,7 +19,6 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
-import com.netflix.conductor.model.TaskModel;
 import org.apache.bval.jsr.ApacheValidationProvider;
 import org.junit.*;
 import org.mockito.Mockito;
