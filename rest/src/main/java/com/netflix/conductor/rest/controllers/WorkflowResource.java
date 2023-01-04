@@ -179,8 +179,7 @@ public class WorkflowResource {
     // expects a 204 for this request
     public void resetTasks(
             @PathVariable("workflowId") String workflowId,
-            @RequestParam(value = "taskIds", required = true)
-            List<String> taskIds) {
+            @RequestParam(value = "taskIds", required = true) List<String> taskIds) {
         workflowService.resetTasks(workflowId, taskIds);
     }
 
