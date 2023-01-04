@@ -314,7 +314,8 @@ public class TestWorkflowExecutor {
 
         boolean stateChanged = workflowExecutor.scheduleTask(workflow, tasks);
         assertEquals(2, startedTaskCount.get());
-        assertEquals(1, queuedTaskCount.get());
+        // Since task3 is at higher level then task 2 which is already scheduled so task3 will not get scheduled.
+        assertEquals(0, queuedTaskCount.get());
         assertTrue(stateChanged);
         assertFalse(httpTask.isStarted());
         assertTrue(http2Task.isStarted());
