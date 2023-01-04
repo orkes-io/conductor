@@ -2527,6 +2527,28 @@ public class TestWorkflowExecutor {
         verify(executionDAOFacade, times(0)).updateTask(any());
     }
 
+    @Test
+    public void testResetTask1() {
+
+    }
+
+    private WorkflowModel getWorkflow() {
+        WorkflowModel workflow = new WorkflowModel();
+        workflow.setWorkflowId("test_workflow");
+        WorkflowDef workflowDef = new WorkflowDef();
+        workflowDef.setName("test_workflow");
+        workflowDef.setVersion(1);
+        workflow.setWorkflowDefinition(workflowDef);
+        workflow.setOwnerApp("junit_test_workflow");
+        workflow.setCreateTime(10L);
+        workflow.setEndTime(100L);
+        //noinspection unchecked
+        workflow.setOutput(Collections.EMPTY_MAP);
+        workflow.setStatus(WorkflowModel.Status.FAILED);
+
+        return workflow;
+    }
+
     private WorkflowModel generateSampleWorkflow() {
         // setup
         WorkflowModel workflow = new WorkflowModel();
