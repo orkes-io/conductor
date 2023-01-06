@@ -1499,7 +1499,7 @@ public class WorkflowExecutor {
 
     List<TaskModel> getActualTasksToBeQueued(
             List<TaskModel> tasksToBeQueued, WorkflowModel workflowModel) {
-        if (!tasksToBeQueued.isEmpty() && tasksToBeQueued.size() > 2) {
+        if (!tasksToBeQueued.isEmpty()) {
             List<TaskModel> scheduledTasks =
                     workflowModel.getTasks().stream()
                             .filter(taskModel -> taskModel.getStatus().equals(SCHEDULED))
