@@ -472,7 +472,6 @@ public class WorkflowServiceImpl implements WorkflowService {
     @Override
     public void resetTasks(String workflowId, List<String> taskIds) {
         WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
-        final TaskModel[] firstTask = {null};
         Map<String, TaskModel> taskIdMap =
                 workflow.getTasks().stream()
                         .collect(Collectors.toMap(TaskModel::getTaskId, Function.identity()));

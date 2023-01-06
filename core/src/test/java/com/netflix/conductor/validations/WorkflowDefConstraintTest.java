@@ -225,6 +225,45 @@ public class WorkflowDefConstraintTest {
         Assert.assertEquals(task.size(), map.size());
     }
 
+    @Test
+    public void testBuildMap2() {
+        //Fork,1 -> [[task1 2, task2 3], task3 2]
+        // Join, 4
+
+
+        WorkflowDef def = new WorkflowDef();
+        def.setName("test_workflow");
+        def.setVersion(1);
+        def.setSchemaVersion(2);
+        WorkflowTask forkTask = createWorkflowTask("fork_task");
+        forkTask.setType(TaskType.FORK_JOIN.name());
+
+        WorkflowTask decision = createWorkflowTask("decision_task_1");
+        decision.setType(TaskType.DECISION.name());
+        decision.getDecisionCases()
+                .put(
+                        "c",
+                        Arrays.asList(
+                                createWorkflowTask("integration_task_1"),
+                                createWorkflowTask("integration_task_2")));
+        decision.getDefaultCase()
+                .add(createWorkflowTask("integration_task_3"));
+
+        WorkflowTask task20 = createWorkflowTask("integration_task_20");
+        WorkflowTask task10 = createWorkflowTask("integration_task_10");
+        WorkflowTask join = createWorkflowTask("join");
+        join.setType(TaskType.JOIN.name());
+        join.setJoinOn(Arrays.asList("integration_task_20", "integration_task_10"));
+
+        forkTask.setForkTasks(Arrays.asList(Arrays.asList(decision,task20), Arrays.asList(task10)));
+        def.getTasks().add(forkTask);
+        def.getTasks().add(join);
+
+        Map<String, Integer> map = def.buildTaskLevelMap();
+        List<WorkflowTask> task = def.collectTasks();
+        Assert.assertEquals(task.size(), map.size());
+    }
+
     private WorkflowTask createWorkflowTask(String name) {
         WorkflowTask task = new WorkflowTask();
         task.setName(name);

@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
@@ -378,27 +373,36 @@ public class WorkflowDef extends BaseDef {
 
     public Map<String, Integer> buildTaskLevelMap() {
         Map<String, Integer> map = new HashMap<>();
-        AtomicInteger level = new AtomicInteger(1);
-        this.tasks.forEach(
-                workflowTask -> {
-                    map.put(workflowTask.getTaskReferenceName(), level.get());
-                    fillMapFurther(workflowTask, map, level.get() + 1);
-                    level.getAndIncrement();
-                });
+        int level = 1;
+        for (int i=0; i<this.tasks.size(); i++) {
+            WorkflowTask workflowTask = this.tasks.get(i);
+            map.put(workflowTask.getTaskReferenceName(), level);
+            level = fillMapFurther(workflowTask, map, ++level);
+            level++;
+        }
         return map;
     }
 
-    private void fillMapFurther(WorkflowTask workflowTask, Map<String, Integer> map, int level) {
-        workflowTask
-                .children()
-                .forEach(
-                        workflowTasks -> {
-                            workflowTasks.forEach(
-                                    workflowTask1 -> {
-                                        map.put(workflowTask1.getTaskReferenceName(), level);
-                                        fillMapFurther(workflowTask1, map, level + 1);
-                                    });
-                        });
+    private int fillMapFurther(WorkflowTask workflowTask, Map<String, Integer> map, int level) {
+        int current_max = 0;
+        if (workflowTask.children() != null && workflowTask.children().size() > 0) {
+            // Tasks with immediate children
+            List<List<WorkflowTask>> children = new ArrayList<>(workflowTask.children());
+            for (int child=0; child<children.size(); child++) {
+                int forkLevel = level;
+                    for (int grandChild=0; grandChild<children.get(child).size(); grandChild++) {
+                        if (workflowTask.getType().equals(TaskType.FORK_JOIN.name())) {
+                            map.put(children.get(child).get(grandChild).getTaskReferenceName(), forkLevel);
+                            current_max = fillMapFurther(children.get(child).get(grandChild), map, forkLevel);
+                        } else {
+                            map.put(children.get(child).get(grandChild).getTaskReferenceName(), level + 1);
+                            current_max = fillMapFurther(children.get(child).get(grandChild), map, ++level);
+                        }
+                    }
+            }
+        }
+        System.out.println("Workflow task " + workflowTask.getTaskReferenceName() + " returning " + Math.max(level, current_max));
+        return Math.max(level, current_max);
     }
 
     @Override
