@@ -13,7 +13,6 @@
 package com.netflix.conductor.common.metadata.workflow;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
