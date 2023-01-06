@@ -1176,9 +1176,7 @@ public class WorkflowExecutor {
         return dedupedTasks;
     }
 
-    /**
-     * @throws ConflictException if the workflow is in terminal state.
-     */
+    /** @throws ConflictException if the workflow is in terminal state. */
     public void pauseWorkflow(String workflowId) {
         try {
             executionLockService.acquireLock(workflowId, 60000);
@@ -1482,7 +1480,7 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
-            tasksToBeQueued = getActualTasksToBeQueued2(tasksToBeQueued, workflow);
+            tasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued, workflow);
             addTaskToQueue(tasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
@@ -1496,75 +1494,95 @@ public class WorkflowExecutor {
         }
         return startedSystemTasks;
     }
-    List<TaskModel> getActualTasksToBeQueued2(
+
+    List<TaskModel> getActualTasksToBeQueued(
             List<TaskModel> tasksToBeQueued, WorkflowModel workflowModel) {
-        if (!tasksToBeQueued.isEmpty()) {
+        if (!tasksToBeQueued.isEmpty() && tasksToBeQueued.size() > 2) {
             List<TaskModel> scheduledTasks =
                     workflowModel.getTasks().stream()
                             .filter(taskModel -> taskModel.getStatus().equals(SCHEDULED))
                             .collect(Collectors.toList());
-            Map<String, Integer> refNameToSequenceNumber = workflowModel.getTasks().stream().
-                    collect(Collectors.toMap(TaskModel::getReferenceTaskName, TaskModel::getSeq, Math::min));
-                // Find the task with the smallest sequence number.
-            tasksToBeQueued.sort(Comparator.comparingInt(task-> refNameToSequenceNumber.get(task.getReferenceTaskName())));
+            Map<String, Integer> refNameToSequenceNumber =
+                    workflowModel.getTasks().stream()
+                            .collect(
+                                    Collectors.toMap(
+                                            TaskModel::getReferenceTaskName,
+                                            TaskModel::getSeq,
+                                            Math::min));
+            // Find the task with the smallest sequence number.
+            tasksToBeQueued.sort(
+                    Comparator.comparingInt(
+                            task -> refNameToSequenceNumber.get(task.getReferenceTaskName())));
             TaskModel smallest = tasksToBeQueued.get(0);
             // Find the parent of this task if it is fork then get all siblings
             List<TaskModel> allTasks = workflowModel.getTasks();
             TaskModel parent = null;
             for (TaskModel taskModel : allTasks) {
-                if (taskModel.getWorkflowTask().has(smallest.getReferenceTaskName()) && !smallest.getReferenceTaskName().equals(taskModel.getReferenceTaskName())) {
+                if (taskModel.getWorkflowTask().has(smallest.getReferenceTaskName())
+                        && !smallest.getReferenceTaskName()
+                                .equals(taskModel.getReferenceTaskName())) {
                     parent = taskModel;
-                } else if (taskModel.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
-                    //Check task is a part of dynamic fork input
-                    if (taskModel.getInputData().get("forkedTasks") != null && taskModel.getInputData().get("forkedTasks") instanceof List) {
-                        List<String> taskNames = (List) taskModel.getInputData().get("forkedTasks");
-                        if (taskNames.contains(smallest.getReferenceTaskName())) {
-                            parent = taskModel;
-                        }
-                    }
+                } else if (isTaskInsideDynamicFork(taskModel, smallest)) {
+                    parent = taskModel;
                 }
             }
             if (parent == null) {
                 // Task is not part of any fork or dynamic fork
                 // Schedule only smallest task and remove all scheduled tasks from the queue.
-                scheduledTasks.forEach(taskModel -> queueDAO.remove(QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
+                scheduledTasks.forEach(
+                        taskModel ->
+                                queueDAO.remove(
+                                        QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
                 return Arrays.asList(smallest);
-            } else if (parent.getTaskType().equals(TaskType.TASK_TYPE_FORK) || parent.getTaskType().equals(TaskType.TASK_TYPE_FORK_JOIN)) {
-                // Find sibling from tasksToBeQueued and schedule all of them.
+            } else if (parent.getTaskType().equals(TaskType.TASK_TYPE_FORK)
+                    || parent.getTaskType().equals(TaskType.TASK_TYPE_FORK_JOIN)) {
+                // Find sibling from tasksToBeQueued and schedule all of them if they are part of
+                // reset tasks.
                 Set<TaskModel> finalTasksToBeQueued = new HashSet<>();
                 finalTasksToBeQueued.add(smallest);
                 TaskModel finalParent = parent;
-                tasksToBeQueued.forEach(taskModel -> {
-                    if (finalParent.getWorkflowTask().has(taskModel.getReferenceTaskName())) {
-                        finalTasksToBeQueued.add(taskModel);
-                    } else if (finalParent.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
-                        if (finalParent.getInputData().get("forkedTasks") != null && finalParent.getInputData().get("forkedTasks") instanceof List) {
-                            List<String> taskNames = (List) finalParent.getInputData().get("forkedTasks");
-                            if (taskNames.contains(taskModel.getReferenceTaskName())) {
+                tasksToBeQueued.forEach(
+                        taskModel -> {
+                            if (finalParent
+                                    .getWorkflowTask()
+                                    .has(taskModel.getReferenceTaskName())) {
+                                finalTasksToBeQueued.add(taskModel);
+                            } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                 finalTasksToBeQueued.add(taskModel);
                             }
-                        }
-                    }
-                });
-                scheduledTasks.forEach(taskModel -> {
-                    if (finalParent.getWorkflowTask().has(taskModel.getReferenceTaskName())) {
-                        finalTasksToBeQueued.add(taskModel);
-                    } else if (finalParent.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
-                        if (finalParent.getInputData().get("forkedTasks") != null && finalParent.getInputData().get("forkedTasks") instanceof List) {
-                            List<String> taskNames = (List) finalParent.getInputData().get("forkedTasks");
-                            if (taskNames.contains(taskModel.getReferenceTaskName())) {
+                        });
+                scheduledTasks.forEach(
+                        taskModel -> {
+                            if (finalParent
+                                    .getWorkflowTask()
+                                    .has(taskModel.getReferenceTaskName())) {
+                                finalTasksToBeQueued.add(taskModel);
+                            } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                 finalTasksToBeQueued.add(taskModel);
                             }
-                        }
-                    }
-                });
+                        });
                 // Remove all scheduled tasks.
-                scheduledTasks.forEach(taskModel -> queueDAO.remove(QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
+                scheduledTasks.forEach(
+                        taskModel ->
+                                queueDAO.remove(
+                                        QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
                 return new ArrayList<>(finalTasksToBeQueued);
             }
             return tasksToBeQueued;
         }
         return tasksToBeQueued;
+    }
+
+    private boolean isTaskInsideDynamicFork(TaskModel taskModel, TaskModel smallest) {
+        if (taskModel.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+            // Check task is a part of dynamic fork input
+            if (taskModel.getInputData().get("forkedTasks") != null
+                    && taskModel.getInputData().get("forkedTasks") instanceof List) {
+                List<String> taskNames = (List) taskModel.getInputData().get("forkedTasks");
+                return taskNames.contains(smallest.getReferenceTaskName());
+            }
+        }
+        return false;
     }
 
     private void addTaskToQueue(final List<TaskModel> tasks) {
