@@ -371,40 +371,6 @@ public class WorkflowDef extends BaseDef {
         return tasks;
     }
 
-    public Map<String, Integer> buildTaskLevelMap() {
-        Map<String, Integer> map = new HashMap<>();
-        int level = 1;
-        for (int i=0; i<this.tasks.size(); i++) {
-            WorkflowTask workflowTask = this.tasks.get(i);
-            map.put(workflowTask.getTaskReferenceName(), level);
-            level = fillMapFurther(workflowTask, map, ++level);
-            level++;
-        }
-        return map;
-    }
-
-    private int fillMapFurther(WorkflowTask workflowTask, Map<String, Integer> map, int level) {
-        int current_max = 0;
-        if (workflowTask.children() != null && workflowTask.children().size() > 0) {
-            // Tasks with immediate children
-            List<List<WorkflowTask>> children = new ArrayList<>(workflowTask.children());
-            for (int child=0; child<children.size(); child++) {
-                int forkLevel = level;
-                    for (int grandChild=0; grandChild<children.get(child).size(); grandChild++) {
-                        if (workflowTask.getType().equals(TaskType.FORK_JOIN.name())) {
-                            map.put(children.get(child).get(grandChild).getTaskReferenceName(), forkLevel);
-                            current_max = fillMapFurther(children.get(child).get(grandChild), map, forkLevel);
-                        } else {
-                            map.put(children.get(child).get(grandChild).getTaskReferenceName(), level + 1);
-                            current_max = fillMapFurther(children.get(child).get(grandChild), map, ++level);
-                        }
-                    }
-            }
-        }
-        System.out.println("Workflow task " + workflowTask.getTaskReferenceName() + " returning " + Math.max(level, current_max));
-        return Math.max(level, current_max);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
