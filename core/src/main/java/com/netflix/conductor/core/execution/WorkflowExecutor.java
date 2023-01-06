@@ -1504,25 +1504,35 @@ public class WorkflowExecutor {
                     workflowModel.getTasks().stream()
                             .filter(taskModel -> taskModel.getStatus().equals(SCHEDULED))
                             .collect(Collectors.toList());
-            Map<String, Integer> refNameToSequenceNumber =
-                    workflowModel.getTasks().stream()
-                            .collect(
-                                    Collectors.toMap(
-                                            TaskModel::getReferenceTaskName,
-                                            TaskModel::getSeq,
-                                            Math::min));
+            Map<String, Integer> refNameToSequenceNumber = new HashMap<>();
+            for (TaskModel taskModel : workflowModel.getTasks()) {
+                String taskReferenceName =
+                        TaskUtils.removeIterationFromTaskRefName(taskModel.getReferenceTaskName());
+                if (refNameToSequenceNumber.get(taskReferenceName) == null) {
+                    refNameToSequenceNumber.put(taskReferenceName, taskModel.getSeq());
+                } else if (refNameToSequenceNumber.get(taskReferenceName) > taskModel.getSeq()) {
+                    refNameToSequenceNumber.put(taskReferenceName, taskModel.getSeq());
+                }
+            }
             // Find the task with the smallest sequence number.
             tasksToBeQueued.sort(
                     Comparator.comparingInt(
-                            task -> refNameToSequenceNumber.get(task.getReferenceTaskName())));
+                            task ->
+                                    refNameToSequenceNumber.get(
+                                            TaskUtils.removeIterationFromTaskRefName(
+                                                    task.getReferenceTaskName()))));
             TaskModel smallest = tasksToBeQueued.get(0);
             // Find the parent of this task if it is fork then get all siblings
             List<TaskModel> allTasks = workflowModel.getTasks();
             TaskModel parent = null;
             for (TaskModel taskModel : allTasks) {
-                if (taskModel.getWorkflowTask().has(smallest.getReferenceTaskName())
-                        && !smallest.getReferenceTaskName()
-                                .equals(taskModel.getReferenceTaskName())) {
+                String childTaskReferenceName =
+                        TaskUtils.removeIterationFromTaskRefName(smallest.getReferenceTaskName());
+                String parentTaskReferenceName =
+                        TaskUtils.removeIterationFromTaskRefName(taskModel.getReferenceTaskName());
+                if (taskModel.getWorkflowTask() != null
+                        && taskModel.getWorkflowTask().has(childTaskReferenceName)
+                        && !childTaskReferenceName.equals(parentTaskReferenceName)) {
                     parent = taskModel;
                 } else if (isTaskInsideDynamicFork(taskModel, smallest)) {
                     parent = taskModel;
@@ -1545,9 +1555,11 @@ public class WorkflowExecutor {
                 TaskModel finalParent = parent;
                 tasksToBeQueued.forEach(
                         taskModel -> {
-                            if (finalParent
-                                    .getWorkflowTask()
-                                    .has(taskModel.getReferenceTaskName())) {
+                            String childTaskReferenceName =
+                                    TaskUtils.removeIterationFromTaskRefName(
+                                            taskModel.getReferenceTaskName());
+                            if (finalParent.getWorkflowTask() != null
+                                    && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
                                 finalTasksToBeQueued.add(taskModel);
                             } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                 finalTasksToBeQueued.add(taskModel);
@@ -1555,9 +1567,11 @@ public class WorkflowExecutor {
                         });
                 scheduledTasks.forEach(
                         taskModel -> {
-                            if (finalParent
-                                    .getWorkflowTask()
-                                    .has(taskModel.getReferenceTaskName())) {
+                            String childTaskReferenceName =
+                                    TaskUtils.removeIterationFromTaskRefName(
+                                            taskModel.getReferenceTaskName());
+                            if (finalParent.getWorkflowTask() != null
+                                    && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
                                 finalTasksToBeQueued.add(taskModel);
                             } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                 finalTasksToBeQueued.add(taskModel);
@@ -1578,10 +1592,12 @@ public class WorkflowExecutor {
     private boolean isTaskInsideDynamicFork(TaskModel taskModel, TaskModel smallest) {
         if (taskModel.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
             // Check task is a part of dynamic fork input
+            String childTaskReferenceName =
+                    TaskUtils.removeIterationFromTaskRefName(smallest.getReferenceTaskName());
             if (taskModel.getInputData().get("forkedTasks") != null
                     && taskModel.getInputData().get("forkedTasks") instanceof List) {
                 List<String> taskNames = (List) taskModel.getInputData().get("forkedTasks");
-                return taskNames.contains(smallest.getReferenceTaskName());
+                return taskNames.contains(childTaskReferenceName);
             }
         }
         return false;
