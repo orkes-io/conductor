@@ -2562,7 +2562,7 @@ public class TestWorkflowExecutor {
                 getWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
 
         TaskModel taskModel11 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED,5);
-        TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED,6);
+        TaskModel taskModel22 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.SCHEDULED,6);
 
         List<TaskModel> taskModels =
                 workflowExecutor.getActualTasksToBeQueued2(
@@ -2570,7 +2570,7 @@ public class TestWorkflowExecutor {
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t1");
-        verify(queueDAO, times(2)).remove(anyString(), anyString());
+        verify(queueDAO, times(1)).remove(anyString(), anyString());
     }
 
     @Test
@@ -2580,6 +2580,7 @@ public class TestWorkflowExecutor {
         TaskModel taskModel1 = getTaskModel("t1", FORK_JOIN.name(), TaskModel.Status.COMPLETED, 1);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED, 2);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED, 3);
+        taskModel1.getWorkflowTask().getForkTasks().add(Arrays.asList(taskModel3.getWorkflowTask(), taskModel2.getWorkflowTask()));
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED, 4);
         WorkflowModel workflowModel =
                 getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
@@ -2607,6 +2608,7 @@ public class TestWorkflowExecutor {
         TaskModel taskModel1 = getTaskModel("t1", FORK_JOIN.name(), TaskModel.Status.COMPLETED,1);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED,2);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED,3);
+        taskModel1.getWorkflowTask().getForkTasks().add(Arrays.asList(taskModel3.getWorkflowTask(), taskModel2.getWorkflowTask()));
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED,4);
         TaskModel taskModel5 = getTaskModel("t5", SIMPLE.name(), TaskModel.Status.SCHEDULED,5);
         WorkflowModel workflowModel =
@@ -2644,7 +2646,7 @@ public class TestWorkflowExecutor {
         TaskModel taskModel11 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.SCHEDULED,5);
 
         List<TaskModel> taskModels =
-                workflowExecutor.getActualTasksToBeQueued2(List.of(taskModel11), workflowModel);
+                workflowExecutor.getActualTasksToBeQueued2(Arrays.asList(taskModel11), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t3");
@@ -2655,7 +2657,7 @@ public class TestWorkflowExecutor {
         taskModel22.setReferenceTaskName("t2");
         taskModel22.setTaskType(SIMPLE.name());
         taskModel22.setStatus(TaskModel.Status.SCHEDULED);
-        taskModels = workflowExecutor.getActualTasksToBeQueued2(List.of(taskModel22), workflowModel);
+        taskModels = workflowExecutor.getActualTasksToBeQueued2(Arrays.asList(taskModel22), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertEquals(taskModels.get(0).getReferenceTaskName(), "t2");
@@ -2670,6 +2672,7 @@ public class TestWorkflowExecutor {
         TaskModel taskModel1 = getTaskModel("t1", FORK_JOIN.name(), TaskModel.Status.COMPLETED,1);
         TaskModel taskModel2 = getTaskModel("t2", SIMPLE.name(), TaskModel.Status.COMPLETED,2);
         TaskModel taskModel3 = getTaskModel("t3", SIMPLE.name(), TaskModel.Status.COMPLETED,3);
+        taskModel1.getWorkflowTask().getForkTasks().add(Arrays.asList(taskModel3.getWorkflowTask(), taskModel2.getWorkflowTask()));
         TaskModel taskModel4 = getTaskModel("t4", JOIN.name(), TaskModel.Status.COMPLETED,4);
         WorkflowModel workflowModel =
                 getForkWorkflow(Arrays.asList(taskModel1, taskModel2, taskModel3, taskModel4));
@@ -2691,7 +2694,7 @@ public class TestWorkflowExecutor {
 
         // Now T1 got reset, it should get chance and T2 and t3 should be removed from the queue.
         TaskModel taskModel21 = getTaskModel("t1", SIMPLE.name(), TaskModel.Status.SCHEDULED,7);
-        taskModels = workflowExecutor.getActualTasksToBeQueued2(List.of(taskModel21), workflowModel);
+        taskModels = workflowExecutor.getActualTasksToBeQueued2(Arrays.asList(taskModel21), workflowModel);
 
         Assert.assertEquals(taskModels.size(), 1);
         Assert.assertTrue(
@@ -2707,6 +2710,11 @@ public class TestWorkflowExecutor {
         taskModel.setStatus(status);
         taskModel.setSeq(sequenceNumber);
         taskModel.setTaskId(UUID.randomUUID().toString());
+        WorkflowTask workflowTask = new WorkflowTask();
+        workflowTask.setType(type);
+        workflowTask.setName(name);
+        workflowTask.setTaskReferenceName(name);
+        taskModel.setWorkflowTask(workflowTask);
         return taskModel;
     }
 
