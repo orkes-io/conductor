@@ -16,7 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
+import com.netflix.conductor.model.TaskModel;
+import com.netflix.conductor.model.WorkflowModel;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +52,17 @@ public class WorkflowServiceImpl implements WorkflowService {
     private final ExecutionService executionService;
     private final MetadataService metadataService;
 
+    private final ExecutionDAOFacade executionDAOFacade;
+
     public WorkflowServiceImpl(
             WorkflowExecutor workflowExecutor,
             ExecutionService executionService,
+            ExecutionDAOFacade executionDAOFacade,
             MetadataService metadataService) {
         this.workflowExecutor = workflowExecutor;
         this.executionService = executionService;
         this.metadataService = metadataService;
+        this.executionDAOFacade = executionDAOFacade;
     }
 
     /**
@@ -599,5 +608,29 @@ public class WorkflowServiceImpl implements WorkflowService {
                     ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT,
                     path);
         }
+    }
+
+    @Override
+    public void resetTasks(String workflowId, List<String> taskIds) {
+        WorkflowModel workflow = executionDAOFacade.getWorkflowModel(workflowId, true);
+        Map<String, TaskModel> taskIdMap =
+                workflow.getTasks().stream()
+                        .collect(Collectors.toMap(TaskModel::getTaskId, Function.identity()));
+        taskIds.forEach(
+                taskId -> {
+                    TaskModel task = taskIdMap.get(taskId);
+                    if (task == null) {
+                        throw new ApplicationException(ApplicationException.Code.NOT_FOUND,
+                                "Task with id "
+                                        + taskId
+                                        + " does not exist in the workflow "
+                                        + workflowId);
+                    }
+                    if (!task.getStatus().isTerminal()) {
+                        throw new ApplicationException(ApplicationException.Code.CONFLICT, "Can not reset non terminal task " + taskId);
+                    }
+                    task.setStatus(TaskModel.Status.SCHEDULED);
+                });
+        workflowExecutor.retryTaskForRunningWorkflow(workflow, taskIds);
     }
 }
