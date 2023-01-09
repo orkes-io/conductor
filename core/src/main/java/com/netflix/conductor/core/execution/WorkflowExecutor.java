@@ -1526,7 +1526,8 @@ public class WorkflowExecutor {
                     refNameToSequenceNumber.put(taskReferenceName, taskModel.getSeq());
                 }
             }
-            // Find the task with the smallest sequence number. sorting is needed in case reset task are sent unordered
+            // Find the task with the smallest sequence number. sorting is needed in case reset task
+            // are sent unordered
             tasksToBeQueued.sort(
                     Comparator.comparingInt(
                             task ->
@@ -1534,7 +1535,8 @@ public class WorkflowExecutor {
                                             TaskUtils.removeIterationFromTaskRefName(
                                                     task.getReferenceTaskName()))));
             TaskModel smallest = tasksToBeQueued.get(0);
-            // Find the parent of this task if it is fork then get all siblings and scheduled uncompleted
+            // Find the parent of this task if it is fork then get all siblings and scheduled
+            // uncompleted
             TaskModel parent = getParent(smallest, workflowModel);
             if (parent == null) {
                 // Task is not part of any fork or dynamic fork
