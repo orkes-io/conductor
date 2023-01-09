@@ -1482,8 +1482,8 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
-            tasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued, workflow);
-            addTaskToQueue(tasksToBeQueued);
+            List<TaskModel> afterTasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued,workflow);
+            addTaskToQueue(afterTasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
                     tasksToBeQueued.stream().map(TaskModel::getTaskId).collect(Collectors.toList());
@@ -1523,21 +1523,7 @@ public class WorkflowExecutor {
                                                     task.getReferenceTaskName()))));
             TaskModel smallest = tasksToBeQueued.get(0);
             // Find the parent of this task if it is fork then get all siblings
-            List<TaskModel> allTasks = workflowModel.getTasks();
-            TaskModel parent = null;
-            for (TaskModel taskModel : allTasks) {
-                String childTaskReferenceName =
-                        TaskUtils.removeIterationFromTaskRefName(smallest.getReferenceTaskName());
-                String parentTaskReferenceName =
-                        TaskUtils.removeIterationFromTaskRefName(taskModel.getReferenceTaskName());
-                if (taskModel.getWorkflowTask() != null
-                        && taskModel.getWorkflowTask().has(childTaskReferenceName)
-                        && !childTaskReferenceName.equals(parentTaskReferenceName)) {
-                    parent = taskModel;
-                } else if (isTaskInsideDynamicFork(taskModel, smallest)) {
-                    parent = taskModel;
-                }
-            }
+            TaskModel parent = getParent(smallest, workflowModel);
             if (parent == null) {
                 // Task is not part of any fork or dynamic fork
                 // Schedule only smallest task and remove all scheduled tasks from the queue.
@@ -1552,31 +1538,35 @@ public class WorkflowExecutor {
                 // reset tasks.
                 Set<TaskModel> finalTasksToBeQueued = new HashSet<>();
                 finalTasksToBeQueued.add(smallest);
-                TaskModel finalParent = parent;
-                tasksToBeQueued.forEach(
-                        taskModel -> {
-                            String childTaskReferenceName =
-                                    TaskUtils.removeIterationFromTaskRefName(
-                                            taskModel.getReferenceTaskName());
-                            if (finalParent.getWorkflowTask() != null
-                                    && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
-                                finalTasksToBeQueued.add(taskModel);
-                            } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
-                                finalTasksToBeQueued.add(taskModel);
-                            }
-                        });
-                scheduledTasks.forEach(
-                        taskModel -> {
-                            String childTaskReferenceName =
-                                    TaskUtils.removeIterationFromTaskRefName(
-                                            taskModel.getReferenceTaskName());
-                            if (finalParent.getWorkflowTask() != null
-                                    && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
-                                finalTasksToBeQueued.add(taskModel);
-                            } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
-                                finalTasksToBeQueued.add(taskModel);
-                            }
-                        });
+                // The parent fork can be inside another fork. So populate all tasks till parent becomes null.
+                while(parent != null) {
+                    TaskModel finalParent = parent;
+                    tasksToBeQueued.forEach(
+                            taskModel -> {
+                                String childTaskReferenceName =
+                                        TaskUtils.removeIterationFromTaskRefName(
+                                                taskModel.getReferenceTaskName());
+                                if (finalParent.getWorkflowTask() != null
+                                        && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
+                                    finalTasksToBeQueued.add(taskModel);
+                                } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
+                                    finalTasksToBeQueued.add(taskModel);
+                                }
+                            });
+                    scheduledTasks.forEach(
+                            taskModel -> {
+                                String childTaskReferenceName =
+                                        TaskUtils.removeIterationFromTaskRefName(
+                                                taskModel.getReferenceTaskName());
+                                if (finalParent.getWorkflowTask() != null
+                                        && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
+                                    finalTasksToBeQueued.add(taskModel);
+                                } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
+                                    finalTasksToBeQueued.add(taskModel);
+                                }
+                            });
+                    parent = getParent(parent, workflowModel);
+                }
                 // Remove all scheduled tasks.
                 scheduledTasks.forEach(
                         taskModel ->
@@ -1587,6 +1577,26 @@ public class WorkflowExecutor {
             return tasksToBeQueued;
         }
         return tasksToBeQueued;
+    }
+
+    //Get parent of any task. Returns null if parent does not exist.
+    private TaskModel getParent(TaskModel child, WorkflowModel workflowModel) {
+        List<TaskModel> allTasks = workflowModel.getTasks();
+        TaskModel parent = null;
+        for (TaskModel taskModel : allTasks) {
+            String childTaskReferenceName =
+                    TaskUtils.removeIterationFromTaskRefName(child.getReferenceTaskName());
+            String parentTaskReferenceName =
+                    TaskUtils.removeIterationFromTaskRefName(taskModel.getReferenceTaskName());
+            if (taskModel.getWorkflowTask() != null
+                    && taskModel.getWorkflowTask().has(childTaskReferenceName)
+                    && !childTaskReferenceName.equals(parentTaskReferenceName)) {
+                parent = taskModel;
+            } else if (isTaskInsideDynamicFork(taskModel, child)) {
+                parent = taskModel;
+            }
+        }
+        return parent;
     }
 
     private boolean isTaskInsideDynamicFork(TaskModel taskModel, TaskModel smallest) {
