@@ -1528,11 +1528,15 @@ public class WorkflowExecutor {
             if (parent == null) {
                 // Task is not part of any fork or dynamic fork
                 // Schedule only smallest task and remove all scheduled tasks from the queue.
-                scheduledTasks.forEach(
-                        taskModel ->
-                                queueDAO.remove(
-                                        QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
-                return Arrays.asList(smallest);
+                List<TaskModel> finalTasksToBeQueued = Arrays.asList(smallest);
+                scheduledTasks.stream()
+                        .filter(scheduledTask -> !finalTasksToBeQueued.contains(scheduledTask))
+                        .forEach(
+                                taskModel ->
+                                        queueDAO.remove(
+                                                QueueUtils.getQueueName(taskModel),
+                                                taskModel.getTaskId()));
+                return finalTasksToBeQueued;
             } else if (parent.getTaskType().equals(TaskType.TASK_TYPE_FORK)
                     || parent.getTaskType().equals(TaskType.TASK_TYPE_FORK_JOIN)) {
                 // Find sibling from tasksToBeQueued and schedule all of them if they are part of
@@ -1574,10 +1578,13 @@ public class WorkflowExecutor {
                     parent = getParent(parent, workflowModel);
                 }
                 // Remove all scheduled tasks.
-                scheduledTasks.forEach(
-                        taskModel ->
-                                queueDAO.remove(
-                                        QueueUtils.getQueueName(taskModel), taskModel.getTaskId()));
+                scheduledTasks.stream()
+                        .filter(scheduledTask -> !finalTasksToBeQueued.contains(scheduledTask))
+                        .forEach(
+                                taskModel ->
+                                        queueDAO.remove(
+                                                QueueUtils.getQueueName(taskModel),
+                                                taskModel.getTaskId()));
                 return new ArrayList<>(finalTasksToBeQueued);
             }
             return tasksToBeQueued;
@@ -1606,7 +1613,12 @@ public class WorkflowExecutor {
     }
 
     private boolean isTaskInsideDynamicFork(TaskModel taskModel, TaskModel smallest) {
-        if (taskModel.getWorkflowTask().getType().equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
+        if (taskModel.getWorkflowTask() != null
+                && taskModel.getWorkflowTask().getType() != null
+                && taskModel
+                        .getWorkflowTask()
+                        .getType()
+                        .equals(TaskType.TASK_TYPE_FORK_JOIN_DYNAMIC)) {
             // Check task is a part of dynamic fork input
             String childTaskReferenceName =
                     TaskUtils.removeIterationFromTaskRefName(smallest.getReferenceTaskName());
