@@ -1482,9 +1482,8 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
-            List<TaskModel> afterTasksToBeQueued =
-                    getActualTasksToBeQueued(tasksToBeQueued, workflow);
-            addTaskToQueue(afterTasksToBeQueued);
+            tasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued, workflow);
+            addTaskToQueue(tasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
                     tasksToBeQueued.stream().map(TaskModel::getTaskId).collect(Collectors.toList());
