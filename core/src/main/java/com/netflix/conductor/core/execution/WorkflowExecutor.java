@@ -1500,6 +1500,17 @@ public class WorkflowExecutor {
 
     List<TaskModel> getActualTasksToBeQueued(
             List<TaskModel> tasksToBeQueued, WorkflowModel workflowModel) {
+        /* Logic is find out the tasks to be queued in order of execution.
+        // If the task that gets reset is completed earlier then the tasks to be executed then
+        // it will get scheduled and tasks which were there in the queue will be removed.
+        // Follow below table for understanding purpose.
+        // Consider workflow t1->t2->t3->t4->t5
+        | Task Completed | Task scheduled | Task reset    | Final output                  |
+        | t1,t2,t3       |    t4          |    t2         |  t2 scheduled, t4 removed     |
+        | t1,t2,t3       |    t4          |    t2,t3      |  t2 scheduled, t4 removed     |
+        | t1,[t2, t3],t4 |    t4          |    t2,t3      |  t2, t3 scheduled, t4 removed |
+        * [] represents tasks are part of fork.
+        */
         if (!tasksToBeQueued.isEmpty()) {
             List<TaskModel> scheduledTasks =
                     workflowModel.getTasks().stream()
@@ -1515,7 +1526,7 @@ public class WorkflowExecutor {
                     refNameToSequenceNumber.put(taskReferenceName, taskModel.getSeq());
                 }
             }
-            // Find the task with the smallest sequence number.
+            // Find the task with the smallest sequence number. sorting is needed in case reset task are sent unordered
             tasksToBeQueued.sort(
                     Comparator.comparingInt(
                             task ->
@@ -1523,7 +1534,7 @@ public class WorkflowExecutor {
                                             TaskUtils.removeIterationFromTaskRefName(
                                                     task.getReferenceTaskName()))));
             TaskModel smallest = tasksToBeQueued.get(0);
-            // Find the parent of this task if it is fork then get all siblings
+            // Find the parent of this task if it is fork then get all siblings and scheduled uncompleted
             TaskModel parent = getParent(smallest, workflowModel);
             if (parent == null) {
                 // Task is not part of any fork or dynamic fork
@@ -1577,7 +1588,7 @@ public class WorkflowExecutor {
                             });
                     parent = getParent(parent, workflowModel);
                 }
-                // Remove all scheduled tasks.
+                // Remove scheduled tasks from the queue if they are not going to fet scheduled
                 scheduledTasks.stream()
                         .filter(scheduledTask -> !finalTasksToBeQueued.contains(scheduledTask))
                         .forEach(
