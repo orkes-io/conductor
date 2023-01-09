@@ -1482,7 +1482,8 @@ public class WorkflowExecutor {
         // On addTaskToQueue failures, ignore the exceptions and let WorkflowRepairService take care
         // of republishing the messages to the queue.
         try {
-            List<TaskModel> afterTasksToBeQueued = getActualTasksToBeQueued(tasksToBeQueued,workflow);
+            List<TaskModel> afterTasksToBeQueued =
+                    getActualTasksToBeQueued(tasksToBeQueued, workflow);
             addTaskToQueue(afterTasksToBeQueued);
         } catch (Exception e) {
             List<String> taskIds =
@@ -1538,8 +1539,9 @@ public class WorkflowExecutor {
                 // reset tasks.
                 Set<TaskModel> finalTasksToBeQueued = new HashSet<>();
                 finalTasksToBeQueued.add(smallest);
-                // The parent fork can be inside another fork. So populate all tasks till parent becomes null.
-                while(parent != null) {
+                // The parent fork can be inside another fork. So populate all tasks till parent
+                // becomes null.
+                while (parent != null) {
                     TaskModel finalParent = parent;
                     tasksToBeQueued.forEach(
                             taskModel -> {
@@ -1547,7 +1549,9 @@ public class WorkflowExecutor {
                                         TaskUtils.removeIterationFromTaskRefName(
                                                 taskModel.getReferenceTaskName());
                                 if (finalParent.getWorkflowTask() != null
-                                        && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
+                                        && finalParent
+                                                .getWorkflowTask()
+                                                .has(childTaskReferenceName)) {
                                     finalTasksToBeQueued.add(taskModel);
                                 } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                     finalTasksToBeQueued.add(taskModel);
@@ -1559,7 +1563,9 @@ public class WorkflowExecutor {
                                         TaskUtils.removeIterationFromTaskRefName(
                                                 taskModel.getReferenceTaskName());
                                 if (finalParent.getWorkflowTask() != null
-                                        && finalParent.getWorkflowTask().has(childTaskReferenceName)) {
+                                        && finalParent
+                                                .getWorkflowTask()
+                                                .has(childTaskReferenceName)) {
                                     finalTasksToBeQueued.add(taskModel);
                                 } else if (isTaskInsideDynamicFork(finalParent, taskModel)) {
                                     finalTasksToBeQueued.add(taskModel);
@@ -1579,7 +1585,7 @@ public class WorkflowExecutor {
         return tasksToBeQueued;
     }
 
-    //Get parent of any task. Returns null if parent does not exist.
+    // Get parent of any task. Returns null if parent does not exist.
     private TaskModel getParent(TaskModel child, WorkflowModel workflowModel) {
         List<TaskModel> allTasks = workflowModel.getTasks();
         TaskModel parent = null;
