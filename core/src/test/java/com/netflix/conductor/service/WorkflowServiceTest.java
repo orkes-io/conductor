@@ -20,7 +20,6 @@ import java.util.Set;
 
 import javax.validation.ConstraintViolationException;
 
-import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.run.WorkflowSummary;
+import com.netflix.conductor.core.dal.ExecutionDAOFacade;
 import com.netflix.conductor.core.exception.ApplicationException;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 
@@ -77,7 +77,8 @@ public class WorkflowServiceTest {
                 ExecutionService executionService,
                 ExecutionDAOFacade executionDAOFacade,
                 MetadataService metadataService) {
-            return new WorkflowServiceImpl(workflowExecutor, executionService, executionDAOFacade, metadataService);
+            return new WorkflowServiceImpl(
+                    workflowExecutor, executionService, executionDAOFacade, metadataService);
         }
     }
 
