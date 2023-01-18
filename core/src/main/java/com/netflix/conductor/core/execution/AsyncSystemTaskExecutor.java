@@ -92,13 +92,17 @@ public class AsyncSystemTaskExecutor {
                         taskId,
                         task.getTaskDefName(),
                         task.getRateLimitPerFrequency());
-                // Instead of postpone quietly calculate the next bucket time and postpone the task till that time.
-                long duration = executionDAOFacade.getPostponeDurationForTask(task, task.getTaskDefinition().isPresent() ? task.getTaskDefinition().get() : null);
+                // Instead of postpone quietly calculate the next bucket time and postpone the task
+                // till that time.
+                long duration =
+                        executionDAOFacade.getPostponeDurationForTask(
+                                task,
+                                task.getTaskDefinition().isPresent()
+                                        ? task.getTaskDefinition().get()
+                                        : null);
+                LOGGER.info("Postponing task {} by {} seconds", task.getTaskId(), duration);
                 queueDAO.postpone(
-                        queueName,
-                        task.getTaskId(),
-                        task.getWorkflowPriority(),
-                        duration);
+                        queueName, task.getTaskId(), task.getWorkflowPriority(), duration);
                 return;
             }
         }
@@ -189,18 +193,6 @@ public class AsyncSystemTaskExecutor {
                     task.getTaskId(),
                     task.getWorkflowPriority(),
                     queueTaskMessagePostponeSecs);
-        } catch (Exception e) {
-            LOGGER.error("Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
-        }
-    }
-
-    private void postponeQuietly(String queueName, TaskModel task, long duration) {
-        try {
-            queueDAO.postpone(
-                    queueName,
-                    task.getTaskId(),
-                    task.getWorkflowPriority(),
-                    duration);
         } catch (Exception e) {
             LOGGER.error("Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
         }

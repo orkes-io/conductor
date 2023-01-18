@@ -164,9 +164,7 @@ public class RedisRateLimitingDAO extends BaseDynoDAO implements RateLimitingDAO
             long currentTimeEpochMillis = System.currentTimeMillis();
             long currentTimeEpochRateLimitBucket =
                     currentTimeEpochMillis / (rateLimitFrequencyInSeconds * 1000L);
-            long postPoneDuration = ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds ) * 1000 - (currentTimeEpochMillis/rateLimitFrequencyInSeconds)) / 1000;
-            LOGGER.info("Postponing task {} by {} seconds", task.getTaskId(), postPoneDuration);
-            return postPoneDuration;
+            return ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds ) * 1000 - (currentTimeEpochMillis/rateLimitFrequencyInSeconds)) / 1000;
         }
         return 0;
     }
