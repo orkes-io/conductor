@@ -607,6 +607,10 @@ public class ExecutionDAOFacade {
         return concurrentExecutionLimitDAO.exceedsLimit(task);
     }
 
+    public long getPostponeDurationForTask(TaskModel task, TaskDef taskDef) {
+        return rateLimitingDao.getPostponeDurationForTask(task, taskDef);
+    }
+
     public boolean exceedsRateLimitPerFrequency(TaskModel task, TaskDef taskDef) {
         return rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef);
     }

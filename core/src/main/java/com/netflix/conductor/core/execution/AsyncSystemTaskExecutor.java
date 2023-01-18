@@ -92,7 +92,13 @@ public class AsyncSystemTaskExecutor {
                         taskId,
                         task.getTaskDefName(),
                         task.getRateLimitPerFrequency());
-                postponeQuietly(queueName, task);
+                // Instead of postpone quietly calculate the next bucket time and postpone the task till that time.
+                long duration = executionDAOFacade.getPostponeDurationForTask(task, task.getTaskDefinition().isPresent() ? task.getTaskDefinition().get() : null);
+                queueDAO.postpone(
+                        queueName,
+                        task.getTaskId(),
+                        task.getWorkflowPriority(),
+                        duration);
                 return;
             }
         }
@@ -183,6 +189,18 @@ public class AsyncSystemTaskExecutor {
                     task.getTaskId(),
                     task.getWorkflowPriority(),
                     queueTaskMessagePostponeSecs);
+        } catch (Exception e) {
+            LOGGER.error("Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
+        }
+    }
+
+    private void postponeQuietly(String queueName, TaskModel task, long duration) {
+        try {
+            queueDAO.postpone(
+                    queueName,
+                    task.getTaskId(),
+                    task.getWorkflowPriority(),
+                    duration);
         } catch (Exception e) {
             LOGGER.error("Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
         }

@@ -14,6 +14,7 @@ package com.netflix.conductor.redis.dao;
 
 import java.util.Optional;
 
+import com.netflix.conductor.core.utils.QueueUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,5 +142,32 @@ public class RedisRateLimitingDAO extends BaseDynoDAO implements RateLimitingDAO
                 return true;
             }
         }
+    }
+
+    @Override
+    public long getPostponeDurationForTask(TaskModel task, TaskDef taskDef) {
+        ImmutablePair<Integer, Integer> rateLimitPair =
+                Optional.ofNullable(taskDef)
+                        .map(
+                                definition ->
+                                        new ImmutablePair<>(
+                                                definition.getRateLimitPerFrequency(),
+                                                definition.getRateLimitFrequencyInSeconds()))
+                        .orElse(
+                                new ImmutablePair<>(
+                                        task.getRateLimitPerFrequency(),
+                                        task.getRateLimitFrequencyInSeconds()));
+
+        int rateLimitPerFrequency = rateLimitPair.getLeft();
+        int rateLimitFrequencyInSeconds = rateLimitPair.getRight();
+        if (rateLimitPerFrequency > 0 && rateLimitFrequencyInSeconds > 0) {
+            long currentTimeEpochMillis = System.currentTimeMillis();
+            long currentTimeEpochRateLimitBucket =
+                    currentTimeEpochMillis / (rateLimitFrequencyInSeconds * 1000L);
+            long postPoneDuration = ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds ) * 1000 - (currentTimeEpochMillis/rateLimitFrequencyInSeconds)) / 1000;
+            LOGGER.info("Postponing task {} by {} seconds", task.getTaskId(), postPoneDuration);
+            return postPoneDuration;
+        }
+        return 0;
     }
 }
