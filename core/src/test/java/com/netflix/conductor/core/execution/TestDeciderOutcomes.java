@@ -233,7 +233,8 @@ public class TestDeciderOutcomes {
         workflow.getTasks().addAll(outcome.tasksToBeScheduled);
         outcome = deciderService.decide(workflow);
         assertFalse(outcome.isComplete);
-        assertEquals(outcome.tasksToBeUpdated.toString(), 1, outcome.tasksToBeUpdated.size());
+        // Reference commit https://github.com/orkes-io/conductor/commit/b35c811d85e0ff2ea206b31765381997abbd6e04
+        assertEquals(outcome.tasksToBeUpdated.toString(), 3, outcome.tasksToBeUpdated.size());
         assertEquals(1, outcome.tasksToBeScheduled.size());
         assertEquals("junit_task_3", outcome.tasksToBeScheduled.get(0).getTaskDefName());
     }
