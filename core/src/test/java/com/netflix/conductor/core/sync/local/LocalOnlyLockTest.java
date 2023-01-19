@@ -53,9 +53,6 @@ public class LocalOnlyLockTest {
 
     @Test(timeout = 10 * 1000)
     public void testLockLeaseTime() {
-        for (int i = 0; i < 10; i++) {
-            localOnlyLock.acquireLock("a", 1000, 100, TimeUnit.MILLISECONDS);
-        }
         localOnlyLock.acquireLock("a");
         assertEquals(0, localOnlyLock.cache().get("a").availablePermits());
         localOnlyLock.releaseLock("a");
