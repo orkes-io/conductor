@@ -14,7 +14,6 @@ package com.netflix.conductor.redis.dao;
 
 import java.util.Optional;
 
-import com.netflix.conductor.core.utils.QueueUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,7 +163,9 @@ public class RedisRateLimitingDAO extends BaseDynoDAO implements RateLimitingDAO
             long currentTimeEpochMillis = System.currentTimeMillis();
             long currentTimeEpochRateLimitBucket =
                     currentTimeEpochMillis / (rateLimitFrequencyInSeconds * 1000L);
-            return ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds ) * 1000 - (currentTimeEpochMillis/rateLimitFrequencyInSeconds)) / 1000;
+            return ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds) * 1000
+                            - (currentTimeEpochMillis / rateLimitFrequencyInSeconds))
+                    / 1000;
         }
         return 0;
     }
