@@ -197,7 +197,7 @@ class AsyncSystemTaskExecutorTest extends Specification {
         1 * executionDAOFacade.getTaskModel(taskId) >> task
         1 * metadataDAO.getTaskDef(task.taskDefName) >> taskDef
         1 * executionDAOFacade.exceedsRateLimitPerFrequency(task, taskDef) >> taskDef
-        1 * queueDAO.postpone(queueName, taskId, task.workflowPriority, properties.taskExecutionPostponeDuration.seconds)
+        1 * queueDAO.postpone(queueName, taskId, task.workflowPriority, 0)
 
         task.status == TaskModel.Status.SCHEDULED
         task.startTime == 0
@@ -219,7 +219,7 @@ class AsyncSystemTaskExecutorTest extends Specification {
         1 * executionDAOFacade.getTaskModel(taskId) >> task
         1 * metadataDAO.getTaskDef(task.taskDefName) >> taskDef
         1 * executionDAOFacade.exceedsRateLimitPerFrequency(task, taskDef) >> taskDef
-        1 * queueDAO.postpone(queueName, taskId, task.workflowPriority, properties.taskExecutionPostponeDuration.seconds) >> { throw new RuntimeException("queue unavailable") }
+        1 * queueDAO.postpone(queueName, taskId, task.workflowPriority, 0) >> { throw new RuntimeException("queue unavailable") }
 
         task.status == TaskModel.Status.SCHEDULED
         task.startTime == 0

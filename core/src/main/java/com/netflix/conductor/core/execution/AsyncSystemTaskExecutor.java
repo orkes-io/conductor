@@ -101,8 +101,13 @@ public class AsyncSystemTaskExecutor {
                                         ? task.getTaskDefinition().get()
                                         : null);
                 LOGGER.info("Postponing task {} by {} seconds", task.getTaskId(), duration);
-                queueDAO.postpone(
-                        queueName, task.getTaskId(), task.getWorkflowPriority(), duration);
+                try {
+                    queueDAO.postpone(
+                            queueName, task.getTaskId(), task.getWorkflowPriority(), duration);
+                } catch (Exception e) {
+                    LOGGER.error(
+                            "Error postponing task: {} in queue: {}", task.getTaskId(), queueName);
+                }
                 return;
             }
         }
