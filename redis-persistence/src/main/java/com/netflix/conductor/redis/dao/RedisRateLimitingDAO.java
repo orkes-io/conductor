@@ -160,13 +160,12 @@ public class RedisRateLimitingDAO extends BaseDynoDAO implements RateLimitingDAO
         int rateLimitPerFrequency = rateLimitPair.getLeft();
         int rateLimitFrequencyInSeconds = rateLimitPair.getRight();
         if (rateLimitPerFrequency > 0 && rateLimitFrequencyInSeconds > 0) {
-            long currentTimeEpochMillis = System.currentTimeMillis();
+            // Find next bucket time and subtract current epoch from that.
+            long currentTimeEpoch = System.currentTimeMillis() / 1000L;
             long currentTimeEpochRateLimitBucket =
-                    currentTimeEpochMillis / (rateLimitFrequencyInSeconds * 1000L);
-            return ((currentTimeEpochRateLimitBucket + rateLimitFrequencyInSeconds) * 1000
-                            - (currentTimeEpochMillis / rateLimitFrequencyInSeconds))
-                    / 1000;
+                    (currentTimeEpoch / rateLimitFrequencyInSeconds) + 1L;
+            return currentTimeEpochRateLimitBucket * rateLimitFrequencyInSeconds - currentTimeEpoch;
         }
-        return 0;
+        return 0L;
     }
 }

@@ -86,4 +86,31 @@ public class RedisRateLimitDAOTest {
         assertFalse(rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef));
         assertTrue(rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef));
     }
+
+    @Test
+    public void testExceedsRateLimitPostponeDuration() {
+        TaskDef taskDef = new TaskDef("TestTaskDefinition");
+        taskDef.setRateLimitFrequencyInSeconds(60);
+        taskDef.setRateLimitPerFrequency(1);
+        TaskModel task = new TaskModel();
+        task.setTaskId(UUID.randomUUID().toString());
+        task.setTaskDefName(taskDef.getName());
+        assertFalse(rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef));
+        assertTrue(rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef));
+        assertTrue(rateLimitingDao.getPostponeDurationForTask(task, taskDef) <= 60);
+    }
+
+    @Test
+    public void testExceedsRateLimitPostponeDurationSecondUseCase() throws InterruptedException {
+        TaskDef taskDef = new TaskDef("TestTaskDefinition");
+        taskDef.setRateLimitFrequencyInSeconds(13);
+        taskDef.setRateLimitPerFrequency(1);
+        TaskModel task = new TaskModel();
+        task.setTaskId(UUID.randomUUID().toString());
+        task.setTaskDefName(taskDef.getName());
+        assertFalse(rateLimitingDao.exceedsRateLimitPerFrequency(task, taskDef));
+        Thread.sleep(5000);
+        long postponeDuration = rateLimitingDao.getPostponeDurationForTask(task, taskDef);
+        assertTrue(postponeDuration <= 8L);
+    }
 }
