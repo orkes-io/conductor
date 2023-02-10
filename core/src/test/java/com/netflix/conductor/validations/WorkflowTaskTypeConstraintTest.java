@@ -205,7 +205,6 @@ public class WorkflowTaskTypeConstraintTest {
         assertEquals(0, result.size());
     }
 
-
     @Test
     public void testWorkflowTaskTypeDecisionWithCaseParam() {
         WorkflowTask workflowTask = createSampleWorkflowTask();

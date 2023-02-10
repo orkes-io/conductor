@@ -300,7 +300,6 @@ public @interface WorkflowTaskTypeConstraint {
                 valid = false;
             }
 
-
             return valid;
         }
 
