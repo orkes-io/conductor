@@ -15,7 +15,6 @@ package com.netflix.conductor.sdk.workflow.executor.task;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +57,7 @@ public class AnnotatedWorker implements Worker {
 
     @Override
     public TaskResult execute(Task task) {
-        TaskResult result;
+        TaskResult result = new TaskResult(task);
         try {
             Object[] parameters = getInvocationParameters(task);
             Object invocationResult = workerMethod.invoke(obj, parameters);
@@ -66,11 +65,11 @@ public class AnnotatedWorker implements Worker {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         return result;
     }
 
     private Object[] getInvocationParameters(Task task) {
+
         Class<?>[] parameterTypes = workerMethod.getParameterTypes();
         Parameter[] parameters = workerMethod.getParameters();
 
@@ -80,65 +79,40 @@ public class AnnotatedWorker implements Worker {
             return new Object[] {task.getInputData()};
         }
 
-        return getParameters(task, parameterTypes, parameters);
-    }
-
-    private Object[] getParameters(Task task, Class<?>[] parameterTypes, Parameter[] parameters) {
         Annotation[][] parameterAnnotations = workerMethod.getParameterAnnotations();
         Object[] values = new Object[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Annotation[] paramAnnotation = parameterAnnotations[i];
             if (paramAnnotation != null && paramAnnotation.length > 0) {
-                Type type = parameters[i].getParameterizedType();
-                Class<?> parameterType = parameterTypes[i];
-                values[i] = getInputValue(task, parameterType, type, paramAnnotation);
-            } else {
-                values[i] = om.convertValue(task.getInputData(), parameterTypes[i]);
-            }
-        }
-
-        return values;
-    }
-
-    private Object getInputValue(
-            Task task, Class<?> parameterType, Type type, Annotation[] paramAnnotation) {
-        InputParam ip = findInputParamAnnotation(paramAnnotation);
-
-        if (ip == null) {
-            return om.convertValue(task.getInputData(), parameterType);
-        }
-
-        final String name = ip.value();
-        final Object value = task.getInputData().get(name);
-        if (value == null) {
-            return null;
-        }
-
-        if (List.class.isAssignableFrom(parameterType)) {
-            List<?> list = om.convertValue(value, List.class);
-            if (type instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> typeOfParameter = (Class<?>) parameterizedType.getActualTypeArguments()[0];
-                List<Object> parameterizedList = new ArrayList<>();
-                for (Object item : list) {
-                    parameterizedList.add(om.convertValue(item, typeOfParameter));
+                for (Annotation ann : paramAnnotation) {
+                    if (ann.annotationType().equals(InputParam.class)) {
+                        InputParam ip = (InputParam) ann;
+                        String name = ip.value();
+                        Object value = task.getInputData().get(name);
+                        if (List.class.isAssignableFrom(parameterTypes[i])) {
+                            Type type = parameters[i].getParameterizedType();
+                            if (type instanceof ParameterizedType) {
+                                ParameterizedType parameterizedType = (ParameterizedType) type;
+                                Class typeOfParameter =
+                                        (Class) parameterizedType.getActualTypeArguments()[0];
+                                List<?> list = om.convertValue(value, List.class);
+                                List parameterizedList = new ArrayList<>();
+                                for (Object item : list) {
+                                    parameterizedList.add(om.convertValue(item, typeOfParameter));
+                                }
+                                values[i] = parameterizedList;
+                            }
+                        } else {
+                            values[i] = om.convertValue(value, parameterTypes[i]);
+                        }
+                    }
                 }
-
-                return parameterizedList;
             } else {
-                return list;
+                Object input = om.convertValue(task.getInputData(), parameterTypes[i]);
+                values[i] = input;
             }
-        } else {
-            return om.convertValue(value, parameterType);
         }
-    }
-
-    private static InputParam findInputParamAnnotation(Annotation[] paramAnnotation) {
-        return (InputParam)
-                Arrays.stream(paramAnnotation)
-                        .filter(ann -> ann.annotationType().equals(InputParam.class))
-                        .findFirst()
-                        .orElse(null);
+        return values;
     }
 
     private TaskResult setValue(Object invocationResult, Task task) {
