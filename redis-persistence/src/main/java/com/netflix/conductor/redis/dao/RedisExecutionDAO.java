@@ -138,7 +138,7 @@ public class RedisExecutionDAO extends BaseDynoDAO
     public Map<String, String> getAllScheduledTask(String workflowId) {
         String key = nsKey(SCHEDULED_TASKS, workflowId);
         Map<String, String> tasks = jedisProxy.hgetAll(key);
-        if (tasks == null || tasks.size() ==0) {
+        if (tasks == null || tasks.size() == 0) {
             return new HashMap<>();
         }
         return tasks;

@@ -46,7 +46,7 @@ public interface ExecutionDAO {
 
     /**
      * @param workflowId WorkflowId
-     * @param key        key to remove
+     * @param key key to remove
      * @return key is removed or not.
      */
     Long removeScheduledTaskMapping(String workflowId, String key);

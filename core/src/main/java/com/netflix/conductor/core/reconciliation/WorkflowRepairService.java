@@ -101,17 +101,19 @@ public class WorkflowRepairService {
     }
 
     private void verifyAndRepairInconsistentTaskStates(String workflowId) {
-        // Check for task inconsistencies i.e. task is scheduled but executionDAO does not have it or
-        // task is in-progress but executionDAO does not have it. This can occur if redis goes down before writing task
+        // Check for task inconsistencies i.e. task is scheduled but executionDAO does not have it
+        // or
+        // task is in-progress but executionDAO does not have it. This can occur if redis goes down
+        // before writing task
         // to executionDAO properly.
 
         Map<String, String> corruptedTasks = executionDAO.getAllScheduledTask(workflowId);
-        corruptedTasks.forEach( (taskReferenceName, taskId) -> {
-            if (executionDAO.getTask(taskId) == null) {
-                executionDAO.removeScheduledTaskMapping(workflowId,  taskReferenceName);
-            }
-        });
-
+        corruptedTasks.forEach(
+                (taskReferenceName, taskId) -> {
+                    if (executionDAO.getTask(taskId) == null) {
+                        executionDAO.removeScheduledTaskMapping(workflowId, taskReferenceName);
+                    }
+                });
     }
 
     /** Verify and repair tasks in a workflow. */
