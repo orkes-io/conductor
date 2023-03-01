@@ -125,6 +125,17 @@ public class TaskDef extends Auditable {
     @Min(value = 1, message = "Backoff scale factor. Applicable for LINEAR_BACKOFF")
     private Integer backoffScaleFactor = 1;
 
+    @ProtoField(id = 21)
+    private boolean updateWorkflowState = false;
+
+    public boolean isUpdateWorkflowState() {
+        return updateWorkflowState;
+    }
+
+    public void setUpdateWorkflowState(boolean updateWorkflowState) {
+        this.updateWorkflowState = updateWorkflowState;
+    }
+
     public TaskDef() {}
 
     public TaskDef(String name) {

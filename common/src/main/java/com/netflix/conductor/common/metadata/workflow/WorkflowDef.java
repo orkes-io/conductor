@@ -101,6 +101,24 @@ public class WorkflowDef extends Auditable {
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
 
+    /*
+        State variables map. example
+            {
+            "orderStatus": "${order_update.output.status}",
+            "city" : "Bangalore"
+            }
+ */
+    @ProtoField(id = 16)
+    private Map<String, Object> stateVariables = new HashMap<>();
+
+    public Map<String, Object> getStateVariables() {
+        return stateVariables;
+    }
+
+    public void setStateVariables(Map<String, Object> stateVariables) {
+        this.stateVariables = stateVariables;
+    }
+
     /**
      * @return the name
      */

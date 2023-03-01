@@ -503,6 +503,11 @@ public class ExecutionDAOFacade {
                     taskModel.setEndTime(System.currentTimeMillis());
                 }
             }
+
+            /*
+                If the task is terminal and updateWorkflowState is true then evaluate the state variables and put it in the
+                workflow state queue for worker to consume.
+            */
             externalizeTaskData(taskModel);
             executionDAO.updateTask(taskModel);
             /*
