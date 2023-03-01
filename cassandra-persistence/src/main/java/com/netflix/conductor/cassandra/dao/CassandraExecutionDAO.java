@@ -170,6 +170,16 @@ public class CassandraExecutionDAO extends CassandraBaseDAO
                 "This method is not implemented in CassandraExecutionDAO. Please use ExecutionDAOFacade instead.");
     }
 
+    @Override
+    public Map<String, String> getAllScheduledTask(String workflowId) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Long removeScheduledTaskMapping(String workflowId, String key) {
+        return 0L;
+    }
+
     /**
      * Inserts tasks into the Cassandra datastore. <b>Note:</b> Creates the task_id to workflow_id
      * mapping in the task_lookup table first. Once this succeeds, inserts the tasks into the

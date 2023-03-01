@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.reconciliation;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -90,6 +91,7 @@ public class WorkflowRepairService {
      */
     public boolean verifyAndRepairWorkflow(String workflowId, boolean includeTasks) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, includeTasks);
+        verifyAndRepairInconsistentTaskStates(workflowId);
         AtomicBoolean repaired = new AtomicBoolean(false);
         repaired.set(verifyAndRepairDeciderQueue(workflow));
         if (includeTasks) {
@@ -98,10 +100,25 @@ public class WorkflowRepairService {
         return repaired.get();
     }
 
+    private void verifyAndRepairInconsistentTaskStates(String workflowId) {
+        // Check for task inconsistencies i.e. task is scheduled but executionDAO does not have it or
+        // task is in-progress but executionDAO does not have it. This can occur if redis goes down before writing task
+        // to executionDAO properly.
+
+        Map<String, String> corruptedTasks = executionDAO.getAllScheduledTask(workflowId);
+        corruptedTasks.forEach( (taskReferenceName, taskId) -> {
+            if (executionDAO.getTask(taskId) == null) {
+                executionDAO.removeScheduledTaskMapping(workflowId,  taskReferenceName);
+            }
+        });
+
+    }
+
     /** Verify and repair tasks in a workflow. */
     public void verifyAndRepairWorkflowTasks(String workflowId) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, true);
         workflow.getTasks().forEach(this::verifyAndRepairTask);
+        verifyAndRepairInconsistentTaskStates(workflowId);
         // repair the parent workflow if needed
         verifyAndRepairWorkflow(workflow.getParentWorkflowId());
     }
