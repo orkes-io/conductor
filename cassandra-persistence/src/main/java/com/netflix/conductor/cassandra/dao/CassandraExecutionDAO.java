@@ -162,6 +162,16 @@ public class CassandraExecutionDAO extends CassandraBaseDAO
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Map<String, String> getAllScheduledTask(String workflowId) {
+        return new HashMap<>();
+    }
+
+    @Override
+    public Long removeScheduledTaskMapping(String workflowId, String key) {
+        return 0L;
+    }
+
     /**
      * This is a dummy implementation and this feature is not implemented for Cassandra backed
      * Conductor

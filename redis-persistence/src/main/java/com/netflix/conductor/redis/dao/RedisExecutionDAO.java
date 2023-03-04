@@ -134,6 +134,22 @@ public class RedisExecutionDAO extends BaseDynoDAO
     }
 
     @Override
+    public Map<String, String> getAllScheduledTask(String workflowId) {
+        String key = nsKey(SCHEDULED_TASKS, workflowId);
+        Map<String, String> tasks = jedisProxy.hgetAll(key);
+        if (tasks == null || tasks.size() == 0) {
+            return new HashMap<>();
+        }
+        return tasks;
+    }
+
+    @Override
+    public Long removeScheduledTaskMapping(String workflowId, String key) {
+        String set = nsKey(SCHEDULED_TASKS, workflowId);
+        return jedisProxy.hdel(set, key);
+    }
+
+    @Override
     public List<TaskModel> createTasks(List<TaskModel> tasks) {
 
         List<TaskModel> tasksCreated = new LinkedList<>();
