@@ -110,6 +110,7 @@ public class WorkflowExecutor {
                         Workflow workflow = workflowClient.getWorkflow(workflowId, true);
                         if (workflow.getStatus().isTerminal()) {
                             future.complete(workflow);
+                            runningWorkflowFutures.remove(workflowId);
                         }
                     }
                 },
@@ -137,6 +138,7 @@ public class WorkflowExecutor {
                         Workflow workflow = workflowClient.getWorkflow(workflowId, true);
                         if (workflow.getStatus().isTerminal()) {
                             future.complete(workflow);
+                            runningWorkflowFutures.remove(workflowId);
                         }
                     }
                 },
