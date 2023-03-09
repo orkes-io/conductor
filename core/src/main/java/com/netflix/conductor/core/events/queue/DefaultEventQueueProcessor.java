@@ -98,15 +98,20 @@ public class DefaultEventQueueProcessor {
                                 WorkflowModel workflow =
                                         workflowExecutor.getWorkflow(workflowId, true);
 
-                                // fetch the task to mark completed based on the filter parameters user passed.
+                                // fetch the task to mark completed based on the filter parameters
+                                // user passed.
                                 Optional<TaskModel> optionalTaskModel;
                                 Predicate<TaskModel> filter;
-                                Predicate<TaskModel>
-                                        nonTerminal        = (task) -> !task.getStatus().isTerminal(),
-                                        waitTask           = (task) -> task.getTaskType().equals(TASK_TYPE_WAIT),
-                                        matchesTaskId      = (task) -> task.getTaskId().equals(taskId),
-                                        matchesTaskRefName = (task) -> task.getReferenceTaskName().equals(taskRefName),
-                                        matchesWorkerId    = (task) -> task.getWorkerId().equals(workerId);
+                                Predicate<TaskModel> nonTerminal =
+                                        (task) -> !task.getStatus().isTerminal();
+                                Predicate<TaskModel> waitTask =
+                                        (task) -> task.getTaskType().equals(TASK_TYPE_WAIT);
+                                Predicate<TaskModel> matchesTaskId =
+                                        (task) -> task.getTaskId().equals(taskId);
+                                Predicate<TaskModel> matchesTaskRefName =
+                                        (task) -> task.getReferenceTaskName().equals(taskRefName);
+                                Predicate<TaskModel> matchesWorkerId =
+                                        (task) -> task.getWorkerId().equals(workerId);
 
                                 if (StringUtils.isNotEmpty(taskId)) {
                                     filter = nonTerminal.and(matchesTaskId);
@@ -123,13 +128,15 @@ public class DefaultEventQueueProcessor {
                                     if (StringUtils.isEmpty(workerId)) {
                                         filter = nonTerminal.and(matchesTaskRefName);
                                     } else {
-                                        filter = nonTerminal.and(matchesTaskRefName).and(matchesWorkerId);
+                                        filter =
+                                                nonTerminal
+                                                        .and(matchesTaskRefName)
+                                                        .and(matchesWorkerId);
                                     }
                                 }
 
-                                optionalTaskModel = workflow.getTasks().stream()
-                                        .filter(filter)
-                                        .findFirst();
+                                optionalTaskModel =
+                                        workflow.getTasks().stream().filter(filter).findFirst();
 
                                 if (optionalTaskModel.isEmpty()) {
                                     LOGGER.error(
@@ -188,7 +195,11 @@ public class DefaultEventQueueProcessor {
     }
 
     public void updateByTaskRefName(
-            String workflowId, String taskRefName, String workerId, Map<String, Object> output, Status status)
+            String workflowId,
+            String taskRefName,
+            String workerId,
+            Map<String, Object> output,
+            Status status)
             throws Exception {
         Map<String, Object> externalIdMap = new HashMap<>();
         externalIdMap.put("workflowId", workflowId);

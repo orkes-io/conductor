@@ -41,7 +41,6 @@ import com.netflix.conductor.model.WorkflowModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.Uninterruptibles;
 
-import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HTTP;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 
 import static org.junit.Assert.assertNotNull;

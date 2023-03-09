@@ -54,7 +54,8 @@ public class QueueAdminResource {
             @RequestParam("workerId") String workerId,
             @RequestBody Map<String, Object> output)
             throws Exception {
-        defaultEventQueueProcessor.updateByTaskRefName(workflowId, taskRefName, workerId, output, status);
+        defaultEventQueueProcessor.updateByTaskRefName(
+                workflowId, taskRefName, workerId, output, status);
     }
 
     @Operation(summary = "Publish a message in queue to mark a wait task (by taskId) as completed.")
