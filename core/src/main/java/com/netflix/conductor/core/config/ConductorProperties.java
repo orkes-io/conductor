@@ -190,6 +190,13 @@ public class ConductorProperties {
     private DataSize maxTaskInputPayloadSizeThreshold = DataSize.ofKilobytes(10240L);
 
     /**
+     * The maximum threshold of the task input payload size in KB beyond which the task input will
+     * be rejected and the task will be marked as FAILED_WITH_TERMINAL_ERROR.
+     */
+    @DataSizeUnit(DataUnit.KILOBYTES)
+    private DataSize maxTaskPayloadSize = DataSize.ofKilobytes(10240L);
+
+    /**
      * The threshold of the task output payload size in KB beyond which the payload will be stored
      * in {@link com.netflix.conductor.common.utils.ExternalPayloadStorage}.
      */
@@ -475,6 +482,14 @@ public class ConductorProperties {
 
     public void setTaskInputPayloadSizeThreshold(DataSize taskInputPayloadSizeThreshold) {
         this.taskInputPayloadSizeThreshold = taskInputPayloadSizeThreshold;
+    }
+
+    public DataSize getMaxTaskPayloadSize() {
+        return maxTaskPayloadSize;
+    }
+
+    public void setMaxTaskPayloadSize(DataSize maxTaskPayloadSize) {
+        this.maxTaskInputPayloadSizeThreshold = maxTaskPayloadSize;
     }
 
     public DataSize getMaxTaskInputPayloadSizeThreshold() {
