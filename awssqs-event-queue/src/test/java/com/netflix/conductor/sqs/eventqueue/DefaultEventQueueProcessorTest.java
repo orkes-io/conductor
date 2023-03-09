@@ -41,6 +41,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.Uninterruptibles;
 
+import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_HTTP;
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_WAIT;
 
 import static org.junit.Assert.assertNotNull;
@@ -95,13 +96,25 @@ public class DefaultEventQueueProcessorTest {
         task0.setTaskId("t0");
         task0.setReferenceTaskName("t0");
         task0.setTaskType(TASK_TYPE_WAIT);
+        task0.setWorkerId("w_0");
         WorkflowModel workflow0 = new WorkflowModel();
         workflow0.setWorkflowId("v_0");
         workflow0.getTasks().add(task0);
 
+        TaskModel task1 = new TaskModel();
+        task1.setStatus(Status.IN_PROGRESS);
+        task1.setTaskId("t1");
+        task1.setReferenceTaskName("t0");
+        task1.setTaskType(TASK_TYPE_WAIT);
+        task1.setWorkerId("w_1");
+        WorkflowModel workflow1 = new WorkflowModel();
+        workflow1.setWorkflowId("v_1");
+        workflow1.getTasks().add(task1);
+
         TaskModel task2 = new TaskModel();
         task2.setStatus(Status.IN_PROGRESS);
         task2.setTaskId("t2");
+        task2.setWorkerId("w_2");
         task2.setTaskType(TASK_TYPE_WAIT);
         WorkflowModel workflow2 = new WorkflowModel();
         workflow2.setWorkflowId("v_2");
@@ -121,7 +134,7 @@ public class DefaultEventQueueProcessorTest {
         assertNotNull(workflowExecutor);
 
         doReturn(workflow0).when(workflowExecutor).getWorkflow(eq("v_0"), anyBoolean());
-
+        doReturn(workflow1).when(workflowExecutor).getWorkflow(eq("v_1"), anyBoolean());
         doReturn(workflow2).when(workflowExecutor).getWorkflow(eq("v_2"), anyBoolean());
 
         doAnswer(
@@ -137,7 +150,7 @@ public class DefaultEventQueueProcessorTest {
     @Test
     public void test() throws Exception {
         defaultEventQueueProcessor.updateByTaskRefName(
-                "v_0", "t0", new HashMap<>(), Status.COMPLETED);
+                "v_0", "t0", "", new HashMap<>(), Status.COMPLETED);
         Uninterruptibles.sleepUninterruptibly(1_000, TimeUnit.MILLISECONDS);
 
         assertTrue(updatedTasks.stream().anyMatch(task -> task.getTaskId().equals("t0")));
@@ -146,7 +159,7 @@ public class DefaultEventQueueProcessorTest {
     @Test(expected = IllegalArgumentException.class)
     public void testFailure() throws Exception {
         defaultEventQueueProcessor.updateByTaskRefName(
-                "v_1", "t1", new HashMap<>(), Status.CANCELED);
+                "v_1", "t1", "", new HashMap<>(), Status.CANCELED);
         Uninterruptibles.sleepUninterruptibly(1_000, TimeUnit.MILLISECONDS);
     }
 
@@ -155,5 +168,13 @@ public class DefaultEventQueueProcessorTest {
         defaultEventQueueProcessor.updateByTaskId("v_2", "t2", new HashMap<>(), Status.COMPLETED);
         Uninterruptibles.sleepUninterruptibly(1_000, TimeUnit.MILLISECONDS);
         assertTrue(updatedTasks.stream().anyMatch(task -> task.getTaskId().equals("t2")));
+    }
+
+    @Test
+    public void testWithWorkerId() throws Exception {
+        defaultEventQueueProcessor.updateByTaskRefName(
+                "v_1", "t0", "w_1", new HashMap<>(), Status.COMPLETED);
+        Uninterruptibles.sleepUninterruptibly(1_000, TimeUnit.MILLISECONDS);
+        assertTrue(updatedTasks.stream().anyMatch(task -> task.getTaskId().equals("t1")));
     }
 }

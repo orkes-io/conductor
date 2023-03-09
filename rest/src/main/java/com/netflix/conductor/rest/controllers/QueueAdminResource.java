@@ -14,12 +14,7 @@ package com.netflix.conductor.rest.controllers;
 
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.netflix.conductor.core.events.queue.DefaultEventQueueProcessor;
 import com.netflix.conductor.model.TaskModel.Status;
@@ -56,9 +51,10 @@ public class QueueAdminResource {
             @PathVariable("workflowId") String workflowId,
             @PathVariable("taskRefName") String taskRefName,
             @PathVariable("status") Status status,
+            @RequestParam("workerId") String workerId,
             @RequestBody Map<String, Object> output)
             throws Exception {
-        defaultEventQueueProcessor.updateByTaskRefName(workflowId, taskRefName, output, status);
+        defaultEventQueueProcessor.updateByTaskRefName(workflowId, taskRefName, workerId, output, status);
     }
 
     @Operation(summary = "Publish a message in queue to mark a wait task (by taskId) as completed.")

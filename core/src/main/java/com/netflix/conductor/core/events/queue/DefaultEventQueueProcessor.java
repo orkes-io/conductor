@@ -13,6 +13,7 @@
 package com.netflix.conductor.core.events.queue;
 
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -85,6 +86,7 @@ public class DefaultEventQueueProcessor {
                                 JsonNode json = objectMapper.readTree(externalId);
                                 String workflowId = getValue("workflowId", json);
                                 String taskRefName = getValue("taskRefName", json);
+                                String workerId = getValue("workerId", json);
                                 String taskId = getValue("taskId", json);
                                 if (workflowId == null || "".equals(workflowId)) {
                                     // This is a bad message, we cannot process it
@@ -95,47 +97,47 @@ public class DefaultEventQueueProcessor {
                                 }
                                 WorkflowModel workflow =
                                         workflowExecutor.getWorkflow(workflowId, true);
+
+                                // fetch the task to mark completed based on the filter parameters user passed.
                                 Optional<TaskModel> optionalTaskModel;
+                                Predicate<TaskModel> filter;
+                                Predicate<TaskModel>
+                                        nonTerminal        = (task) -> !task.getStatus().isTerminal(),
+                                        waitTask           = (task) -> task.getTaskType().equals(TASK_TYPE_WAIT),
+                                        matchesTaskId      = (task) -> task.getTaskId().equals(taskId),
+                                        matchesTaskRefName = (task) -> task.getReferenceTaskName().equals(taskRefName),
+                                        matchesWorkerId    = (task) -> task.getWorkerId().equals(workerId);
+
                                 if (StringUtils.isNotEmpty(taskId)) {
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getTaskId()
-                                                                                    .equals(taskId))
-                                                    .findFirst();
+                                    filter = nonTerminal.and(matchesTaskId);
                                 } else if (StringUtils.isEmpty(taskRefName)) {
-                                    LOGGER.error(
-                                            "No taskRefName found in the message. If there is only one WAIT task, will mark it as completed. {}",
-                                            payload);
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getTaskType()
-                                                                                    .equals(
-                                                                                            TASK_TYPE_WAIT))
-                                                    .findFirst();
+                                    if (StringUtils.isNotEmpty(workerId)) {
+                                        filter = nonTerminal.and(waitTask).and(matchesWorkerId);
+                                    } else {
+                                        filter = nonTerminal.and(waitTask);
+                                        LOGGER.error(
+                                                "No taskRefName or workerId found in the message. If there is only one WAIT task, will mark it as completed. {}",
+                                                payload);
+                                    }
                                 } else {
-                                    optionalTaskModel =
-                                            workflow.getTasks().stream()
-                                                    .filter(
-                                                            task ->
-                                                                    !task.getStatus().isTerminal()
-                                                                            && task.getReferenceTaskName()
-                                                                                    .equals(
-                                                                                            taskRefName))
-                                                    .findFirst();
+                                    if (StringUtils.isEmpty(workerId)) {
+                                        filter = nonTerminal.and(matchesTaskRefName);
+                                    } else {
+                                        filter = nonTerminal.and(matchesTaskRefName).and(matchesWorkerId);
+                                    }
                                 }
+
+                                optionalTaskModel = workflow.getTasks().stream()
+                                        .filter(filter)
+                                        .findFirst();
 
                                 if (optionalTaskModel.isEmpty()) {
                                     LOGGER.error(
-                                            "No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}",
+                                            "No matching tasks found to be marked as completed for workflow {}, taskRefName {}, taskId {}, workerId {}",
                                             workflowId,
                                             taskRefName,
-                                            taskId);
+                                            taskId,
+                                            workerId);
                                     queue.ack(Collections.singletonList(msg));
                                     return;
                                 }
@@ -186,11 +188,12 @@ public class DefaultEventQueueProcessor {
     }
 
     public void updateByTaskRefName(
-            String workflowId, String taskRefName, Map<String, Object> output, Status status)
+            String workflowId, String taskRefName, String workerId, Map<String, Object> output, Status status)
             throws Exception {
         Map<String, Object> externalIdMap = new HashMap<>();
         externalIdMap.put("workflowId", workflowId);
         externalIdMap.put("taskRefName", taskRefName);
+        externalIdMap.put("workerId", workerId);
 
         update(externalIdMap, output, status);
     }
