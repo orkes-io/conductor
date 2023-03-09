@@ -190,7 +190,7 @@ public class ConductorProperties {
     private DataSize maxTaskInputPayloadSizeThreshold = DataSize.ofKilobytes(10240L);
 
     /**
-     * The maximum threshold of the task input payload size in KB beyond which the task input will
+     * The maximum threshold of the task payload size in KB beyond which the task input will
      * be rejected and the task will be marked as FAILED_WITH_TERMINAL_ERROR.
      */
     @DataSizeUnit(DataUnit.KILOBYTES)
