@@ -13,6 +13,7 @@
 package com.netflix.conductor.dao;
 
 import java.util.List;
+import java.util.Map;
 
 import com.netflix.conductor.common.metadata.events.EventExecution;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -36,6 +37,19 @@ public interface ExecutionDAO {
      * @return List of tasks starting from startKey
      */
     List<TaskModel> getTasks(String taskType, String startKey, int count);
+
+    /**
+     * @param workflowId WorkflowId
+     * @return List of scheduled tasks
+     */
+    Map<String, String> getAllScheduledTask(String workflowId);
+
+    /**
+     * @param workflowId WorkflowId
+     * @param key key to remove
+     * @return key is removed or not.
+     */
+    Long removeScheduledTaskMapping(String workflowId, String key);
 
     /**
      * @param tasks tasks to be created
