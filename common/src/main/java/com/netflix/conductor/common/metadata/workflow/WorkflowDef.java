@@ -101,20 +101,19 @@ public class WorkflowDef extends Auditable {
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
 
-
     /*
-       Business State Schema
-           {
-           "DB_TYPE" : "POSTGRESQL|MONGODB",
-           "DB_NAME" : "Audit",
-           "Schema" :
+           Business State Schema
                {
-                   "orderStatus": "order_status",
-                   "city" : "order_city",
-                   "customerId" : "customer_id"
+               "DB_TYPE" : "POSTGRESQL|MONGODB",
+               "DB_NAME" : "Audit",
+               "Schema" :
+                   {
+                       "orderStatus": "order_status",
+                       "city" : "order_city",
+                       "customerId" : "customer_id"
+                   }
                }
-           }
-*/
+    */
     @ProtoField(id = 16)
     private Map<String, Object> businessStateSchema = new HashMap<>();
 
