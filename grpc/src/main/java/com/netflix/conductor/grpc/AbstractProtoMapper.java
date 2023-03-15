@@ -1184,6 +1184,9 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getInputTemplate().entrySet()) {
             to.putInputTemplate( pair.getKey(), toProto( pair.getValue() ) );
         }
+        for (Map.Entry<String, Object> pair : from.getBusinessStateSchema().entrySet()) {
+            to.putBusinessStateSchema( pair.getKey(), toProto( pair.getValue() ) );
+        }
         return to.build();
     }
 
@@ -1216,6 +1219,11 @@ public abstract class AbstractProtoMapper {
             inputTemplateMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setInputTemplate(inputTemplateMap);
+        Map<String, Object> businessStateSchemaMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getBusinessStateSchemaMap().entrySet()) {
+            businessStateSchemaMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setBusinessStateSchema(businessStateSchemaMap);
         return to;
     }
 

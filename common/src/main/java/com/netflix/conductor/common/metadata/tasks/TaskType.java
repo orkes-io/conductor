@@ -32,6 +32,7 @@ public enum TaskType {
     EVENT,
     WAIT,
     HUMAN,
+    BUSINESS_STATE,
     USER_DEFINED,
     HTTP,
     LAMBDA,
