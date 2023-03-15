@@ -120,9 +120,11 @@ public @interface WorkflowTaskTypeConstraint {
             return valid;
         }
 
-        private boolean isBusinessStateTaskValid(WorkflowTask workflowTask, ConstraintValidatorContext context) {
+        private boolean isBusinessStateTaskValid(
+                WorkflowTask workflowTask, ConstraintValidatorContext context) {
             boolean valid = true;
-            if (workflowTask.getInputParameters() != null && !workflowTask.getInputParameters().containsKey("businessState")) {
+            if (workflowTask.getInputParameters() != null
+                    && !workflowTask.getInputParameters().containsKey("businessState")) {
                 String message =
                         String.format(
                                 PARAM_REQUIRED_STRING_FORMAT,
