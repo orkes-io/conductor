@@ -120,6 +120,7 @@ public class WorkflowRepairService {
     /** Verify and repair tasks in a workflow. */
     public void verifyAndRepairWorkflowTasks(String workflowId) {
         WorkflowModel workflow = executionDAO.getWorkflow(workflowId, true);
+        verifyAndRepairInconsistentTaskStates(workflowId);
         workflow.getTasks().forEach(this::verifyAndRepairTask);
         // repair the parent workflow if needed
         verifyAndRepairWorkflow(workflow.getParentWorkflowId());
