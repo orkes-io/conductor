@@ -150,6 +150,7 @@ public class WorkflowTask {
     */
     @ProtoField(id = 29)
     private Map<EventType, Object> events;
+    
 
     public Map<EventType, Object> getEvents() {
         return events;
