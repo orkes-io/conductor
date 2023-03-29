@@ -145,6 +145,20 @@ public class WorkflowTask {
     @ProtoField(id = 28)
     private String expression;
 
+    /*
+    Map of events to be emitted when the task status changed.
+    */
+    @ProtoField(id = 29)
+    private Map<EventType, Object> events;
+
+    public Map<EventType, Object> getEvents() {
+        return events;
+    }
+
+    public void setEvents(Map<EventType, Object> events) {
+        this.events = events;
+    }
+
     /**
      * @return the name
      */

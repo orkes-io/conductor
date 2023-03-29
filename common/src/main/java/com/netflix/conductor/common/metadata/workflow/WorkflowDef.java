@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -100,29 +95,15 @@ public class WorkflowDef extends Auditable {
 
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
-
-    /*
-           Business State Schema
-               {
-               "DB_TYPE" : "POSTGRESQL|MONGODB",
-               "DB_NAME" : "Audit",
-               "Schema" :
-                   {
-                       "orderStatus": "order_status",
-                       "city" : "order_city",
-                       "customerId" : "customer_id"
-                   }
-               }
-    */
     @ProtoField(id = 16)
-    private Map<String, Object> businessStateSchema = new HashMap<>();
+    private List<Object> eventDestinations = new ArrayList<>();
 
-    public Map<String, Object> getBusinessStateSchema() {
-        return businessStateSchema;
+    public List<Object> getEventDestinations() {
+        return eventDestinations;
     }
 
-    public void setBusinessStateSchema(Map<String, Object> businessStateSchema) {
-        this.businessStateSchema = businessStateSchema;
+    public void setEventDestinations(List<Object> eventDestinations) {
+        this.eventDestinations = eventDestinations;
     }
 
     /**
