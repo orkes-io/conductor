@@ -12,11 +12,10 @@
  */
 package com.netflix.conductor.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
+import com.netflix.conductor.common.metadata.workflow.EventType;
+import com.netflix.conductor.common.metadata.workflow.TaskEvent;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
@@ -154,6 +153,8 @@ public class TaskModel {
      * it directly.
      */
     private boolean subworkflowChanged;
+
+    private Map<EventType, List<TaskEvent>> events;
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
@@ -852,5 +853,13 @@ public class TaskModel {
 
     public void addOutput(Map<String, Object> outputData) {
         this.outputData.putAll(outputData);
+    }
+
+    public Map<EventType, List<TaskEvent>> getEvents() {
+        return events;
+    }
+
+    public void setEvents(Map<EventType, List<TaskEvent>> events) {
+        this.events = events;
     }
 }

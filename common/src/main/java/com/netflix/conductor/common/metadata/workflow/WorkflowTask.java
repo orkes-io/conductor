@@ -149,14 +149,13 @@ public class WorkflowTask {
     Map of events to be emitted when the task status changed.
     */
     @ProtoField(id = 29)
-    private Map<EventType, Object> events;
-    
+    private Map<EventType, List<TaskEvent>> events;
 
-    public Map<EventType, Object> getEvents() {
+    public Map<EventType, List<TaskEvent>> getEvents() {
         return events;
     }
 
-    public void setEvents(Map<EventType, Object> events) {
+    public void setEvents(Map<EventType, List<TaskEvent>> events) {
         this.events = events;
     }
 

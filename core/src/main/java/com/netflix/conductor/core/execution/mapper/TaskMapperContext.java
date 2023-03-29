@@ -100,6 +100,7 @@ public class TaskMapperContext {
     public TaskModel createTaskModel() {
         TaskModel taskModel = new TaskModel();
         taskModel.setReferenceTaskName(workflowTask.getTaskReferenceName());
+        taskModel.setEvents(workflowTask.getEvents());
         taskModel.setWorkflowInstanceId(workflowModel.getWorkflowId());
         taskModel.setWorkflowType(workflowModel.getWorkflowName());
         taskModel.setCorrelationId(workflowModel.getCorrelationId());
