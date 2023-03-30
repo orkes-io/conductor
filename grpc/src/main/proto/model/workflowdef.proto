@@ -3,6 +3,7 @@ package conductor.proto;
 
 import "model/workflowtask.proto";
 import "google/protobuf/struct.proto";
+import "model/taskevent.proto";
 
 option java_package = "com.netflix.conductor.proto";
 option java_outer_classname = "WorkflowDefPb";
@@ -28,5 +29,5 @@ message WorkflowDef {
     int64 timeout_seconds = 13;
     map<string, google.protobuf.Value> variables = 14;
     map<string, google.protobuf.Value> input_template = 15;
-    map<string, google.protobuf.Value> business_state_schema = 16;
+    repeated TaskEvent event_destinations = 16;
 }

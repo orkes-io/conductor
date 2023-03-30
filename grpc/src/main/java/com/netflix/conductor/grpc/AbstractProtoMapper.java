@@ -9,7 +9,15 @@ import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskExecLog;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
-import com.netflix.conductor.common.metadata.workflow.*;
+import com.netflix.conductor.common.metadata.workflow.DynamicForkJoinTask;
+import com.netflix.conductor.common.metadata.workflow.DynamicForkJoinTaskList;
+import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
+import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
+import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
+import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
+import com.netflix.conductor.common.metadata.workflow.TaskEvent;
+import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.TaskSummary;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.run.WorkflowSummary;
@@ -23,6 +31,7 @@ import com.netflix.conductor.proto.SkipTaskRequestPb;
 import com.netflix.conductor.proto.StartWorkflowRequestPb;
 import com.netflix.conductor.proto.SubWorkflowParamsPb;
 import com.netflix.conductor.proto.TaskDefPb;
+import com.netflix.conductor.proto.TaskEventPb;
 import com.netflix.conductor.proto.TaskExecLogPb;
 import com.netflix.conductor.proto.TaskPb;
 import com.netflix.conductor.proto.TaskResultPb;
@@ -850,6 +859,66 @@ public abstract class AbstractProtoMapper {
         return to;
     }
 
+    public TaskEventPb.TaskEvent toProto(TaskEvent from) {
+        TaskEventPb.TaskEvent.Builder to = TaskEventPb.TaskEvent.newBuilder();
+        if (from.getType() != null) {
+            to.setType( toProto( from.getType() ) );
+        }
+        if (from.getSchemaName() != null) {
+            to.setSchemaName( from.getSchemaName() );
+        }
+        for (Map.Entry<String, Object> pair : from.getValues().entrySet()) {
+            to.putValues( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        if (from.getTopic() != null) {
+            to.setTopic( from.getTopic() );
+        }
+        for (Map.Entry<String, Object> pair : from.getSchema().entrySet()) {
+            to.putSchema( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        return to.build();
+    }
+
+    public TaskEvent fromProto(TaskEventPb.TaskEvent from) {
+        TaskEvent to = new TaskEvent();
+        to.setType( fromProto( from.getType() ) );
+        to.setSchemaName( from.getSchemaName() );
+        Map<String, Object> valuesMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getValuesMap().entrySet()) {
+            valuesMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setValues(valuesMap);
+        to.setTopic( from.getTopic() );
+        Map<String, Object> schemaMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getSchemaMap().entrySet()) {
+            schemaMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setSchema(schemaMap);
+        return to;
+    }
+
+    public TaskEventPb.TaskEvent.EventType toProto(TaskEvent.EventType from) {
+        TaskEventPb.TaskEvent.EventType to;
+        switch (from) {
+            case POSTGRESQL: to = TaskEventPb.TaskEvent.EventType.POSTGRESQL; break;
+            case KAFKA: to = TaskEventPb.TaskEvent.EventType.KAFKA; break;
+            case MONGODB: to = TaskEventPb.TaskEvent.EventType.MONGODB; break;
+            default: throw new IllegalArgumentException("Unexpected enum constant: " + from);
+        }
+        return to;
+    }
+
+    public TaskEvent.EventType fromProto(TaskEventPb.TaskEvent.EventType from) {
+        TaskEvent.EventType to;
+        switch (from) {
+            case POSTGRESQL: to = TaskEvent.EventType.POSTGRESQL; break;
+            case KAFKA: to = TaskEvent.EventType.KAFKA; break;
+            case MONGODB: to = TaskEvent.EventType.MONGODB; break;
+            default: throw new IllegalArgumentException("Unexpected enum constant: " + from);
+        }
+        return to;
+    }
+
     public TaskExecLogPb.TaskExecLog toProto(TaskExecLog from) {
         TaskExecLogPb.TaskExecLog.Builder to = TaskExecLogPb.TaskExecLog.newBuilder();
         if (from.getLog() != null) {
@@ -1177,6 +1246,9 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getInputTemplate().entrySet()) {
             to.putInputTemplate( pair.getKey(), toProto( pair.getValue() ) );
         }
+        for (TaskEvent elem : from.getEventDestinations()) {
+            to.addEventDestinations( toProto(elem) );
+        }
         return to.build();
     }
 
@@ -1209,6 +1281,7 @@ public abstract class AbstractProtoMapper {
             inputTemplateMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setInputTemplate(inputTemplateMap);
+        to.setEventDestinations( from.getEventDestinationsList().stream().map(this::fromProto).collect(Collectors.toCollection(ArrayList::new)) );
         return to;
     }
 
@@ -1386,6 +1459,9 @@ public abstract class AbstractProtoMapper {
         if (from.getExpression() != null) {
             to.setExpression( from.getExpression() );
         }
+        for (TaskEvent elem : from.getEvents()) {
+            to.addEvents( toProto(elem) );
+        }
         return to.build();
     }
 
@@ -1431,6 +1507,7 @@ public abstract class AbstractProtoMapper {
         to.setRetryCount( from.getRetryCount() );
         to.setEvaluatorType( from.getEvaluatorType() );
         to.setExpression( from.getExpression() );
+        to.setEvents( from.getEventsList().stream().map(this::fromProto).collect(Collectors.toCollection(ArrayList::new)) );
         return to;
     }
 
