@@ -14,18 +14,20 @@ package com.netflix.conductor.model;
 
 import java.util.*;
 
+import com.netflix.conductor.common.metadata.workflow.TaskEventList;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
-import com.netflix.conductor.common.metadata.workflow.EventType;
 import com.netflix.conductor.common.metadata.workflow.TaskEvent;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
+
+import javax.validation.Valid;
 
 public class TaskModel {
 
@@ -154,7 +156,7 @@ public class TaskModel {
      */
     private boolean subworkflowChanged;
 
-    private List<TaskEvent> events;
+    private @Valid Map<String, TaskEventList> events;
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
@@ -855,11 +857,11 @@ public class TaskModel {
         this.outputData.putAll(outputData);
     }
 
-    public List<TaskEvent> getEvents() {
+    public @Valid Map<String, TaskEventList> getEvents() {
         return events;
     }
 
-    public void setEvents(List<TaskEvent> events) {
+    public void setEvents(@Valid Map<String, TaskEventList> events) {
         this.events = events;
     }
 }

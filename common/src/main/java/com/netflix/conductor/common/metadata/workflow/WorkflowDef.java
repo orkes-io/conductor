@@ -97,13 +97,13 @@ public class WorkflowDef extends Auditable {
     private Map<String, Object> inputTemplate = new HashMap<>();
 
     @ProtoField(id = 16)
-    private List<@Valid TaskEvent> eventDestinations = new LinkedList<>();
+    private  Map<String ,TaskEventList> eventDestinations = new LinkedHashMap<>();
 
-    public List<@Valid TaskEvent> getEventDestinations() {
+    public Map<String ,TaskEventList> getEventDestinations() {
         return eventDestinations;
     }
 
-    public void setEventDestinations(List<@Valid TaskEvent> eventDestinations) {
+    public void setEventDestinations(Map<String ,TaskEventList> eventDestinations) {
         this.eventDestinations = eventDestinations;
     }
 

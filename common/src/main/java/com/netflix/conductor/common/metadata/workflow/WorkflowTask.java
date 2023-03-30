@@ -149,13 +149,13 @@ public class WorkflowTask {
     Map of events to be emitted when the task status changed.
     */
     @ProtoField(id = 29)
-    private @Valid List<@Valid TaskEvent> events = new LinkedList<>();
+    private @Valid Map<String, TaskEventList> events = new LinkedHashMap<>();
 
-    public List<@Valid TaskEvent> getEvents() {
+    public @Valid Map<String, TaskEventList> getEvents() {
         return events;
     }
 
-    public void setEvents(List<@Valid TaskEvent> events) {
+    public void setEvents(@Valid Map<String, TaskEventList> events) {
         this.events = events;
     }
 

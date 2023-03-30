@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.netflix.conductor.annotations.protogen.ProtoEnum;
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 
@@ -25,18 +24,11 @@ import com.netflix.conductor.annotations.protogen.ProtoMessage;
 @Valid
 public class TaskEvent {
 
-    @ProtoEnum
-    public enum EventType {
-        POSTGRESQL,
-        KAFKA,
-        MONGODB
-    }
-
-    public EventType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(EventType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -74,7 +66,7 @@ public class TaskEvent {
 
     @ProtoField(id = 1)
     @NotNull
-    private EventType type;
+    private String type;
 
     @ProtoField(id = 2)
     private String schemaName;

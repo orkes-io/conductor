@@ -8,12 +8,7 @@ option java_outer_classname = "TaskEventPb";
 option go_package = "github.com/netflix/conductor/client/gogrpc/conductor/model";
 
 message TaskEvent {
-    enum EventType {
-        POSTGRESQL = 0;
-        KAFKA = 1;
-        MONGODB = 2;
-    }
-    TaskEvent.EventType type = 1;
+    string type = 1;
     string schema_name = 2;
     map<string, google.protobuf.Value> values = 3;
     string topic = 4;
