@@ -20,7 +20,6 @@ import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
-import com.netflix.conductor.common.metadata.workflow.TaskEvent;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -157,6 +156,10 @@ public class TaskModel {
     private boolean subworkflowChanged;
 
     private @Valid Map<String, TaskEventList> events;
+
+    private String eventAssociatedTaskId;
+
+    private boolean systemEventTask;
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
@@ -721,6 +724,12 @@ public class TaskModel {
                 + '\''
                 + ", subworkflowChanged="
                 + subworkflowChanged
+                + '\''
+                + ", eventAssociatedTaskId='"
+                + eventAssociatedTaskId
+                + '\''
+                + ", systemEventTask='"
+                + systemEventTask
                 + '}';
     }
 
@@ -864,4 +873,21 @@ public class TaskModel {
     public void setEvents(@Valid Map<String, TaskEventList> events) {
         this.events = events;
     }
+
+    public String getEventAssociatedTaskId() {
+        return eventAssociatedTaskId;
+    }
+
+    public void setEventAssociatedTaskId(String eventAssociatedTaskId) {
+        this.eventAssociatedTaskId = eventAssociatedTaskId;
+    }
+
+    public boolean isSystemEventTask() {
+        return systemEventTask;
+    }
+
+    public void setSystemEventTask(boolean systemEventTask) {
+        this.systemEventTask = systemEventTask;
+    }
+
 }

@@ -866,17 +866,8 @@ public abstract class AbstractProtoMapper {
         if (from.getType() != null) {
             to.setType( from.getType() );
         }
-        if (from.getSchemaName() != null) {
-            to.setSchemaName( from.getSchemaName() );
-        }
-        for (Map.Entry<String, Object> pair : from.getValues().entrySet()) {
-            to.putValues( pair.getKey(), toProto( pair.getValue() ) );
-        }
-        if (from.getTopic() != null) {
-            to.setTopic( from.getTopic() );
-        }
-        for (Map.Entry<String, Object> pair : from.getSchema().entrySet()) {
-            to.putSchema( pair.getKey(), toProto( pair.getValue() ) );
+        for (Map.Entry<String, Object> pair : from.getPayload().entrySet()) {
+            to.putPayload( pair.getKey(), toProto( pair.getValue() ) );
         }
         return to.build();
     }
@@ -884,18 +875,11 @@ public abstract class AbstractProtoMapper {
     public TaskEvent fromProto(TaskEventPb.TaskEvent from) {
         TaskEvent to = new TaskEvent();
         to.setType( from.getType() );
-        to.setSchemaName( from.getSchemaName() );
-        Map<String, Object> valuesMap = new HashMap<String, Object>();
-        for (Map.Entry<String, Value> pair : from.getValuesMap().entrySet()) {
-            valuesMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        Map<String, Object> payloadMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getPayloadMap().entrySet()) {
+            payloadMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
-        to.setValues(valuesMap);
-        to.setTopic( from.getTopic() );
-        Map<String, Object> schemaMap = new HashMap<String, Object>();
-        for (Map.Entry<String, Value> pair : from.getSchemaMap().entrySet()) {
-            schemaMap.put( pair.getKey(), fromProto( pair.getValue() ) );
-        }
-        to.setSchema(schemaMap);
+        to.setPayload(payloadMap);
         return to;
     }
 
@@ -1240,7 +1224,7 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getInputTemplate().entrySet()) {
             to.putInputTemplate( pair.getKey(), toProto( pair.getValue() ) );
         }
-        for (Map.Entry<String, TaskEventList> pair : from.getEventDestinations().entrySet()) {
+        for (Map.Entry<String, Object> pair : from.getEventDestinations().entrySet()) {
             to.putEventDestinations( pair.getKey(), toProto( pair.getValue() ) );
         }
         return to.build();
@@ -1275,8 +1259,8 @@ public abstract class AbstractProtoMapper {
             inputTemplateMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setInputTemplate(inputTemplateMap);
-        Map<String, TaskEventList> eventDestinationsMap = new HashMap<String, TaskEventList>();
-        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getEventDestinationsMap().entrySet()) {
+        Map<String, Object> eventDestinationsMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getEventDestinationsMap().entrySet()) {
             eventDestinationsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setEventDestinations(eventDestinationsMap);

@@ -32,51 +32,29 @@ public class TaskEvent {
         this.type = type;
     }
 
-    public String getSchemaName() {
-        return schemaName;
+    public Map<String, Object> getPayload() {
+        return payload;
     }
 
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
-
-    public Map<String, Object> getValues() {
-        return values;
-    }
-
-    public void setValues(Map<String, Object> values) {
-        this.values = values;
-    }
-
-    public String getTopic() {
-        return topic;
-    }
-
-    public void setTopic(String topic) {
-        this.topic = topic;
-    }
-
-    public Map<String, Object> getSchema() {
-        return schema;
-    }
-
-    public void setSchema(Map<String, Object> schema) {
-        this.schema = schema;
+    public void setPayload(Map<String, Object> payload) {
+        this.payload = payload;
     }
 
     @ProtoField(id = 1)
     @NotNull
     private String type;
 
-    @ProtoField(id = 2)
-    private String schemaName;
-
     @ProtoField(id = 3)
-    private Map<String, Object> values;
+    private Map<String, Object> payload;
 
-    @ProtoField(id = 4)
-    private String topic;
-
-    @ProtoField(id = 5)
-    private Map<String, Object> schema;
+    @Override
+    public String toString() {
+        return "TaskEvent{"
+                + "type='"
+                + type
+                + '\''
+                + ", payload="
+                + payload
+                + '}';
+    }
 }
