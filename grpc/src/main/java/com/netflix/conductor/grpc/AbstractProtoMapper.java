@@ -1227,6 +1227,9 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getEventDestinations().entrySet()) {
             to.putEventDestinations( pair.getKey(), toProto( pair.getValue() ) );
         }
+        for (Map.Entry<String, TaskEventList> pair : from.getStateChangeEvents().entrySet()) {
+            to.putStateChangeEvents( pair.getKey(), toProto( pair.getValue() ) );
+        }
         return to.build();
     }
 
@@ -1264,6 +1267,11 @@ public abstract class AbstractProtoMapper {
             eventDestinationsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setEventDestinations(eventDestinationsMap);
+        Map<String, TaskEventList> stateChangeEventsMap = new HashMap<String, TaskEventList>();
+        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getStateChangeEventsMap().entrySet()) {
+            stateChangeEventsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setStateChangeEvents(stateChangeEventsMap);
         return to;
     }
 
@@ -1441,8 +1449,8 @@ public abstract class AbstractProtoMapper {
         if (from.getExpression() != null) {
             to.setExpression( from.getExpression() );
         }
-        for (Map.Entry<String, TaskEventList> pair : from.getEvents().entrySet()) {
-            to.putEvents( pair.getKey(), toProto( pair.getValue() ) );
+        for (Map.Entry<String, TaskEventList> pair : from.getStateChangeEvents().entrySet()) {
+            to.putStateChangeEvents( pair.getKey(), toProto( pair.getValue() ) );
         }
         return to.build();
     }
@@ -1489,11 +1497,11 @@ public abstract class AbstractProtoMapper {
         to.setRetryCount( from.getRetryCount() );
         to.setEvaluatorType( from.getEvaluatorType() );
         to.setExpression( from.getExpression() );
-        Map<String, TaskEventList> eventsMap = new HashMap<String, TaskEventList>();
-        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getEventsMap().entrySet()) {
-            eventsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        Map<String, TaskEventList> stateChangeEventsMap = new HashMap<String, TaskEventList>();
+        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getStateChangeEventsMap().entrySet()) {
+            stateChangeEventsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
-        to.setEvents(eventsMap);
+        to.setStateChangeEvents(stateChangeEventsMap);
         return to;
     }
 

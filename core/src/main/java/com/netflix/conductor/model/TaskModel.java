@@ -155,7 +155,7 @@ public class TaskModel {
      */
     private boolean subworkflowChanged;
 
-    private @Valid Map<String, TaskEventList> events;
+    private @Valid Map<String, TaskEventList> stateChangeEvents;
 
     private String eventAssociatedTaskId;
 
@@ -866,12 +866,12 @@ public class TaskModel {
         this.outputData.putAll(outputData);
     }
 
-    public @Valid Map<String, TaskEventList> getEvents() {
-        return events;
+    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
+        return stateChangeEvents;
     }
 
-    public void setEvents(@Valid Map<String, TaskEventList> events) {
-        this.events = events;
+    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
+        this.stateChangeEvents = stateChangeEvents;
     }
 
     public String getEventAssociatedTaskId() {

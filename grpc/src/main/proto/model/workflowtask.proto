@@ -42,5 +42,5 @@ message WorkflowTask {
     int32 retry_count = 26;
     string evaluator_type = 27;
     string expression = 28;
-    map<string, TaskEventList> events = 29;
+    map<string, TaskEventList> state_change_events = 29;
 }

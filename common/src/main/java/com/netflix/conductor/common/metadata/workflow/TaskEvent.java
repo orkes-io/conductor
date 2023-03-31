@@ -44,7 +44,7 @@ public class TaskEvent {
     @NotNull
     private String type;
 
-    @ProtoField(id = 3)
+    @ProtoField(id = 2)
     private Map<String, Object> payload;
 
     @Override

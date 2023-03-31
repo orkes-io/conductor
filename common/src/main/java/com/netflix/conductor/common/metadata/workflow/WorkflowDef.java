@@ -107,6 +107,17 @@ public class WorkflowDef extends Auditable {
         this.eventDestinations = eventDestinations;
     }
 
+    @ProtoField(id = 17)
+    private @Valid Map<String, TaskEventList> stateChangeEvents = new LinkedHashMap<>();
+
+    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
+        return stateChangeEvents;
+    }
+
+    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
+        this.stateChangeEvents = stateChangeEvents;
+    }
+
     /**
      * @return the name
      */

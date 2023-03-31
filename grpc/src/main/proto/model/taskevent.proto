@@ -9,5 +9,5 @@ option go_package = "github.com/netflix/conductor/client/gogrpc/conductor/model"
 
 message TaskEvent {
     string type = 1;
-    map<string, google.protobuf.Value> payload = 3;
+    map<string, google.protobuf.Value> payload = 2;
 }
