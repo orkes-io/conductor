@@ -49,12 +49,6 @@ public class TaskEvent {
 
     @Override
     public String toString() {
-        return "TaskEvent{"
-                + "type='"
-                + type
-                + '\''
-                + ", payload="
-                + payload
-                + '}';
+        return "TaskEvent{" + "type='" + type + '\'' + ", payload=" + payload + '}';
     }
 }

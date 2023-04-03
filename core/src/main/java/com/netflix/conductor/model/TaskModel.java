@@ -14,19 +14,19 @@ package com.netflix.conductor.model;
 
 import java.util.*;
 
-import com.netflix.conductor.common.metadata.workflow.TaskEventList;
+import javax.validation.Valid;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.workflow.TaskEventList;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.protobuf.Any;
-
-import javax.validation.Valid;
 
 public class TaskModel {
 
@@ -889,5 +889,4 @@ public class TaskModel {
     public void setSystemEventTask(boolean systemEventTask) {
         this.systemEventTask = systemEventTask;
     }
-
 }
