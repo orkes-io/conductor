@@ -100,20 +100,6 @@ public class WorkflowDef extends Auditable {
     private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
 
     /**
-     * @return
-     */
-    public Map<String, StateChangeEventList> getOnStateChange() {
-        return onStateChange;
-    }
-
-    /**
-     * @param onStateChange
-     */
-    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
-        this.onStateChange = onStateChange;
-    }
-
-    /**
      * @return the name
      */
     public String getName() {
@@ -331,6 +317,14 @@ public class WorkflowDef extends Auditable {
 
     public static String getKey(String name, int version) {
         return name + "." + version;
+    }
+
+    public Map<String, StateChangeEventList> getOnStateChange() {
+        return onStateChange;
+    }
+
+    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+        this.onStateChange = onStateChange;
     }
 
     public boolean containsType(String taskType) {
