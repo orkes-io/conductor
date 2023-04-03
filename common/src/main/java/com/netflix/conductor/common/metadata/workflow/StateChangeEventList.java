@@ -21,15 +21,15 @@ import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 
 @ProtoMessage
-public class TaskEventList {
-    public List<TaskEvent> getEvents() {
+public class StateChangeEventList {
+    public List<StateChangeEvent> getEvents() {
         return events;
     }
 
-    public void setEvents(List<TaskEvent> events) {
+    public void setEvents(List<StateChangeEvent> events) {
         this.events = events;
     }
 
     @ProtoField(id = 1)
-    private @Valid List<@Valid TaskEvent> events = new LinkedList<>();
+    private @Valid List<@Valid StateChangeEvent> events = new LinkedList<>();
 }

@@ -97,25 +97,22 @@ public class WorkflowDef extends Auditable {
     private Map<String, Object> inputTemplate = new HashMap<>();
 
     @ProtoField(id = 16)
-    private Map<String, Object> eventDestinations = new LinkedHashMap<>();
+    private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
 
-    public Map<String, Object> getEventDestinations() {
-        return eventDestinations;
+    /**
+     *
+     * @return
+     */
+    public Map<String, StateChangeEventList> getOnStateChange() {
+        return onStateChange;
     }
 
-    public void setEventDestinations(Map<String, Object> eventDestinations) {
-        this.eventDestinations = eventDestinations;
-    }
-
-    @ProtoField(id = 17)
-    private @Valid Map<String, TaskEventList> stateChangeEvents = new LinkedHashMap<>();
-
-    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
-        return stateChangeEvents;
-    }
-
-    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
-        this.stateChangeEvents = stateChangeEvents;
+    /**
+     *
+     * @param onStateChange
+     */
+    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+        this.onStateChange = onStateChange;
     }
 
     /**

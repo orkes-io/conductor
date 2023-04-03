@@ -16,12 +16,12 @@ import java.util.*;
 
 import javax.validation.Valid;
 
+import com.netflix.conductor.common.metadata.workflow.StateChangeEventList;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
-import com.netflix.conductor.common.metadata.workflow.TaskEventList;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -155,7 +155,7 @@ public class TaskModel {
      */
     private boolean subworkflowChanged;
 
-    private @Valid Map<String, TaskEventList> stateChangeEvents;
+    private @Valid Map<String, StateChangeEventList> onStateChange;
 
     private String eventAssociatedTaskId;
 
@@ -782,7 +782,8 @@ public class TaskModel {
                         taskModel.getExternalOutputPayloadStoragePath())
                 && Objects.equals(getExecutionNameSpace(), taskModel.getExecutionNameSpace())
                 && Objects.equals(getIsolationGroupId(), taskModel.getIsolationGroupId())
-                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId());
+                && Objects.equals(getSubWorkflowId(), taskModel.getSubWorkflowId())
+                && Objects.equals(getOnStateChange(), taskModel.getOnStateChange());
     }
 
     @Override
@@ -828,6 +829,7 @@ public class TaskModel {
                 getIsolationGroupId(),
                 getIteration(),
                 getSubWorkflowId(),
+                getOnStateChange(),
                 isSubworkflowChanged());
     }
 
@@ -866,12 +868,12 @@ public class TaskModel {
         this.outputData.putAll(outputData);
     }
 
-    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
-        return stateChangeEvents;
+    public Map<String, StateChangeEventList> getOnStateChange() {
+        return onStateChange;
     }
 
-    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
-        this.stateChangeEvents = stateChangeEvents;
+    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+        this.onStateChange = onStateChange;
     }
 
     public String getEventAssociatedTaskId() {

@@ -22,7 +22,14 @@ import com.netflix.conductor.annotations.protogen.ProtoMessage;
 
 @ProtoMessage
 @Valid
-public class TaskEvent {
+public class StateChangeEvent {
+
+    @ProtoField(id = 1)
+    @NotNull
+    private String type;
+
+    @ProtoField(id = 2)
+    private Map<String, Object> payload;
 
     public String getType() {
         return type;
@@ -40,15 +47,8 @@ public class TaskEvent {
         this.payload = payload;
     }
 
-    @ProtoField(id = 1)
-    @NotNull
-    private String type;
-
-    @ProtoField(id = 2)
-    private Map<String, Object> payload;
-
     @Override
     public String toString() {
-        return "TaskEvent{" + "type='" + type + '\'' + ", payload=" + payload + '}';
+        return "StateChangeEvent{" + "type='" + type + '\'' + ", payload=" + payload + '}';
     }
 }

@@ -144,20 +144,11 @@ public class WorkflowTask {
 
     @ProtoField(id = 28)
     private String expression;
-
     /*
     Map of events to be emitted when the task status changed.
     */
     @ProtoField(id = 29)
-    private @Valid Map<String, TaskEventList> stateChangeEvents = new LinkedHashMap<>();
-
-    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
-        return stateChangeEvents;
-    }
-
-    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
-        this.stateChangeEvents = stateChangeEvents;
-    }
+    private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
 
     /**
      * @return the name
@@ -701,6 +692,14 @@ public class WorkflowTask {
         return null;
     }
 
+    public Map<String, StateChangeEventList> getOnStateChange() {
+        return onStateChange;
+    }
+
+    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+        this.onStateChange = onStateChange;
+    }
+
     @Override
     public String toString() {
         return name + "/" + taskReferenceName;
@@ -741,7 +740,8 @@ public class WorkflowTask {
                 && Objects.equals(getSink(), that.getSink())
                 && Objects.equals(isAsyncComplete(), that.isAsyncComplete())
                 && Objects.equals(getDefaultExclusiveJoinTask(), that.getDefaultExclusiveJoinTask())
-                && Objects.equals(getRetryCount(), that.getRetryCount());
+                && Objects.equals(getRetryCount(), that.getRetryCount())
+                && Objects.equals(getOnStateChange(), that.getOnStateChange());
     }
 
     @Override
@@ -771,6 +771,7 @@ public class WorkflowTask {
                 isAsyncComplete(),
                 isOptional(),
                 getDefaultExclusiveJoinTask(),
+                getOnStateChange(),
                 getRetryCount());
     }
 }
