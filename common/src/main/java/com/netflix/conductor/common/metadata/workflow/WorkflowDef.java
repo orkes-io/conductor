@@ -100,7 +100,6 @@ public class WorkflowDef extends Auditable {
     private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
 
     /**
-     *
      * @return
      */
     public Map<String, StateChangeEventList> getOnStateChange() {
@@ -108,7 +107,6 @@ public class WorkflowDef extends Auditable {
     }
 
     /**
-     *
      * @param onStateChange
      */
     public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {

@@ -16,12 +16,12 @@ import java.util.*;
 
 import javax.validation.Valid;
 
-import com.netflix.conductor.common.metadata.workflow.StateChangeEventList;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.workflow.StateChangeEventList;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
