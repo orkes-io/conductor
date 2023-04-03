@@ -112,8 +112,28 @@ public @interface WorkflowTaskTypeConstraint {
                 case TaskType.TASK_TYPE_WAIT:
                     valid = isWaitTaskValid(workflowTask, context);
                     break;
+                case TaskType.TASK_TYPE_BUSINESS_STATE:
+                    valid = isBusinessStateTaskValid(workflowTask, context);
+                    break;
             }
 
+            return valid;
+        }
+
+        private boolean isBusinessStateTaskValid(
+                WorkflowTask workflowTask, ConstraintValidatorContext context) {
+            boolean valid = true;
+            if (workflowTask.getInputParameters() != null
+                    && !workflowTask.getInputParameters().containsKey("businessState")) {
+                String message =
+                        String.format(
+                                PARAM_REQUIRED_STRING_FORMAT,
+                                "businessState",
+                                TaskType.TASK_TYPE_BUSINESS_STATE,
+                                workflowTask.getName());
+                context.buildConstraintViolationWithTemplate(message).addConstraintViolation();
+                valid = false;
+            }
             return valid;
         }
 

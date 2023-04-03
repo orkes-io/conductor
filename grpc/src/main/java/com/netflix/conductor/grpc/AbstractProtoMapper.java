@@ -15,6 +15,8 @@ import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
+import com.netflix.conductor.common.metadata.workflow.TaskEvent;
+import com.netflix.conductor.common.metadata.workflow.TaskEventList;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.TaskSummary;
@@ -30,6 +32,8 @@ import com.netflix.conductor.proto.SkipTaskRequestPb;
 import com.netflix.conductor.proto.StartWorkflowRequestPb;
 import com.netflix.conductor.proto.SubWorkflowParamsPb;
 import com.netflix.conductor.proto.TaskDefPb;
+import com.netflix.conductor.proto.TaskEventListPb;
+import com.netflix.conductor.proto.TaskEventPb;
 import com.netflix.conductor.proto.TaskExecLogPb;
 import com.netflix.conductor.proto.TaskPb;
 import com.netflix.conductor.proto.TaskResultPb;
@@ -857,6 +861,42 @@ public abstract class AbstractProtoMapper {
         return to;
     }
 
+    public TaskEventPb.TaskEvent toProto(TaskEvent from) {
+        TaskEventPb.TaskEvent.Builder to = TaskEventPb.TaskEvent.newBuilder();
+        if (from.getType() != null) {
+            to.setType( from.getType() );
+        }
+        for (Map.Entry<String, Object> pair : from.getPayload().entrySet()) {
+            to.putPayload( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        return to.build();
+    }
+
+    public TaskEvent fromProto(TaskEventPb.TaskEvent from) {
+        TaskEvent to = new TaskEvent();
+        to.setType( from.getType() );
+        Map<String, Object> payloadMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getPayloadMap().entrySet()) {
+            payloadMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setPayload(payloadMap);
+        return to;
+    }
+
+    public TaskEventListPb.TaskEventList toProto(TaskEventList from) {
+        TaskEventListPb.TaskEventList.Builder to = TaskEventListPb.TaskEventList.newBuilder();
+        for (TaskEvent elem : from.getEvents()) {
+            to.addEvents( toProto(elem) );
+        }
+        return to.build();
+    }
+
+    public TaskEventList fromProto(TaskEventListPb.TaskEventList from) {
+        TaskEventList to = new TaskEventList();
+        to.setEvents( from.getEventsList().stream().map(this::fromProto).collect(Collectors.toCollection(ArrayList::new)) );
+        return to;
+    }
+
     public TaskExecLogPb.TaskExecLog toProto(TaskExecLog from) {
         TaskExecLogPb.TaskExecLog.Builder to = TaskExecLogPb.TaskExecLog.newBuilder();
         if (from.getLog() != null) {
@@ -1184,6 +1224,12 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getInputTemplate().entrySet()) {
             to.putInputTemplate( pair.getKey(), toProto( pair.getValue() ) );
         }
+        for (Map.Entry<String, Object> pair : from.getEventDestinations().entrySet()) {
+            to.putEventDestinations( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        for (Map.Entry<String, TaskEventList> pair : from.getStateChangeEvents().entrySet()) {
+            to.putStateChangeEvents( pair.getKey(), toProto( pair.getValue() ) );
+        }
         return to.build();
     }
 
@@ -1216,6 +1262,16 @@ public abstract class AbstractProtoMapper {
             inputTemplateMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setInputTemplate(inputTemplateMap);
+        Map<String, Object> eventDestinationsMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getEventDestinationsMap().entrySet()) {
+            eventDestinationsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setEventDestinations(eventDestinationsMap);
+        Map<String, TaskEventList> stateChangeEventsMap = new HashMap<String, TaskEventList>();
+        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getStateChangeEventsMap().entrySet()) {
+            stateChangeEventsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setStateChangeEvents(stateChangeEventsMap);
         return to;
     }
 
@@ -1393,6 +1449,9 @@ public abstract class AbstractProtoMapper {
         if (from.getExpression() != null) {
             to.setExpression( from.getExpression() );
         }
+        for (Map.Entry<String, TaskEventList> pair : from.getStateChangeEvents().entrySet()) {
+            to.putStateChangeEvents( pair.getKey(), toProto( pair.getValue() ) );
+        }
         return to.build();
     }
 
@@ -1438,6 +1497,11 @@ public abstract class AbstractProtoMapper {
         to.setRetryCount( from.getRetryCount() );
         to.setEvaluatorType( from.getEvaluatorType() );
         to.setExpression( from.getExpression() );
+        Map<String, TaskEventList> stateChangeEventsMap = new HashMap<String, TaskEventList>();
+        for (Map.Entry<String, TaskEventListPb.TaskEventList> pair : from.getStateChangeEventsMap().entrySet()) {
+            stateChangeEventsMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setStateChangeEvents(stateChangeEventsMap);
         return to;
     }
 

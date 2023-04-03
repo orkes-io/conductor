@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -100,6 +95,28 @@ public class WorkflowDef extends Auditable {
 
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
+
+    @ProtoField(id = 16)
+    private  Map<String ,Object> eventDestinations = new LinkedHashMap<>();
+
+    public Map<String ,Object> getEventDestinations() {
+        return eventDestinations;
+    }
+
+    public void setEventDestinations(Map<String ,Object> eventDestinations) {
+        this.eventDestinations = eventDestinations;
+    }
+
+    @ProtoField(id = 17)
+    private @Valid Map<String, TaskEventList> stateChangeEvents = new LinkedHashMap<>();
+
+    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
+        return stateChangeEvents;
+    }
+
+    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
+        this.stateChangeEvents = stateChangeEvents;
+    }
 
     /**
      * @return the name

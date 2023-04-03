@@ -145,6 +145,20 @@ public class WorkflowTask {
     @ProtoField(id = 28)
     private String expression;
 
+    /*
+    Map of events to be emitted when the task status changed.
+    */
+    @ProtoField(id = 29)
+    private @Valid Map<String, TaskEventList> stateChangeEvents = new LinkedHashMap<>();
+
+    public @Valid Map<String, TaskEventList> getStateChangeEvents() {
+        return stateChangeEvents;
+    }
+
+    public void setStateChangeEvents(@Valid Map<String, TaskEventList> stateChangeEvents) {
+        this.stateChangeEvents = stateChangeEvents;
+    }
+
     /**
      * @return the name
      */
