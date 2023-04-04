@@ -543,6 +543,9 @@ public class DeciderService {
                     break;
             }
             updateWorkflowOutput(workflow, task);
+            if (StringUtils.isEmpty(task.getReasonForIncompletion())) {
+                task.setReasonForIncompletion("Terminated");
+            }
             throw new TerminateWorkflowException(task.getReasonForIncompletion(), status, task);
         }
 
