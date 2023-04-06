@@ -17,18 +17,11 @@ import java.util.Map;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.netflix.conductor.annotations.protogen.ProtoField;
-import com.netflix.conductor.annotations.protogen.ProtoMessage;
-
-@ProtoMessage
 @Valid
 public class StateChangeEvent {
 
-    @ProtoField(id = 1)
-    @NotNull
-    private String type;
+    @NotNull private String type;
 
-    @ProtoField(id = 2)
     private Map<String, Object> payload;
 
     public String getType() {

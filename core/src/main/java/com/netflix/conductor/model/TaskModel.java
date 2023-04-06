@@ -21,7 +21,7 @@ import org.springframework.beans.BeanUtils;
 
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
-import com.netflix.conductor.common.metadata.workflow.StateChangeEventList;
+import com.netflix.conductor.common.metadata.workflow.StateChangeEvent;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -158,7 +158,7 @@ public class TaskModel {
     /** Id of the parent task when *this* task is an event associated with the task */
     private String parentTaskId;
 
-    private @Valid Map<String, StateChangeEventList> onStateChange;
+    private @Valid Map<String, List<StateChangeEvent>> onStateChange;
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
 
@@ -680,11 +680,11 @@ public class TaskModel {
         this.outputData.putAll(outputData);
     }
 
-    public Map<String, StateChangeEventList> getOnStateChange() {
+    public Map<String, List<StateChangeEvent>> getOnStateChange() {
         return onStateChange;
     }
 
-    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+    public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
         this.onStateChange = onStateChange;
     }
 
