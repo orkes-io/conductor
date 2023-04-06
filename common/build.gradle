@@ -4,6 +4,7 @@ configurations {
 
 dependencies {
     implementation project(':conductor-annotations')
+    implementation 'org.projectlombok:lombok:1.18.22'
     annotationsProcessorCodegen project(':conductor-annotations-processor')
 
     compileOnly 'org.springframework.boot:spring-boot-starter'

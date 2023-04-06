@@ -12,12 +12,7 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
@@ -100,6 +95,9 @@ public class WorkflowDef extends Auditable {
 
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
+
+    @ProtoField(id = 16)
+    private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
 
     /**
      * @return the name
@@ -319,6 +317,14 @@ public class WorkflowDef extends Auditable {
 
     public static String getKey(String name, int version) {
         return name + "." + version;
+    }
+
+    public Map<String, StateChangeEventList> getOnStateChange() {
+        return onStateChange;
+    }
+
+    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+        this.onStateChange = onStateChange;
     }
 
     public boolean containsType(String taskType) {
