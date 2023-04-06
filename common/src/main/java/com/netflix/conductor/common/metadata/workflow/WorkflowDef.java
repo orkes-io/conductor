@@ -96,8 +96,7 @@ public class WorkflowDef extends Auditable {
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
 
-    @ProtoField(id = 16)
-    private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
+    private @Valid Map<String, List<StateChangeEvent>> onStateChange = new LinkedHashMap<>();
 
     /**
      * @return the name
@@ -319,11 +318,11 @@ public class WorkflowDef extends Auditable {
         return name + "." + version;
     }
 
-    public Map<String, StateChangeEventList> getOnStateChange() {
+    public Map<String, List<StateChangeEvent>> getOnStateChange() {
         return onStateChange;
     }
 
-    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+    public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
         this.onStateChange = onStateChange;
     }
 

@@ -146,9 +146,9 @@ public class WorkflowTask {
     private String expression;
     /*
     Map of events to be emitted when the task status changed.
+    key can be comma separated values of the status changes prefixed with "on"<STATUS>
     */
-    @ProtoField(id = 29)
-    private @Valid Map<String, StateChangeEventList> onStateChange = new LinkedHashMap<>();
+    private @Valid Map<String, List<StateChangeEvent>> onStateChange = new HashMap<>();
 
     /**
      * @return the name
@@ -692,11 +692,11 @@ public class WorkflowTask {
         return null;
     }
 
-    public Map<String, StateChangeEventList> getOnStateChange() {
+    public Map<String, List<StateChangeEvent>> getOnStateChange() {
         return onStateChange;
     }
 
-    public void setOnStateChange(Map<String, StateChangeEventList> onStateChange) {
+    public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
         this.onStateChange = onStateChange;
     }
 
