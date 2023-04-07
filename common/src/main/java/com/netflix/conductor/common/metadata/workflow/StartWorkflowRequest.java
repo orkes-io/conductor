@@ -20,11 +20,15 @@ import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
+import com.netflix.conductor.common.config.ObjectMapperProvider;
 
 @ProtoMessage
 public class StartWorkflowRequest {
+
+    private static final ObjectMapper objectMapper = new ObjectMapperProvider().getObjectMapper();
 
     @ProtoField(id = 1)
     @NotNull(message = "Workflow name cannot be null or empty")
@@ -129,6 +133,18 @@ public class StartWorkflowRequest {
 
     public void setInput(Map<String, Object> input) {
         this.input = input;
+    }
+
+    public void setInput(Object input) {
+        try {
+            if(input.getClass().isPrimitive()) {
+                this.input.put("request", input);
+            } else {
+                this.input = objectMapper.convertValue(input, Map.class);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to convert the input to a JSON Map.  Error: " + e.getMessage(), e);
+        }
     }
 
     public StartWorkflowRequest withInput(Map<String, Object> input) {
