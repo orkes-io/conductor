@@ -12,7 +12,6 @@
  */
 package com.netflix.conductor.core.execution.mapper;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
