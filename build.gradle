@@ -55,7 +55,7 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 
-    group = 'io.orkes.conductor'
+    group = 'com.netflix.conductor'
 
     configurations.all {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
