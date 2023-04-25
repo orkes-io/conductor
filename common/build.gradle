@@ -22,6 +22,7 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core"
 
     testImplementation 'org.springframework.boot:spring-boot-starter-validation'
+    testImplementation "org.junit.vintage:junit-vintage-engine"
 }
 
 /*

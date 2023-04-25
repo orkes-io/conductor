@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -28,6 +27,7 @@ import com.netflix.conductor.annotations.protogen.ProtoEnum;
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
+import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskTimeoutConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
 
@@ -114,7 +114,7 @@ public class TaskDef extends Auditable {
 
     @ProtoField(id = 18)
     @OwnerEmailMandatoryConstraint
-    @Email(message = "ownerEmail should be valid email address")
+    @OwnerEmailValidConstraint(message = "ownerEmail should be valid email address")
     private String ownerEmail;
 
     @ProtoField(id = 19)

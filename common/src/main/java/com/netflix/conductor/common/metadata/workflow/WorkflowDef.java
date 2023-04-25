@@ -15,7 +15,6 @@ package com.netflix.conductor.common.metadata.workflow;
 import java.util.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
@@ -26,6 +25,7 @@ import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.constraints.NoSemiColonConstraint;
 import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
+import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskReferenceNameUniqueConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
@@ -80,7 +80,7 @@ public class WorkflowDef extends Auditable {
 
     @ProtoField(id = 11)
     @OwnerEmailMandatoryConstraint
-    @Email(message = "ownerEmail should be valid email address")
+    @OwnerEmailValidConstraint(message = "ownerEmail should be valid email address")
     private String ownerEmail;
 
     @ProtoField(id = 12)
