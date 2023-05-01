@@ -58,6 +58,7 @@ public class JoinTaskMapper implements TaskMapper {
 
         Map<String, Object> joinInput = new HashMap<>();
         joinInput.put("joinOn", workflowTask.getJoinOn());
+        joinInput.put("joinStatus", workflowTask.getJoinStatus());
 
         TaskModel joinTask = taskMapperContext.createTaskModel();
         joinTask.setTaskType(TaskType.TASK_TYPE_JOIN);
