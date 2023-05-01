@@ -144,6 +144,10 @@ public class WorkflowTask {
 
     @ProtoField(id = 28)
     private String expression;
+
+    @ProtoField(id = 29)
+    private String joinStatus;
+
     /*
     Map of events to be emitted when the task status changed.
     key can be comma separated values of the status changes prefixed with "on"<STATUS>
@@ -545,6 +549,14 @@ public class WorkflowTask {
         this.expression = expression;
     }
 
+    public String getJoinStatus() {
+        return joinStatus;
+    }
+
+    public void setJoinStatus(String joinStatus) {
+        this.joinStatus = joinStatus;
+    }
+
     private Collection<List<WorkflowTask>> children() {
         Collection<List<WorkflowTask>> workflowTaskLists = new LinkedList<>();
 
@@ -737,6 +749,7 @@ public class WorkflowTask {
                 && Objects.equals(getForkTasks(), that.getForkTasks())
                 && Objects.equals(getSubWorkflowParam(), that.getSubWorkflowParam())
                 && Objects.equals(getJoinOn(), that.getJoinOn())
+                && Objects.equals(getJoinStatus(), that.getJoinStatus())
                 && Objects.equals(getSink(), that.getSink())
                 && Objects.equals(isAsyncComplete(), that.isAsyncComplete())
                 && Objects.equals(getDefaultExclusiveJoinTask(), that.getDefaultExclusiveJoinTask())
@@ -767,6 +780,7 @@ public class WorkflowTask {
                 getStartDelay(),
                 getSubWorkflowParam(),
                 getJoinOn(),
+                getJoinStatus(),
                 getSink(),
                 isAsyncComplete(),
                 isOptional(),
