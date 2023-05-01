@@ -1393,6 +1393,9 @@ public abstract class AbstractProtoMapper {
         if (from.getExpression() != null) {
             to.setExpression( from.getExpression() );
         }
+        if (from.getJoinStatus() != null) {
+            to.setJoinStatus( from.getJoinStatus() );
+        }
         return to.build();
     }
 
@@ -1438,6 +1441,7 @@ public abstract class AbstractProtoMapper {
         to.setRetryCount( from.getRetryCount() );
         to.setEvaluatorType( from.getEvaluatorType() );
         to.setExpression( from.getExpression() );
+        to.setJoinStatus( from.getJoinStatus() );
         return to;
     }
 
