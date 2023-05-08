@@ -34,6 +34,7 @@ public enum TaskType {
     HUMAN,
     USER_DEFINED,
     HTTP,
+    HTTP_POLL,
     LAMBDA,
     INLINE,
     EXCLUSIVE_JOIN,
@@ -61,6 +62,7 @@ public enum TaskType {
     public static final String TASK_TYPE_FORK_JOIN = "FORK_JOIN";
     public static final String TASK_TYPE_SIMPLE = "SIMPLE";
     public static final String TASK_TYPE_HTTP = "HTTP";
+    public static final String TASK_TYPE_HTTP_POLL = "HTTP_POLL";
     public static final String TASK_TYPE_LAMBDA = "LAMBDA";
     public static final String TASK_TYPE_INLINE = "INLINE";
     public static final String TASK_TYPE_EXCLUSIVE_JOIN = "EXCLUSIVE_JOIN";
