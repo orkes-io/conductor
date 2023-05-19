@@ -88,6 +88,9 @@ public class WorkflowSummary {
     @ProtoField(id = 18)
     private Set<String> failedTaskNames = new HashSet<>();
 
+    @ProtoField(id = 19)
+    private boolean dynamic;
+
     public WorkflowSummary() {}
 
     public WorkflowSummary(Workflow workflow) {
@@ -130,6 +133,7 @@ public class WorkflowSummary {
         if (StringUtils.isNotBlank(workflow.getExternalOutputPayloadStoragePath())) {
             this.externalOutputPayloadStoragePath = workflow.getExternalOutputPayloadStoragePath();
         }
+        this.dynamic = workflow.isDynamic();
     }
 
     /**
@@ -344,6 +348,14 @@ public class WorkflowSummary {
      */
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     @Override

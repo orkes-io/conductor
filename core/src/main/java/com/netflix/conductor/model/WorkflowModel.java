@@ -63,6 +63,8 @@ public class WorkflowModel {
 
     private String parentWorkflowTaskId;
 
+    private boolean dynamic;
+
     private List<TaskModel> tasks = new LinkedList<>();
 
     private String correlationId;
@@ -166,6 +168,14 @@ public class WorkflowModel {
 
     public void setParentWorkflowTaskId(String parentWorkflowTaskId) {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     public List<TaskModel> getTasks() {

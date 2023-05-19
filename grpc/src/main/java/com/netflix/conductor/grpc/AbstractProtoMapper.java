@@ -1018,6 +1018,7 @@ public abstract class AbstractProtoMapper {
         }
         to.setLastRetriedTime( from.getLastRetriedTime() );
         to.addAllFailedTaskNames( from.getFailedTaskNames() );
+        to.setDynamic( from.isDynamic() );
         return to.build();
     }
 
@@ -1058,6 +1059,7 @@ public abstract class AbstractProtoMapper {
         to.setVariables(variablesMap);
         to.setLastRetriedTime( from.getLastRetriedTime() );
         to.setFailedTaskNames( from.getFailedTaskNamesList().stream().collect(Collectors.toCollection(HashSet::new)) );
+        to.setDynamic( from.getDynamic() );
         return to;
     }
 
@@ -1247,6 +1249,7 @@ public abstract class AbstractProtoMapper {
         }
         to.setPriority( from.getPriority() );
         to.addAllFailedTaskNames( from.getFailedTaskNames() );
+        to.setDynamic( from.isDynamic() );
         return to.build();
     }
 
@@ -1270,6 +1273,7 @@ public abstract class AbstractProtoMapper {
         to.setExternalOutputPayloadStoragePath( from.getExternalOutputPayloadStoragePath() );
         to.setPriority( from.getPriority() );
         to.setFailedTaskNames( from.getFailedTaskNamesList().stream().collect(Collectors.toCollection(HashSet::new)) );
+        to.setDynamic( from.getDynamic() );
         return to;
     }
 

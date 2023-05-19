@@ -65,6 +65,11 @@
         "index": true,
         "doc_values": true
       },
+      "isDynamic": {
+        "type": "boolean",
+        "index": true,
+        "doc_values": true
+      },
       "rawJSON": {
         "type": "text",
         "index": false

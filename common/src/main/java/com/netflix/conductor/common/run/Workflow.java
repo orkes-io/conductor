@@ -126,6 +126,9 @@ public class Workflow extends Auditable {
     @ProtoField(id = 25)
     private Set<String> failedTaskNames = new HashSet<>();
 
+    @ProtoField(id = 26)
+    private boolean dynamic;
+
     public Workflow() {}
 
     /**
@@ -302,6 +305,14 @@ public class Workflow extends Auditable {
      */
     public void setParentWorkflowTaskId(String parentWorkflowTaskId) {
         this.parentWorkflowTaskId = parentWorkflowTaskId;
+    }
+
+    public boolean isDynamic() {
+        return dynamic;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        this.dynamic = dynamic;
     }
 
     /**
@@ -483,6 +494,7 @@ public class Workflow extends Auditable {
         copy.setWorkflowId(workflowId);
         copy.setParentWorkflowId(parentWorkflowId);
         copy.setParentWorkflowTaskId(parentWorkflowTaskId);
+        copy.setDynamic(dynamic);
         copy.setReRunFromWorkflowId(reRunFromWorkflowId);
         copy.setCorrelationId(correlationId);
         copy.setEvent(event);
