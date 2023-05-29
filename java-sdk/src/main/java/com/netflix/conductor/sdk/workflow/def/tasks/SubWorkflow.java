@@ -55,9 +55,11 @@ public class SubWorkflow extends Task<SubWorkflow> {
         SubWorkflowParams subworkflowParam = workflowTask.getSubWorkflowParam();
         this.workflowName = subworkflowParam.getName();
         this.workflowVersion = subworkflowParam.getVersion();
-        if (subworkflowParam.getWorkflowDefinition() != null && subworkflowParam.getWorkflowDefinition() instanceof WorkflowDef) {
+        if (subworkflowParam.getWorkflowDefinition() != null
+                && subworkflowParam.getWorkflowDefinition() instanceof WorkflowDef) {
             this.conductorWorkflow =
-                    ConductorWorkflow.fromWorkflowDef((WorkflowDef) subworkflowParam.getWorkflowDefinition());
+                    ConductorWorkflow.fromWorkflowDef(
+                            (WorkflowDef) subworkflowParam.getWorkflowDefinition());
         }
     }
 

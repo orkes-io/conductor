@@ -21,7 +21,6 @@ import javax.validation.constraints.NotNull;
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 @ProtoMessage
@@ -47,7 +46,7 @@ public class SubWorkflowParams {
      * @return the name
      */
     public String getName() {
-        if(this.workflowDefinition != null) {
+        if (this.workflowDefinition != null) {
             return null;
         } else {
             return name;
@@ -65,7 +64,7 @@ public class SubWorkflowParams {
      * @return the version
      */
     public Integer getVersion() {
-        if(this.workflowDefinition != null) {
+        if (this.workflowDefinition != null) {
             return null;
         } else {
             return version;
@@ -104,9 +103,11 @@ public class SubWorkflowParams {
      * @param workflowDef the workflowDefinition to set
      */
     public void setWorkflowDefinition(Object workflowDef) {
-        if (workflowDef != null && !(workflowDef instanceof WorkflowDef)
-                && !(workflowDef instanceof String && !(((String) workflowDef).startsWith("${"))
-                && !(((String) workflowDef).endsWith("}")))) {
+        if (workflowDef != null
+                && !(workflowDef instanceof WorkflowDef)
+                && !(workflowDef instanceof String
+                        && !(((String) workflowDef).startsWith("${"))
+                        && !(((String) workflowDef).endsWith("}")))) {
             throw new IllegalArgumentException(
                     "workflowDefinition must be either null or WorkflowDef");
         }

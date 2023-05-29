@@ -63,11 +63,10 @@ public class SubWorkflowTaskMapper implements TaskMapper {
         Map<String, Object> resolvedParams =
                 getSubWorkflowInputParameters(workflowModel, subWorkflowParams);
 
-        String subWorkflowName = Optional.ofNullable(resolvedParams.get("name"))
-                .map(Object::toString)
-                .orElse(null);
+        String subWorkflowName =
+                Optional.ofNullable(resolvedParams.get("name")).map(Object::toString).orElse(null);
         Integer subWorkflowVersion = null;
-        if(subWorkflowParams.getWorkflowDefinition() == null && subWorkflowName != null) {
+        if (subWorkflowParams.getWorkflowDefinition() == null && subWorkflowName != null) {
             subWorkflowVersion = getSubWorkflowVersion(resolvedParams, subWorkflowName);
         }
 
@@ -110,7 +109,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
     private Map<String, Object> getSubWorkflowInputParameters(
             WorkflowModel workflowModel, SubWorkflowParams subWorkflowParams) {
         Map<String, Object> params = new HashMap<>();
-        if(subWorkflowParams.getName() != null) {
+        if (subWorkflowParams.getName() != null) {
             params.put("name", subWorkflowParams.getName());
         }
 
@@ -123,7 +122,9 @@ public class SubWorkflowTaskMapper implements TaskMapper {
             params.put("taskToDomain", taskToDomain);
         }
 
-        if(subWorkflowParams.getWorkflowDefinition() == null || (subWorkflowParams.getWorkflowDefinition() != null && subWorkflowParams.getWorkflowDefinition() instanceof String)) {
+        if (subWorkflowParams.getWorkflowDefinition() == null
+                || (subWorkflowParams.getWorkflowDefinition() != null
+                        && subWorkflowParams.getWorkflowDefinition() instanceof String)) {
             params.put("workflowDefinition", subWorkflowParams.getWorkflowDefinition());
             params = parametersUtils.getTaskInputV2(params, workflowModel, null, null);
         } else {

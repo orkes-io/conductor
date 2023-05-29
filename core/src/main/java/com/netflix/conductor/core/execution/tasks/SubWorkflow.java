@@ -15,7 +15,6 @@ package com.netflix.conductor.core.execution.tasks;
 import java.util.Map;
 import java.util.Optional;
 
-import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.core.exception.ApplicationException;
+import com.netflix.conductor.core.exception.TerminateWorkflowException;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
 import com.netflix.conductor.model.WorkflowModel;
@@ -59,10 +59,14 @@ public class SubWorkflow extends WorkflowSystemTask {
                             input.get("subWorkflowDefinition"), WorkflowDef.class);
             name = workflowDefinition.getName();
         } else {
-            name = Optional.ofNullable(input.get("subWorkflowName")).map(Object::toString).orElse(null);
+            name =
+                    Optional.ofNullable(input.get("subWorkflowName"))
+                            .map(Object::toString)
+                            .orElse(null);
             version = (Integer) input.get("subWorkflowVersion");
-            if(name == null) {
-                throw new TerminateWorkflowException("SubWorkflow name is null, but no workflowDefinition supplied");
+            if (name == null) {
+                throw new TerminateWorkflowException(
+                        "SubWorkflow name is null, but no workflowDefinition supplied");
             }
         }
 
