@@ -47,8 +47,8 @@ public class SubWorkflowParams {
      * @return the name
      */
     public String getName() {
-        if (workflowDefinition != null) {
-            return getWorkflowDef().getName();
+        if(this.workflowDefinition != null) {
+            return null;
         } else {
             return name;
         }
@@ -65,8 +65,8 @@ public class SubWorkflowParams {
      * @return the version
      */
     public Integer getVersion() {
-        if (workflowDefinition != null) {
-            return getWorkflowDef().getVersion();
+        if(this.workflowDefinition != null) {
+            return null;
         } else {
             return version;
         }
@@ -101,18 +101,12 @@ public class SubWorkflowParams {
     }
 
     /**
-     * @return the workflowDefinition as a WorkflowDef
-     */
-    @JsonGetter("workflowDefinition")
-    public WorkflowDef getWorkflowDef() {
-        return (WorkflowDef) workflowDefinition;
-    }
-
-    /**
      * @param workflowDef the workflowDefinition to set
      */
     public void setWorkflowDefinition(Object workflowDef) {
-        if (!(workflowDef == null || workflowDef instanceof WorkflowDef)) {
+        if (workflowDef != null && !(workflowDef instanceof WorkflowDef)
+                && !(workflowDef instanceof String && !(((String) workflowDef).startsWith("${"))
+                && !(((String) workflowDef).endsWith("}")))) {
             throw new IllegalArgumentException(
                     "workflowDefinition must be either null or WorkflowDef");
         }
@@ -123,7 +117,7 @@ public class SubWorkflowParams {
      * @param workflowDef the workflowDefinition to set
      */
     @JsonSetter("workflowDefinition")
-    public void setWorkflowDef(WorkflowDef workflowDef) {
+    public void setWorkflowDef(Object workflowDef) {
         this.workflowDefinition = workflowDef;
     }
 

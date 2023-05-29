@@ -138,7 +138,7 @@ public class MetadataMapperService {
     private void populateVersionForSubWorkflow(WorkflowTask workflowTask) {
         Utils.checkNotNull(workflowTask, "WorkflowTask cannot be null");
         SubWorkflowParams subworkflowParams = workflowTask.getSubWorkflowParam();
-        if (subworkflowParams.getVersion() == null) {
+        if (subworkflowParams.getVersion() == null && subworkflowParams.getWorkflowDefinition() == null) {
             String subWorkflowName = subworkflowParams.getName();
             Integer subWorkflowVersion =
                     metadataDAO
