@@ -80,7 +80,7 @@ public class SubWorkflow extends Task<SubWorkflow> {
         SubWorkflowParams subWorkflowParam = new SubWorkflowParams();
 
         if (conductorWorkflow != null) {
-            subWorkflowParam.setWorkflowDef(conductorWorkflow.toWorkflowDef());
+            subWorkflowParam.setWorkflowDefinition(conductorWorkflow.toWorkflowDef());
         } else {
             subWorkflowParam.setName(workflowName);
             subWorkflowParam.setVersion(workflowVersion);
