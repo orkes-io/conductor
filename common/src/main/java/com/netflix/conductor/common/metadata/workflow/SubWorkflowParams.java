@@ -41,11 +41,11 @@ public class SubWorkflowParams {
      * @return the name
      */
     public String getName() {
-        if(workflowDefinition == null) {
+        if (workflowDefinition == null) {
             return name;
         } else {
-            if(workflowDefinition instanceof WorkflowDef) {
-                return ((WorkflowDef)workflowDefinition).getName();
+            if (workflowDefinition instanceof WorkflowDef) {
+                return ((WorkflowDef) workflowDefinition).getName();
             } else return name;
         }
     }
