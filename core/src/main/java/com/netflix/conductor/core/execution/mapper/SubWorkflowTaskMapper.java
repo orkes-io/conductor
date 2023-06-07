@@ -122,13 +122,13 @@ public class SubWorkflowTaskMapper implements TaskMapper {
             params.put("taskToDomain", taskToDomain);
         }
 
+        params = parametersUtils.getTaskInputV2(params, workflowModel, null, null);
         if (subWorkflowParams.getWorkflowDefinition() == null) {
             params.put("workflowDefinition", null);
         } else {
             Object subWorkflowDefinition = subWorkflowParams.getWorkflowDefinition();
-            params.put("workflowDefinition", subWorkflowDefinition);
-            if (subWorkflowDefinition instanceof String) { // DSL string
-                params = parametersUtils.getTaskInputV2(params, workflowModel, null, null);
+            if (!(subWorkflowDefinition instanceof String)) { // not a DSL string
+                params.put("workflowDefinition", subWorkflowParams.getWorkflowDefinition());
             }
         }
 
