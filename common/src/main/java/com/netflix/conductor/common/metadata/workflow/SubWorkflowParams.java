@@ -41,10 +41,12 @@ public class SubWorkflowParams {
      * @return the name
      */
     public String getName() {
-        if (this.workflowDefinition != null) {
-            return "ignored";
-        } else {
+        if(workflowDefinition == null) {
             return name;
+        } else {
+            if(workflowDefinition instanceof WorkflowDef) {
+                return ((WorkflowDef)workflowDefinition).getName();
+            } else return name;
         }
     }
 
