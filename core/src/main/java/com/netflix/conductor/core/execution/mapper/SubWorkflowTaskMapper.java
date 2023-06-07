@@ -127,7 +127,7 @@ public class SubWorkflowTaskMapper implements TaskMapper {
         } else {
             Object subWorkflowDefinition = subWorkflowParams.getWorkflowDefinition();
             params.put("workflowDefinition", subWorkflowDefinition);
-            if (subWorkflowDefinition instanceof String) {
+            if (subWorkflowDefinition instanceof String) { //DSL string
                 params = parametersUtils.getTaskInputV2(params, workflowModel, null, null);
             }
         }
