@@ -1425,6 +1425,7 @@ public class WorkflowExecutor {
         try {
             DeciderService.DeciderOutcome outcome = deciderService.decide(workflow);
             if (outcome.isComplete) {
+                executionDAOFacade.updateTasks(outcome.tasksToBeUpdated);
                 endExecution(workflow, outcome.terminateTask);
                 return workflow;
             }

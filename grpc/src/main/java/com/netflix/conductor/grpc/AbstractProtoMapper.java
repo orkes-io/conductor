@@ -1184,6 +1184,9 @@ public abstract class AbstractProtoMapper {
         for (Map.Entry<String, Object> pair : from.getInputTemplate().entrySet()) {
             to.putInputTemplate( pair.getKey(), toProto( pair.getValue() ) );
         }
+        if (from.getWorkflowStatusListenerSink() != null) {
+            to.setWorkflowStatusListenerSink( from.getWorkflowStatusListenerSink() );
+        }
         return to.build();
     }
 
@@ -1216,6 +1219,7 @@ public abstract class AbstractProtoMapper {
             inputTemplateMap.put( pair.getKey(), fromProto( pair.getValue() ) );
         }
         to.setInputTemplate(inputTemplateMap);
+        to.setWorkflowStatusListenerSink( from.getWorkflowStatusListenerSink() );
         return to;
     }
 

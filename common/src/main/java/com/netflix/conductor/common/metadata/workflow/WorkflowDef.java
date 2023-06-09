@@ -96,6 +96,9 @@ public class WorkflowDef extends Auditable {
     @ProtoField(id = 15)
     private Map<String, Object> inputTemplate = new HashMap<>();
 
+    @ProtoField(id = 16)
+    private String workflowStatusListenerSink;
+
     private @Valid Map<String, List<StateChangeEvent>> onStateChange = new LinkedHashMap<>();
 
     /**
@@ -320,6 +323,14 @@ public class WorkflowDef extends Auditable {
 
     public Map<String, List<StateChangeEvent>> getOnStateChange() {
         return onStateChange;
+    }
+
+    public String getWorkflowStatusListenerSink() {
+        return workflowStatusListenerSink;
+    }
+
+    public void setWorkflowStatusListenerSink(String workflowStatusListenerSink) {
+        this.workflowStatusListenerSink = workflowStatusListenerSink;
     }
 
     public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
