@@ -41,13 +41,12 @@ public class SubWorkflowParams {
      * @return the name
      */
     public String getName() {
-        if (workflowDefinition == null) {
-            return name;
-        } else {
+        if (workflowDefinition != null) {
             if (workflowDefinition instanceof WorkflowDef) {
                 return ((WorkflowDef) workflowDefinition).getName();
-            } else return name;
+            }
         }
+        return name;
     }
 
     /**
@@ -61,11 +60,12 @@ public class SubWorkflowParams {
      * @return the version
      */
     public Integer getVersion() {
-        if (this.workflowDefinition != null) {
-            return null;
-        } else {
-            return version;
+        if (workflowDefinition != null) {
+            if (workflowDefinition instanceof WorkflowDef) {
+                return ((WorkflowDef) workflowDefinition).getVersion();
+            }
         }
+        return version;
     }
 
     /**
