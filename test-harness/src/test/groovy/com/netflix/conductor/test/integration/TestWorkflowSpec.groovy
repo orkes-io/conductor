@@ -38,7 +38,7 @@ class TestWorkflowSpec extends AbstractSpecification {
 
     def "Run Workflow Test with simple tasks"() {
         given: "workflow input"
-        def workflowInput = new HashMap()
+        HashMap<String, Object> workflowInput = new HashMap()
         workflowInput['var'] = "var_test_value"
 
         WorkflowTestRequest request = new WorkflowTestRequest();
