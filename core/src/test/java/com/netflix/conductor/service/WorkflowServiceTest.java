@@ -12,16 +12,14 @@
  */
 package com.netflix.conductor.service;
 
-import java.util.Collections;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintViolationException;
-
-import com.netflix.conductor.common.metadata.workflow.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +29,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import com.netflix.conductor.common.metadata.workflow.*;
 import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
@@ -177,25 +176,25 @@ public class WorkflowServiceTest {
         input.put("1", "abc");
 
         when(workflowExecutor.startWorkflow(
-                eq(workflowDef),
-                anyMap(),
-                isNull(),
-                eq(correlationID),
-                anyInt(),
-                isNull(),
-                anyMap(),
-                eq(createdBy))).
-                thenReturn(workflowID);
+                        eq(workflowDef),
+                        anyMap(),
+                        isNull(),
+                        eq(correlationID),
+                        anyInt(),
+                        isNull(),
+                        anyMap(),
+                        eq(createdBy)))
+                .thenReturn(workflowID);
 
         String createdWorkFlowId = workflowService.startWorkflow(startWorkflowRequest);
         assertEquals(workflowID, createdWorkFlowId);
 
         String metadataKey = "_system_metadata";
         assertTrue(startWorkflowRequest.getInput().containsKey(metadataKey));
-        HashMap<String, Object> metadata = (HashMap<String, Object>) (startWorkflowRequest.getInput().get(metadataKey));
+        HashMap<String, Object> metadata =
+                (HashMap<String, Object>) (startWorkflowRequest.getInput().get(metadataKey));
         assertEquals(true, metadata.getOrDefault("dynamic", false));
     }
-
 
     @Test
     public void testStartWorkflowParam() {

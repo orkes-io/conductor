@@ -604,9 +604,7 @@ public class WorkflowServiceImpl implements WorkflowService {
         }
     }
 
-    private void populateDynamicFlagInSystemMetadata(
-        Map<String, Object> input
-    ) {
+    private void populateDynamicFlagInSystemMetadata(Map<String, Object> input) {
         String key = "_system_metadata";
         Object systemMetadata = input.getOrDefault(key, new HashMap<String, Object>());
         ((HashMap<String, Object>) systemMetadata).put("dynamic", true);
