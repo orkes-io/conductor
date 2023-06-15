@@ -13,12 +13,15 @@
 package com.netflix.conductor.service;
 
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.validation.ConstraintViolationException;
+
+import com.netflix.conductor.common.metadata.workflow.*;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -143,6 +146,56 @@ public class WorkflowServiceTest {
                 .thenReturn(workflowID);
         assertEquals("w112", workflowService.startWorkflow(startWorkflowRequest));
     }
+
+    @Test
+    public void testStartDynamicWorkflow() {
+        String workflowID = "w113";
+        String workflowName = "dynamic-workflow";
+        String createdBy = "junit@test.org";
+        String correlationID = "c123";
+
+        WorkflowDef workflowDef = new WorkflowDef();
+        workflowDef.setName(workflowName);
+        workflowDef.setVersion(1);
+        workflowDef.setOwnerEmail(createdBy);
+
+        WorkflowTask task = new WorkflowTask();
+        task.setName("test_simple_task");
+        task.setTaskReferenceName("test_simple_task_ref");
+        ArrayList<WorkflowTask> tasks = new ArrayList<WorkflowTask>();
+        tasks.add(task);
+        workflowDef.setTasks(tasks);
+
+        StartWorkflowRequest startWorkflowRequest = new StartWorkflowRequest();
+        startWorkflowRequest.setName(workflowName);
+        startWorkflowRequest.setVersion(1);
+        startWorkflowRequest.setCreatedBy(createdBy);
+        startWorkflowRequest.setWorkflowDef(workflowDef);
+        startWorkflowRequest.setCorrelationId(correlationID);
+
+        Map<String, Object> input = new HashMap<>();
+        input.put("1", "abc");
+
+        when(workflowExecutor.startWorkflow(
+                eq(workflowDef),
+                anyMap(),
+                isNull(),
+                eq(correlationID),
+                anyInt(),
+                isNull(),
+                anyMap(),
+                eq(createdBy))).
+                thenReturn(workflowID);
+
+        String createdWorkFlowId = workflowService.startWorkflow(startWorkflowRequest);
+        assertEquals(workflowID, createdWorkFlowId);
+
+        String metadataKey = "_system_metadata";
+        assertTrue(startWorkflowRequest.getInput().containsKey(metadataKey));
+        HashMap<String, Object> metadata = (HashMap<String, Object>) (startWorkflowRequest.getInput().get(metadataKey));
+        assertEquals(true, metadata.getOrDefault("dynamic", false));
+    }
+
 
     @Test
     public void testStartWorkflowParam() {
