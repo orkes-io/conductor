@@ -38,8 +38,8 @@ class TestWorkflowSpec extends AbstractSpecification {
 
     def "Run Workflow Test with simple tasks"() {
         given: "workflow input"
-        HashMap<String, Object> workflowInput = new HashMap()
-        workflowInput['var'] = "var_test_value"
+        HashMap<String, Object> workflowInput = new HashMap();
+        workflowInput['var'] = "var_test_value";
 
         WorkflowTestRequest request = new WorkflowTestRequest();
         WorkflowDef workflowDef = new WorkflowDef();
@@ -83,6 +83,9 @@ class TestWorkflowSpec extends AbstractSpecification {
 
             tasks[1].taskType == 'task2'
             tasks[1].status == Task.Status.SCHEDULED
+
+            input.containsKey("_system_metadata") == true
+            ((HashMap<String, Object>)input.get("_system_metadata")).get("dynamic", false) == true
         }
 
 
@@ -90,8 +93,8 @@ class TestWorkflowSpec extends AbstractSpecification {
 
     def "Run Workflow Test with decision task"() {
         given: "workflow input"
-        def workflowInput = new HashMap()
-        workflowInput['var'] = "var_test_value"
+        HashMap<String, Object> workflowInput = new HashMap();
+        workflowInput['var'] = "var_test_value";
 
         WorkflowTestRequest request = new WorkflowTestRequest();
         WorkflowDef workflowDef = new WorkflowDef();
@@ -138,7 +141,8 @@ class TestWorkflowSpec extends AbstractSpecification {
         request.getTaskRefToMockOutput().put("task1", task1Executions);
 
         request.setWorkflowDef(workflowDef);
-        request.setInput(Map.of("case", "b"));
+        HashMap<String, Object> m = Map.of("case", "b");
+        request.setInput(m);
 
         when: "Start the workflow which has the set variable task"
         def workflow = workflowTestService.testWorkflow(request)
