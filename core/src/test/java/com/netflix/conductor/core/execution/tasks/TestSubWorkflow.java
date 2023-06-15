@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.core.execution.tasks;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.netflix.conductor.common.config.TestObjectMapperConfiguration;
+import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
+import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.exception.ApplicationException;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.model.TaskModel;
@@ -35,9 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -102,6 +103,84 @@ public class TestSubWorkflow {
         subWorkflow.start(workflowInstance, task, workflowExecutor);
         assertEquals("workflow_1", task.getSubWorkflowId());
         assertEquals(TaskModel.Status.COMPLETED, task.getStatus());
+    }
+
+    @Test
+    public void testStartDynamicSubWorkflow() {
+        String workflowName = "test-parent-workflow";
+        String workflowID = "workflow_2";
+        String createdBy = "junit@test.org";
+        String correlationID = "c123";
+
+        WorkflowDef workflowDef = new WorkflowDef();
+        workflowDef.setName(workflowName);
+        workflowDef.setVersion(1);
+        workflowDef.setOwnerEmail(createdBy);
+
+        WorkflowModel parentWorkflowInstance = new WorkflowModel();
+        parentWorkflowInstance.setWorkflowDefinition(workflowDef);
+        parentWorkflowInstance.setCorrelationId(correlationID);
+        parentWorkflowInstance.setWorkflowId(workflowID);
+
+        String subWorkflowName = "test_sub_workflow_task";
+        String subWorkflowID = "sub_workflow_1";
+
+        WorkflowTask subWorkflowTask = new WorkflowTask();
+        subWorkflowTask.setTaskReferenceName("sub_workflow_task_ref");
+        subWorkflowTask.setType(TaskType.TASK_TYPE_INLINE);
+
+        ArrayList<WorkflowTask> tasks = new ArrayList<>();
+        tasks.add(subWorkflowTask);
+
+        WorkflowDef subWorkflowDef = new WorkflowDef();
+        subWorkflowDef.setName(subWorkflowName);
+        subWorkflowDef.setVersion(1);
+        subWorkflowDef.setOwnerEmail(createdBy);
+        subWorkflowDef.setTasks(tasks);
+
+        Map<String, Object> workflowInput = new HashMap<>();
+        workflowInput.put("1", "abc");
+
+        Map<String, Object> inputData = new HashMap<>();
+        inputData.put("workflowInput", workflowInput);
+        inputData.put("subWorkflowDefinition", subWorkflowDef);
+
+        // The next two lines can be removed after merging
+        // https://github.com/Netflix/conductor/pull/3648
+        inputData.put("subWorkflowName", subWorkflowName);
+        inputData.put("subWorkflowVersion", 1);
+
+        TaskModel task = new TaskModel();
+        String taskID = "test_task_id";
+        task.setTaskId(taskID);
+        task.setTaskType(TaskType.TASK_TYPE_SUB_WORKFLOW);
+        task.setInputData(inputData);
+        task.setOutputData(new HashMap<>());
+
+        WorkflowModel workflow = new WorkflowModel();
+        workflow.setWorkflowId(workflowID);
+
+        when(workflowExecutor.startWorkflow(
+                        any(),
+                        eq(workflowInput),
+                        isNull(),
+                        eq(correlationID),
+                        anyInt(),
+                        eq(workflowID),
+                        eq(taskID),
+                        isNull(),
+                        anyMap()))
+                .thenReturn(subWorkflowID);
+
+        when(workflowExecutor.getWorkflow(eq(subWorkflowID), eq(false))).thenReturn(workflow);
+
+        workflow.setStatus(WorkflowModel.Status.RUNNING);
+        subWorkflow.start(parentWorkflowInstance, task, workflowExecutor);
+        assertEquals(subWorkflowID, task.getSubWorkflowId());
+        assertEquals(TaskModel.Status.IN_PROGRESS, task.getStatus());
+        HashMap<String, Object> metadata =
+                (HashMap<String, Object>) (workflowInput.get("_system_metadata"));
+        assertEquals(true, metadata.getOrDefault("dynamic", false));
     }
 
     @Test

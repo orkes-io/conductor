@@ -186,8 +186,7 @@ public class WorkflowServiceTest {
                         eq(createdBy)))
                 .thenReturn(workflowID);
 
-        String createdWorkFlowId = workflowService.startWorkflow(startWorkflowRequest);
-        assertEquals(workflowID, createdWorkFlowId);
+        assertEquals(workflowID, workflowService.startWorkflow(startWorkflowRequest));
 
         String metadataKey = "_system_metadata";
         assertTrue(startWorkflowRequest.getInput().containsKey(metadataKey));

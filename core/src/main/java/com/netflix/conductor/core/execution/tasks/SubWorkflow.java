@@ -28,6 +28,7 @@ import com.netflix.conductor.model.WorkflowModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static com.netflix.conductor.common.metadata.tasks.TaskType.TASK_TYPE_SUB_WORKFLOW;
+import static com.netflix.conductor.core.utils.WorkflowUtils.populateDynamicFlagInSystemMetadata;
 
 @Component(TASK_TYPE_SUB_WORKFLOW)
 public class SubWorkflow extends WorkflowSystemTask {
@@ -72,6 +73,8 @@ public class SubWorkflow extends WorkflowSystemTask {
         try {
             String subWorkflowId;
             if (workflowDefinition != null) {
+                populateDynamicFlagInSystemMetadata(wfInput);
+
                 subWorkflowId =
                         workflowExecutor.startWorkflow(
                                 workflowDefinition,
