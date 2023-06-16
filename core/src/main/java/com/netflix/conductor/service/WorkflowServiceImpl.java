@@ -37,8 +37,6 @@ import com.netflix.conductor.core.exception.ApplicationException;
 import com.netflix.conductor.core.execution.WorkflowExecutor;
 import com.netflix.conductor.core.utils.Utils;
 
-import static com.netflix.conductor.core.utils.WorkflowUtils.populateDynamicFlagInSystemMetadata;
-
 @Audit
 @Trace
 @Service
@@ -604,5 +602,11 @@ public class WorkflowServiceImpl implements WorkflowService {
                     ExternalPayloadStorage.PayloadType.WORKFLOW_INPUT,
                     path);
         }
+    }
+
+    public static void populateDynamicFlagInSystemMetadata(Map<String, Object> input) {
+        HashMap<String, Object> systemMetadata = new HashMap();
+        systemMetadata.put("dynamic", true);
+        input.put("_system_metadata", systemMetadata);
     }
 }
