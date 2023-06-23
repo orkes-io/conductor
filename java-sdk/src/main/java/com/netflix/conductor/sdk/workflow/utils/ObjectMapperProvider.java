@@ -18,10 +18,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class ObjectMapperProvider {
 
-    public ObjectMapper getObjectMapper() {
+    private static final ObjectMapper objectMapper = _getObjectMapper();
+
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    private static ObjectMapper _getObjectMapper() {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -32,9 +39,9 @@ public class ObjectMapperProvider {
                 JsonInclude.Value.construct(
                         JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_EMPTY));
         objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
-        // objectMapper.setSerializationInclusion(JsonInclude.Include.);
 
         objectMapper.registerModule(new JsonProtoModule());
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }

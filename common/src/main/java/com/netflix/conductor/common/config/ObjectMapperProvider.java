@@ -17,6 +17,7 @@ import com.netflix.conductor.common.jackson.JsonProtoModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * A Factory class for creating a customized {@link ObjectMapper}. This is only used by the
@@ -24,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * TestObjectMapperConfiguration.
  */
 public class ObjectMapperProvider {
+
+    private static final ObjectMapper objectMapper = _getObjectMapper();
 
     /**
      * The customizations in this method are configured using {@link
@@ -37,7 +40,11 @@ public class ObjectMapperProvider {
      *
      * @see org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
      */
-    public ObjectMapper getObjectMapper() {
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    private static ObjectMapper _getObjectMapper() {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
@@ -46,6 +53,7 @@ public class ObjectMapperProvider {
                 JsonInclude.Value.construct(
                         JsonInclude.Include.NON_NULL, JsonInclude.Include.ALWAYS));
         objectMapper.registerModule(new JsonProtoModule());
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }
