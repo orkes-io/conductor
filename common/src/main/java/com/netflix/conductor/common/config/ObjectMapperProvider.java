@@ -25,6 +25,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ObjectMapperProvider {
 
+    private static final ObjectMapper objectMapper = _getObjectMapper();
+
     /**
      * The customizations in this method are configured using {@link
      * org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration}
@@ -37,7 +39,11 @@ public class ObjectMapperProvider {
      *
      * @see org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
      */
-    public ObjectMapper getObjectMapper() {
+    public static ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    private static ObjectMapper _getObjectMapper() {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
