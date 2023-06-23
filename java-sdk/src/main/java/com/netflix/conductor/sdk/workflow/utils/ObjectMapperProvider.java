@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.sdk.workflow.utils;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.netflix.conductor.common.jackson.JsonProtoModule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -39,6 +40,7 @@ public class ObjectMapperProvider {
         objectMapper.setSerializationInclusion(JsonInclude.Include.ALWAYS);
 
         objectMapper.registerModule(new JsonProtoModule());
+        objectMapper.registerModule(new JavaTimeModule());
         return objectMapper;
     }
 }
