@@ -12,13 +12,13 @@
  */
 package com.netflix.conductor.sdk.workflow.utils;
 
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.netflix.conductor.common.jackson.JsonProtoModule;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class ObjectMapperProvider {
 
@@ -27,6 +27,7 @@ public class ObjectMapperProvider {
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
     }
+
     private static ObjectMapper _getObjectMapper() {
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
