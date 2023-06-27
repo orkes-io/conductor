@@ -22,6 +22,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class ObjectMapperProvider {
 
+    //Making object mapper static allows it to be configured by getting the instance
     private static final ObjectMapper objectMapper = _getObjectMapper();
 
     public ObjectMapper getObjectMapper() {
