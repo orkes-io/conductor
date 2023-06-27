@@ -24,7 +24,7 @@ public class ObjectMapperProvider {
 
     private static final ObjectMapper objectMapper = _getObjectMapper();
 
-    public static ObjectMapper getObjectMapper() {
+    public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 
