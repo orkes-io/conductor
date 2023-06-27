@@ -101,22 +101,7 @@ public class WorkflowExecutor {
         metadataClient.setRootURI(apiServerURL);
 
         annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
-        scheduledWorkflowMonitor.scheduleAtFixedRate(
-                () -> {
-                    for (Map.Entry<String, CompletableFuture<Workflow>> entry :
-                            runningWorkflowFutures.entrySet()) {
-                        String workflowId = entry.getKey();
-                        CompletableFuture<Workflow> future = entry.getValue();
-                        Workflow workflow = workflowClient.getWorkflow(workflowId, true);
-                        if (workflow.getStatus().isTerminal()) {
-                            future.complete(workflow);
-                            runningWorkflowFutures.remove(workflowId);
-                        }
-                    }
-                },
-                100,
-                100,
-                TimeUnit.MILLISECONDS);
+        initMonitor();
     }
 
     public WorkflowExecutor(
@@ -129,6 +114,23 @@ public class WorkflowExecutor {
         this.workflowClient = workflowClient;
         this.metadataClient = metadataClient;
         annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
+        initMonitor();
+    }
+
+    public WorkflowExecutor(
+            TaskClient taskClient,
+            WorkflowClient workflowClient,
+            MetadataClient metadataClient,
+            AnnotatedWorkerExecutor annotatedWorkerExecutor) {
+
+        this.taskClient = taskClient;
+        this.workflowClient = workflowClient;
+        this.metadataClient = metadataClient;
+        this.annotatedWorkerExecutor = annotatedWorkerExecutor;
+        initMonitor();
+    }
+
+    private void initMonitor() {
         scheduledWorkflowMonitor.scheduleAtFixedRate(
                 () -> {
                     for (Map.Entry<String, CompletableFuture<Workflow>> entry :
