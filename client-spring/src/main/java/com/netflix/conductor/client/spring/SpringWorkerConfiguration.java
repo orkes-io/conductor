@@ -13,9 +13,9 @@
 package com.netflix.conductor.client.spring;
 
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
-import org.springframework.stereotype.Component;
 
 @Component
 public class SpringWorkerConfiguration extends WorkerConfiguration {

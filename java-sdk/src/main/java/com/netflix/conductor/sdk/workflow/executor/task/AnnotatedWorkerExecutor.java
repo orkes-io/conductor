@@ -46,6 +46,7 @@ public class AnnotatedWorkerExecutor {
     private static Set<String> scannedPackages = new HashSet<>();
 
     private WorkerConfiguration workerConfiguration;
+
     public AnnotatedWorkerExecutor(TaskClient taskClient, WorkerConfiguration workerConfiguration) {
         this.taskClient = taskClient;
         this.workerConfiguration = workerConfiguration;

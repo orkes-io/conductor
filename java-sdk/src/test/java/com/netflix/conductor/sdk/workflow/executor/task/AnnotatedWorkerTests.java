@@ -283,7 +283,8 @@ public class AnnotatedWorkerTests {
         assertEquals(333, taskWorker.getPollingInterval());
 
         var worker2 = new AnotherAnnotationInput();
-        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(mock(TaskClient.class), new WorkerConfiguration());
+        annotatedWorkerExecutor =
+                new AnnotatedWorkerExecutor(mock(TaskClient.class), new WorkerConfiguration());
         annotatedWorkerExecutor.addBean(worker2);
         annotatedWorkerExecutor.startPolling();
         workers = annotatedWorkerExecutor.getExecutors();

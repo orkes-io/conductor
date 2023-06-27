@@ -29,7 +29,8 @@ public class WorkflowTestRunner {
 
         TaskClient taskClient = new TaskClient();
         taskClient.setRootURI(serverApiUrl);
-        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
+        this.annotatedWorkerExecutor =
+                new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
 
         this.workflowExecutor = new WorkflowExecutor(serverApiUrl);
     }
@@ -40,7 +41,8 @@ public class WorkflowTestRunner {
 
         TaskClient taskClient = new TaskClient();
         taskClient.setRootURI(localServerRunner.getServerAPIUrl());
-        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
+        this.annotatedWorkerExecutor =
+                new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
 
         this.workflowExecutor = new WorkflowExecutor(localServerRunner.getServerAPIUrl());
     }

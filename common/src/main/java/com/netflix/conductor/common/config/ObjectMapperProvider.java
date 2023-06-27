@@ -40,7 +40,7 @@ public class ObjectMapperProvider {
      *
      * @see org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
      */
-    public static ObjectMapper getObjectMapper() {
+    public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
 

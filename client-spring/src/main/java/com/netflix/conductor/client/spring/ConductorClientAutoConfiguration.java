@@ -15,7 +15,6 @@ package com.netflix.conductor.client.spring;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,6 +25,7 @@ import com.netflix.conductor.client.automator.TaskRunnerConfigurer;
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.client.worker.Worker;
 import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorkerExecutor;
+import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 import com.netflix.discovery.EurekaClient;
 
 @Configuration(proxyBeanMethods = false)
@@ -48,7 +48,8 @@ public class ConductorClientAutoConfiguration {
 
     @ConditionalOnMissingBean
     @Bean
-    public AnnotatedWorkerExecutor annotatedWorkerExecutor(TaskClient taskClient, WorkerConfiguration workerConfiguration) {
+    public AnnotatedWorkerExecutor annotatedWorkerExecutor(
+            TaskClient taskClient, WorkerConfiguration workerConfiguration) {
         return new AnnotatedWorkerExecutor(taskClient, workerConfiguration);
     }
 

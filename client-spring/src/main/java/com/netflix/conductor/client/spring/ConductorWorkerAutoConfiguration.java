@@ -14,17 +14,14 @@ package com.netflix.conductor.client.spring;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorkerExecutor;
-import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 
 @Component
 public class ConductorWorkerAutoConfiguration
@@ -34,7 +31,8 @@ public class ConductorWorkerAutoConfiguration
 
     private final AnnotatedWorkerExecutor annotatedWorkerExecutor;
 
-    public ConductorWorkerAutoConfiguration(TaskClient taskClient, AnnotatedWorkerExecutor annotatedWorkerExecutor) {
+    public ConductorWorkerAutoConfiguration(
+            TaskClient taskClient, AnnotatedWorkerExecutor annotatedWorkerExecutor) {
         this.taskClient = taskClient;
         this.annotatedWorkerExecutor = annotatedWorkerExecutor;
     }
