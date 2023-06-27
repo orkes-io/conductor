@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
+import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -91,32 +92,18 @@ public class WorkflowExecutor {
     public WorkflowExecutor(
             String apiServerURL, int pollingInterval, ClientFilter... clientFilter) {
 
-        taskClient = new TaskClient(new JerseyRequestHandler(clientFilter));
-        taskClient.setRootURI(apiServerURL);
+        this.taskClient = new TaskClient(new JerseyRequestHandler(clientFilter));
+        this.taskClient.setRootURI(apiServerURL);
 
-        workflowClient = new WorkflowClient(new JerseyRequestHandler(clientFilter));
-        workflowClient.setRootURI(apiServerURL);
+        this.workflowClient = new WorkflowClient(new JerseyRequestHandler(clientFilter));
+        this.workflowClient.setRootURI(apiServerURL);
 
-        metadataClient = new MetadataClient(new JerseyRequestHandler(clientFilter));
-        metadataClient.setRootURI(apiServerURL);
+        this.metadataClient = new MetadataClient(new JerseyRequestHandler(clientFilter));
+        this.metadataClient.setRootURI(apiServerURL);
 
-        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
-        scheduledWorkflowMonitor.scheduleAtFixedRate(
-                () -> {
-                    for (Map.Entry<String, CompletableFuture<Workflow>> entry :
-                            runningWorkflowFutures.entrySet()) {
-                        String workflowId = entry.getKey();
-                        CompletableFuture<Workflow> future = entry.getValue();
-                        Workflow workflow = workflowClient.getWorkflow(workflowId, true);
-                        if (workflow.getStatus().isTerminal()) {
-                            future.complete(workflow);
-                            runningWorkflowFutures.remove(workflowId);
-                        }
-                    }
-                },
-                100,
-                100,
-                TimeUnit.MILLISECONDS);
+        WorkerConfiguration configuration = new WorkerConfiguration(pollingInterval);
+        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, configuration);
+        init();
     }
 
     public WorkflowExecutor(
@@ -128,7 +115,25 @@ public class WorkflowExecutor {
         this.taskClient = taskClient;
         this.workflowClient = workflowClient;
         this.metadataClient = metadataClient;
-        annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, pollingInterval);
+        WorkerConfiguration configuration = new WorkerConfiguration(pollingInterval);
+        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, configuration);
+        init();
+    }
+
+    public WorkflowExecutor(
+            TaskClient taskClient,
+            WorkflowClient workflowClient,
+            MetadataClient metadataClient,
+            AnnotatedWorkerExecutor annotatedWorkerExecutor) {
+        this.taskClient = taskClient;
+        this.workflowClient = workflowClient;
+        this.metadataClient = metadataClient;
+        this.annotatedWorkerExecutor = annotatedWorkerExecutor;
+        init();
+    }
+
+    private void init() {
+
         scheduledWorkflowMonitor.scheduleAtFixedRate(
                 () -> {
                     for (Map.Entry<String, CompletableFuture<Workflow>> entry :

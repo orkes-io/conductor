@@ -17,6 +17,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -29,16 +30,19 @@ import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 public class ConductorWorkerAutoConfiguration
         implements ApplicationListener<ContextRefreshedEvent> {
 
-    @Autowired private TaskClient taskClient;
+    private final TaskClient taskClient;
+
+    private final AnnotatedWorkerExecutor annotatedWorkerExecutor;
+
+    public ConductorWorkerAutoConfiguration(TaskClient taskClient, AnnotatedWorkerExecutor annotatedWorkerExecutor) {
+        this.taskClient = taskClient;
+        this.annotatedWorkerExecutor = annotatedWorkerExecutor;
+    }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent refreshedEvent) {
         ApplicationContext applicationContext = refreshedEvent.getApplicationContext();
         Environment environment = applicationContext.getEnvironment();
-        WorkerConfiguration configuration = new SpringWorkerConfiguration(environment);
-        AnnotatedWorkerExecutor annotatedWorkerExecutor =
-                new AnnotatedWorkerExecutor(taskClient, configuration);
-
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Component.class);
         beans.values()
                 .forEach(

@@ -15,6 +15,7 @@ package com.netflix.conductor.sdk.testing;
 import com.netflix.conductor.client.http.TaskClient;
 import com.netflix.conductor.sdk.workflow.executor.WorkflowExecutor;
 import com.netflix.conductor.sdk.workflow.executor.task.AnnotatedWorkerExecutor;
+import com.netflix.conductor.sdk.workflow.executor.task.WorkerConfiguration;
 
 public class WorkflowTestRunner {
 
@@ -28,7 +29,7 @@ public class WorkflowTestRunner {
 
         TaskClient taskClient = new TaskClient();
         taskClient.setRootURI(serverApiUrl);
-        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient);
+        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
 
         this.workflowExecutor = new WorkflowExecutor(serverApiUrl);
     }
@@ -39,7 +40,7 @@ public class WorkflowTestRunner {
 
         TaskClient taskClient = new TaskClient();
         taskClient.setRootURI(localServerRunner.getServerAPIUrl());
-        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient);
+        this.annotatedWorkerExecutor = new AnnotatedWorkerExecutor(taskClient, new WorkerConfiguration());
 
         this.workflowExecutor = new WorkflowExecutor(localServerRunner.getServerAPIUrl());
     }

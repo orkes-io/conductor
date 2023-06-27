@@ -31,36 +31,21 @@ public class AnnotatedWorkerExecutor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AnnotatedWorkerExecutor.class);
 
-    private TaskClient taskClient;
+    protected TaskClient taskClient;
 
     private TaskRunnerConfigurer taskRunner;
 
-    private List<Worker> executors = new ArrayList<>();
+    protected List<Worker> executors = new ArrayList<>();
 
-    private Map<String, Method> workerExecutors = new HashMap<>();
+    protected Map<String, Integer> workerToThreadCount = new HashMap<>();
 
-    private Map<String, Integer> workerToThreadCount = new HashMap<>();
+    protected Map<String, Integer> workerToPollingInterval = new HashMap<>();
 
-    private Map<String, Integer> workerToPollingInterval = new HashMap<>();
-
-    private Map<String, String> workerDomains = new HashMap<>();
-
-    private Map<String, Object> workerClassObjs = new HashMap<>();
+    protected Map<String, String> workerDomains = new HashMap<>();
 
     private static Set<String> scannedPackages = new HashSet<>();
 
     private WorkerConfiguration workerConfiguration;
-
-    public AnnotatedWorkerExecutor(TaskClient taskClient) {
-        this.taskClient = taskClient;
-        this.workerConfiguration = new WorkerConfiguration();
-    }
-
-    public AnnotatedWorkerExecutor(TaskClient taskClient, int pollingIntervalInMillis) {
-        this.taskClient = taskClient;
-        this.workerConfiguration = new WorkerConfiguration(pollingIntervalInMillis);
-    }
-
     public AnnotatedWorkerExecutor(TaskClient taskClient, WorkerConfiguration workerConfiguration) {
         this.taskClient = taskClient;
         this.workerConfiguration = workerConfiguration;
@@ -126,7 +111,7 @@ public class AnnotatedWorkerExecutor {
             LOGGER.info(
                     "Took {} ms to scan all the classes, loading {} tasks",
                     (System.currentTimeMillis() - s),
-                    workerExecutors.size());
+                    executors.size());
 
         } catch (Exception e) {
             LOGGER.error("Error while scanning for workers: ", e);
@@ -174,8 +159,10 @@ public class AnnotatedWorkerExecutor {
             workerDomains.put(name, domain);
         }
 
-        workerClassObjs.put(name, bean);
-        workerExecutors.put(name, method);
+        AnnotatedWorker executor = new AnnotatedWorker(name, method, bean);
+        executor.setPollingInterval(workerToPollingInterval.get(name));
+        executors.add(executor);
+
         LOGGER.info(
                 "Adding worker for task {}, method {} with threadCount {} and polling interval set to {} ms",
                 name,
@@ -185,13 +172,6 @@ public class AnnotatedWorkerExecutor {
     }
 
     public void startPolling() {
-        workerExecutors.forEach(
-                (taskName, method) -> {
-                    Object obj = workerClassObjs.get(taskName);
-                    AnnotatedWorker executor = new AnnotatedWorker(taskName, method, obj);
-                    executor.setPollingInterval(workerToPollingInterval.get(taskName));
-                    executors.add(executor);
-                });
 
         if (executors.isEmpty()) {
             return;
