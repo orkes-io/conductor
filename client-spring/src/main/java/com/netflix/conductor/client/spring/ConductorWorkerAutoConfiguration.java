@@ -40,7 +40,6 @@ public class ConductorWorkerAutoConfiguration
     @Override
     public void onApplicationEvent(ContextRefreshedEvent refreshedEvent) {
         ApplicationContext applicationContext = refreshedEvent.getApplicationContext();
-        Environment environment = applicationContext.getEnvironment();
         Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Component.class);
         beans.values()
                 .forEach(
