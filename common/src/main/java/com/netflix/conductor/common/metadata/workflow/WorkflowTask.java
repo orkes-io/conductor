@@ -32,6 +32,9 @@ import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
+
 /**
  * This is the task definition definied as part of the {@link WorkflowDef}. The tasks definied in
  * the Workflow definition are saved as part of {@link WorkflowDef#getTasks}
@@ -394,6 +397,7 @@ public class WorkflowTask {
     /**
      * @return the subWorkflow
      */
+    @JsonGetter
     public SubWorkflowParams getSubWorkflowParam() {
         return subWorkflowParam;
     }
@@ -401,8 +405,10 @@ public class WorkflowTask {
     /**
      * @param subWorkflow the subWorkflowParam to set
      */
+    @JsonSetter
     public void setSubWorkflowParam(SubWorkflowParams subWorkflow) {
-        if (subWorkflow.getWorkflowDefinition() == null
+        if (subWorkflow != null
+                && subWorkflow.getWorkflowDefinition() == null
                 && (StringUtils.isBlank(subWorkflow.getName()))) {
             throw new IllegalArgumentException("SubWorkflowParams name cannot be null or empty");
         }

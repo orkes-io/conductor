@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.common.workflow;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +23,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.netflix.conductor.common.config.TestObjectMapperConfiguration;
+import com.netflix.conductor.common.metadata.tasks.TaskDef;
+import com.netflix.conductor.common.metadata.tasks.TaskType;
 import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
@@ -100,5 +103,39 @@ public class SubWorkflowParamsTest {
                 objectMapper.readValue(serializedParams, SubWorkflowParams.class);
         var x = (WorkflowDef) deserializedParams.getWorkflowDefinition();
         assertEquals(def, x);
+
+        var taskName = "taskName";
+        var subWorkflowName = "subwf";
+        TaskDef taskDef = new TaskDef(taskName);
+        taskDef.setRetryCount(0);
+        taskDef.setOwnerEmail("test@orkes.io");
+
+        WorkflowTask inline = new WorkflowTask();
+        inline.setTaskReferenceName(taskName);
+        inline.setName(taskName);
+        inline.setTaskDefinition(taskDef);
+        inline.setWorkflowTaskType(TaskType.SIMPLE);
+        inline.setInputParameters(Map.of("evaluatorType", "graaljs", "expression", "true;"));
+
+        WorkflowDef subworkflowDef = new WorkflowDef();
+        subworkflowDef.setName(subWorkflowName);
+        subworkflowDef.setOwnerEmail("test@orkes.io");
+        subworkflowDef.setInputParameters(Arrays.asList("value", "inlineValue"));
+        subworkflowDef.setDescription("Sub Workflow to test retry");
+        subworkflowDef.setTimeoutSeconds(600);
+        subworkflowDef.setTimeoutPolicy(WorkflowDef.TimeoutPolicy.TIME_OUT_WF);
+        subworkflowDef.setTasks(Arrays.asList(inline));
+
+        // autowired
+        var serializedSubWorkflowDef1 = objectMapper.writeValueAsString(subworkflowDef);
+        var deserializedSubWorkflowDef1 =
+                objectMapper.readValue(serializedSubWorkflowDef1, WorkflowDef.class);
+        assertEquals(deserializedSubWorkflowDef1, subworkflowDef);
+        // default
+        ObjectMapper mapper = new ObjectMapper();
+        var serializedSubWorkflowDef2 = mapper.writeValueAsString(subworkflowDef);
+        var deserializedSubWorkflowDef2 =
+                mapper.readValue(serializedSubWorkflowDef2, WorkflowDef.class);
+        assertEquals(deserializedSubWorkflowDef2, subworkflowDef);
     }
 }

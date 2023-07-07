@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.common.utils;
 
+import com.netflix.conductor.common.config.ObjectMapperProvider;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -19,7 +20,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TaskUtils {
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper;
+
+    static {
+        ObjectMapperProvider provider = new ObjectMapperProvider();
+        objectMapper = provider.getObjectMapper();
+    }
 
     private static final String LOOP_TASK_DELIMITER = "__";
 
