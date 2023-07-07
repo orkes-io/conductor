@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.utils.TaskUtils;
@@ -92,13 +94,25 @@ public class SubWorkflowParams {
     /**
      * @return the workflowDefinition as an Object
      */
+    @JsonGetter("workflowDefinition")
     public Object getWorkflowDefinition() {
         return workflowDefinition;
+    }
+
+    @Deprecated
+    public void setWorkflowDef(WorkflowDef workflowDef) {
+        this.setWorkflowDefinition(workflowDef);
+    }
+
+    @Deprecated
+    public WorkflowDef getWorkflowDef() {
+        return (WorkflowDef) workflowDefinition;
     }
 
     /**
      * @param workflowDef the workflowDefinition to set
      */
+    @JsonSetter("workflowDefinition")
     public void setWorkflowDefinition(Object workflowDef) {
         if (workflowDef == null) {
             this.workflowDefinition = workflowDef;
