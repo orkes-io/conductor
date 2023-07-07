@@ -132,9 +132,10 @@ public class SubWorkflowParamsTest {
                 objectMapper.readValue(serializedSubWorkflowDef1, WorkflowDef.class);
         assertEquals(deserializedSubWorkflowDef1, subworkflowDef);
         // default
-        var serializedSubWorkflowDef2 = objectMapper.writeValueAsString(subworkflowDef);
+        ObjectMapper mapper = new ObjectMapper();
+        var serializedSubWorkflowDef2 = mapper.writeValueAsString(subworkflowDef);
         var deserializedSubWorkflowDef2 =
-                objectMapper.readValue(serializedSubWorkflowDef2, WorkflowDef.class);
+                mapper.readValue(serializedSubWorkflowDef2, WorkflowDef.class);
         assertEquals(deserializedSubWorkflowDef2, subworkflowDef);
     }
 }
