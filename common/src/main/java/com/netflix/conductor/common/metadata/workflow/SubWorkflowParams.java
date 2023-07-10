@@ -21,6 +21,7 @@ import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.utils.TaskUtils;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 @ProtoMessage
@@ -101,11 +102,13 @@ public class SubWorkflowParams {
     }
 
     @Deprecated
+    @JsonIgnore
     public void setWorkflowDef(WorkflowDef workflowDef) {
         this.setWorkflowDefinition(workflowDef);
     }
 
     @Deprecated
+    @JsonIgnore
     public WorkflowDef getWorkflowDef() {
         return (WorkflowDef) workflowDefinition;
     }
