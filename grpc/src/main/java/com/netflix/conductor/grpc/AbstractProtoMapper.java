@@ -1079,7 +1079,9 @@ public abstract class AbstractProtoMapper {
             to.putVariables( pair.getKey(), toProto( pair.getValue() ) );
         }
         to.setLastRetriedTime( from.getLastRetriedTime() );
-        to.addAllHistory( from.getHistory() );
+        for (Workflow elem : from.getHistory()) {
+            to.addHistory( toProto(elem) );
+        }
         return to.build();
     }
 
@@ -1119,7 +1121,7 @@ public abstract class AbstractProtoMapper {
         }
         to.setVariables(variablesMap);
         to.setLastRetriedTime( from.getLastRetriedTime() );
-        to.setHistory( from.getHistoryList().stream().collect(Collectors.toCollection(ArrayList::new)) );
+        to.setHistory( from.getHistoryList().stream().map(this::fromProto).collect(Collectors.toCollection(ArrayList::new)) );
         return to;
     }
 

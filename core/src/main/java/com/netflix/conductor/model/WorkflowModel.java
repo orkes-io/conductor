@@ -103,13 +103,13 @@ public class WorkflowModel {
 
     private Status previousStatus;
 
-    private List<String> history = new LinkedList<>();
+    private List<WorkflowModel> history = new LinkedList<>();
 
-    public List<String> getHistory() {
+    public List<WorkflowModel> getHistory() {
         return history;
     }
 
-    public void setHistory(List<String> history) {
+    public void setHistory(List<WorkflowModel> history) {
         this.history = history;
     }
 
@@ -549,6 +549,7 @@ public class WorkflowModel {
         BeanUtils.copyProperties(this, workflow);
         workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
         workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
+        workflow.setHistory(history.stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList()));
 
         // ensure that input/output is properly represented
         if (externalInputPayloadStoragePath != null) {

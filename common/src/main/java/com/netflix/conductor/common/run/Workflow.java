@@ -124,13 +124,13 @@ public class Workflow extends Auditable {
     private long lastRetriedTime;
 
     @ProtoField(id = 25)
-    private List<String> history = new LinkedList<>();
+    private List<Workflow> history = new LinkedList<>();
 
-    public List<String> getHistory() {
+    public List<Workflow> getHistory() {
         return history;
     }
 
-    public void setHistory(List<String> history) {
+    public void setHistory(List<Workflow> history) {
         this.history = history;
     }
 
