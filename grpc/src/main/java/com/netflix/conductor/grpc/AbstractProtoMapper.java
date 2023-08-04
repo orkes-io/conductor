@@ -1079,6 +1079,7 @@ public abstract class AbstractProtoMapper {
             to.putVariables( pair.getKey(), toProto( pair.getValue() ) );
         }
         to.setLastRetriedTime( from.getLastRetriedTime() );
+        to.addAllHistory( from.getHistory() );
         return to.build();
     }
 
@@ -1118,6 +1119,7 @@ public abstract class AbstractProtoMapper {
         }
         to.setVariables(variablesMap);
         to.setLastRetriedTime( from.getLastRetriedTime() );
+        to.setHistory( from.getHistoryList().stream().collect(Collectors.toCollection(ArrayList::new)) );
         return to;
     }
 

@@ -103,6 +103,16 @@ public class WorkflowModel {
 
     private Status previousStatus;
 
+    private List<String> history = new LinkedList<>();
+
+    public List<String> getHistory() {
+        return history;
+    }
+
+    public void setHistory(List<String> history) {
+        this.history = history;
+    }
+
     @JsonIgnore private Map<String, Object> input = new HashMap<>();
 
     @JsonIgnore private Map<String, Object> output = new HashMap<>();
