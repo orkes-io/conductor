@@ -2150,4 +2150,8 @@ public class WorkflowExecutor {
 
         LOGGER.info("Pushed parent workflow {} to {}", parentWorkflowId, DECIDER_QUEUE);
     }
+
+    public void jumpWorkflowExecutionToTask(String workflowId, String taskReferenceName, Map<String, Object> input) {
+        // Implemented in enterprise
+    }
 }
