@@ -2151,7 +2151,8 @@ public class WorkflowExecutor {
         LOGGER.info("Pushed parent workflow {} to {}", parentWorkflowId, DECIDER_QUEUE);
     }
 
-    public WorkflowModel jumpWorkflowExecutionToTask(String workflowId, String taskReferenceName, Map<String, Object> input) {
+    public WorkflowModel jumpWorkflowExecutionToTask(
+            String workflowId, String taskReferenceName, Map<String, Object> input) {
         // Implemented in enterprise
         return null;
     }

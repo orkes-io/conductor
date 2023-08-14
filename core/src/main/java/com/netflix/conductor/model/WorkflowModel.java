@@ -549,7 +549,8 @@ public class WorkflowModel {
         BeanUtils.copyProperties(this, workflow);
         workflow.setStatus(Workflow.WorkflowStatus.valueOf(this.status.name()));
         workflow.setTasks(tasks.stream().map(TaskModel::toTask).collect(Collectors.toList()));
-        workflow.setHistory(history.stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList()));
+        workflow.setHistory(
+                history.stream().map(WorkflowModel::toWorkflow).collect(Collectors.toList()));
 
         // ensure that input/output is properly represented
         if (externalInputPayloadStoragePath != null) {
