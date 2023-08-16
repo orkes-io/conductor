@@ -2150,4 +2150,9 @@ public class WorkflowExecutor {
 
         LOGGER.info("Pushed parent workflow {} to {}", parentWorkflowId, DECIDER_QUEUE);
     }
+
+    public WorkflowModel jumpWorkflowExecutionToTask(
+            String workflowId, String taskReferenceName, Map<String, Object> input) {
+        return executionDAOFacade.getWorkflowModel(workflowId, true);
+    }
 }
