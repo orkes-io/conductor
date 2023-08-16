@@ -2153,7 +2153,6 @@ public class WorkflowExecutor {
 
     public WorkflowModel jumpWorkflowExecutionToTask(
             String workflowId, String taskReferenceName, Map<String, Object> input) {
-        // Implemented in enterprise
-        return null;
+        return executionDAOFacade.getWorkflowModel(workflowId, true);
     }
 }
