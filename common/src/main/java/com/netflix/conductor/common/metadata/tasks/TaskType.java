@@ -40,6 +40,7 @@ public enum TaskType {
     TERMINATE,
     KAFKA_PUBLISH,
     JSON_JQ_TRANSFORM,
+    UPDATE_SECRET,
     JUMP,
     SET_VARIABLE;
 
@@ -70,6 +71,8 @@ public enum TaskType {
     public static final String TASK_TYPE_KAFKA_PUBLISH = "KAFKA_PUBLISH";
     public static final String TASK_TYPE_JSON_JQ_TRANSFORM = "JSON_JQ_TRANSFORM";
     public static final String TASK_TYPE_SET_VARIABLE = "SET_VARIABLE";
+    public static final String TASK_TYPE_UPDATE_SECRET = "UPDATE_SECRET";
+
     public static final String TASK_TYPE_FORK = "FORK";
 
     private static final Set<String> BUILT_IN_TASKS = new HashSet<>();
