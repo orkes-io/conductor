@@ -770,7 +770,7 @@ public class DeciderService {
         Monitors.recordTaskPendingTime(task.getTaskType(), task.getWorkflowType(), pendingTime);
         long thresholdMS = taskPendingTimeThresholdMins * 60 * 1000;
         if (pendingTime > thresholdMS) {
-            LOGGER.warn(
+            LOGGER.trace(
                     "Task: {} of type: {} in workflow: {}/{} is in pending state for longer than {} ms",
                     task.getTaskId(),
                     task.getTaskType(),
