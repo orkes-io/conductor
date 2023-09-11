@@ -2155,4 +2155,7 @@ public class WorkflowExecutor {
             String workflowId, String taskReferenceName, Map<String, Object> input) {
         return executionDAOFacade.getWorkflowModel(workflowId, true);
     }
+
+    public void upgradeRunningWorkflowToVersion(String workflowId, Integer version, Map<String, Map<String, Object>> output, Map<String, Object> workflowInput) {
+    }
 }

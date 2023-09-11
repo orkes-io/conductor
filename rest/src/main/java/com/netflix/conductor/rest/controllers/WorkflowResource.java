@@ -15,6 +15,7 @@ package com.netflix.conductor.rest.controllers;
 import java.util.List;
 import java.util.Map;
 
+import com.netflix.conductor.common.metadata.workflow.UpgradeWorkflowRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -282,5 +283,12 @@ public class WorkflowResource {
     @Operation(summary = "Test workflow execution using mock data")
     public Workflow testWorkflow(@RequestBody WorkflowTestRequest request) {
         return workflowTestService.testWorkflow(request);
+    }
+
+    @PostMapping("/{workflowId}/upgrade/{version}")
+    @Operation(summary = "Upgrade running workflow to newer version", description = "Upgrade running workflow to newer version")
+    public void upgradeRunningWorkflowToVersion(@PathVariable("workflowId") String workflowId,
+                                                @RequestParam(value = "version") Integer version, @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
+        workflowService.upgradeRunningWorkflowToVersion(workflowId, version, upgradeWorkflowRequest.getTaskOutput(), upgradeWorkflowRequest.getWorkflowInput());
     }
 }
