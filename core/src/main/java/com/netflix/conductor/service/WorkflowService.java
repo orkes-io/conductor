@@ -435,5 +435,9 @@ public interface WorkflowService {
     ExternalStorageLocation getExternalStorageLocation(
             String path, String operation, String payloadType);
 
-    void upgradeRunningWorkflowToVersion(String workflowId, Integer version, Map<String, Map<String, Object>> taskOutput, Map<String, Object> workflowInput);
+    void upgradeRunningWorkflowToVersion(
+            String workflowId,
+            Integer version,
+            Map<String, Map<String, Object>> taskOutput,
+            Map<String, Object> workflowInput);
 }

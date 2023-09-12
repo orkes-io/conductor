@@ -602,7 +602,12 @@ public class WorkflowServiceImpl implements WorkflowService {
     }
 
     @Override
-    public void upgradeRunningWorkflowToVersion(String workflowId, Integer version, Map<String, Map<String, Object>> taskOutput, Map<String, Object> workflowInput) {
-        workflowExecutor.upgradeRunningWorkflowToVersion(workflowId, version, taskOutput, workflowInput);
+    public void upgradeRunningWorkflowToVersion(
+            String workflowId,
+            Integer version,
+            Map<String, Map<String, Object>> taskOutput,
+            Map<String, Object> workflowInput) {
+        workflowExecutor.upgradeRunningWorkflowToVersion(
+                workflowId, version, taskOutput, workflowInput);
     }
 }

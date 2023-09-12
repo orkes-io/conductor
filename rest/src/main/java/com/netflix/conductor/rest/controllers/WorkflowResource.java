@@ -15,7 +15,6 @@ package com.netflix.conductor.rest.controllers;
 import java.util.List;
 import java.util.Map;
 
-import com.netflix.conductor.common.metadata.workflow.UpgradeWorkflowRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
+import com.netflix.conductor.common.metadata.workflow.UpgradeWorkflowRequest;
 import com.netflix.conductor.common.run.*;
 import com.netflix.conductor.service.WorkflowService;
 import com.netflix.conductor.service.WorkflowTestService;
@@ -286,9 +286,17 @@ public class WorkflowResource {
     }
 
     @PostMapping("/{workflowId}/upgrade/{version}")
-    @Operation(summary = "Upgrade running workflow to newer version", description = "Upgrade running workflow to newer version")
-    public void upgradeRunningWorkflowToVersion(@PathVariable("workflowId") String workflowId,
-                                                @RequestParam(value = "version") Integer version, @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
-        workflowService.upgradeRunningWorkflowToVersion(workflowId, version, upgradeWorkflowRequest.getTaskOutput(), upgradeWorkflowRequest.getWorkflowInput());
+    @Operation(
+            summary = "Upgrade running workflow to newer version",
+            description = "Upgrade running workflow to newer version")
+    public void upgradeRunningWorkflowToVersion(
+            @PathVariable("workflowId") String workflowId,
+            @RequestParam(value = "version") Integer version,
+            @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
+        workflowService.upgradeRunningWorkflowToVersion(
+                workflowId,
+                version,
+                upgradeWorkflowRequest.getTaskOutput(),
+                upgradeWorkflowRequest.getWorkflowInput());
     }
 }
