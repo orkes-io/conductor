@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.netflix.conductor.common.metadata.workflow.*;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import com.netflix.conductor.annotations.Audit;
 import com.netflix.conductor.annotations.Trace;
+import com.netflix.conductor.common.metadata.workflow.*;
 import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.Workflow;
@@ -600,9 +600,7 @@ public class WorkflowServiceImpl implements WorkflowService {
 
     @Override
     public void upgradeRunningWorkflowToVersion(
-            String workflowId,
-            UpgradeWorkflowRequest upgradeWorkflowRequest) {
-        workflowExecutor.upgradeRunningWorkflowToVersion(
-                workflowId, upgradeWorkflowRequest);
+            String workflowId, UpgradeWorkflowRequest upgradeWorkflowRequest) {
+        workflowExecutor.upgradeRunningWorkflowToVersion(workflowId, upgradeWorkflowRequest);
     }
 }

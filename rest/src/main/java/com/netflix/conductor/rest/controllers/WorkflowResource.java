@@ -292,8 +292,6 @@ public class WorkflowResource {
     public void upgradeRunningWorkflowToVersion(
             @PathVariable("workflowId") String workflowId,
             @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
-        workflowService.upgradeRunningWorkflowToVersion(
-                workflowId,
-                upgradeWorkflowRequest);
+        workflowService.upgradeRunningWorkflowToVersion(workflowId, upgradeWorkflowRequest);
     }
 }

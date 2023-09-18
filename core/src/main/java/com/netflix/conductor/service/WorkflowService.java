@@ -21,9 +21,9 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.netflix.conductor.common.metadata.workflow.*;
 import org.springframework.validation.annotation.Validated;
 
+import com.netflix.conductor.common.metadata.workflow.*;
 import com.netflix.conductor.common.run.ExternalStorageLocation;
 import com.netflix.conductor.common.run.SearchResult;
 import com.netflix.conductor.common.run.Workflow;
@@ -433,6 +433,5 @@ public interface WorkflowService {
             String path, String operation, String payloadType);
 
     void upgradeRunningWorkflowToVersion(
-            String workflowId,
-            UpgradeWorkflowRequest upgradeWorkflowRequest);
+            String workflowId, UpgradeWorkflowRequest upgradeWorkflowRequest);
 }

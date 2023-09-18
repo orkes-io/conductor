@@ -12,11 +12,12 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
-import com.netflix.conductor.annotations.protogen.ProtoField;
-import com.netflix.conductor.annotations.protogen.ProtoMessage;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
-import java.util.Map;
+
+import com.netflix.conductor.annotations.protogen.ProtoField;
+import com.netflix.conductor.annotations.protogen.ProtoMessage;
 
 @ProtoMessage
 public class UpgradeWorkflowRequest {
@@ -65,5 +66,4 @@ public class UpgradeWorkflowRequest {
     public void setVersion(Integer version) {
         this.version = version;
     }
-
 }
