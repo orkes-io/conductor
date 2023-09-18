@@ -12,15 +12,20 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
+import com.netflix.conductor.annotations.protogen.ProtoField;
+import com.netflix.conductor.annotations.protogen.ProtoMessage;
+
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
+@ProtoMessage
 public class UpgradeWorkflowRequest {
 
-    public Map<String, Map<String, Object>> getTaskOutput() {
+    public Map<String, Object> getTaskOutput() {
         return taskOutput;
     }
 
-    public void setTaskOutput(Map<String, Map<String, Object>> taskOutput) {
+    public void setTaskOutput(Map<String, Object> taskOutput) {
         this.taskOutput = taskOutput;
     }
 
@@ -32,12 +37,17 @@ public class UpgradeWorkflowRequest {
         this.workflowInput = workflowInput;
     }
 
-    private Map<String, Map<String, Object>> taskOutput;
+    @ProtoField(id = 4)
+    private Map<String, Object> taskOutput;
 
+    @ProtoField(id = 3)
     private Map<String, Object> workflowInput;
 
+    @ProtoField(id = 2)
     private Integer version;
 
+    @NotNull(message = "Workflow name cannot be null or empty")
+    @ProtoField(id = 1)
     private String name;
 
     public String getName() {
