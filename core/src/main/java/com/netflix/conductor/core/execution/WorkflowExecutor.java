@@ -24,10 +24,7 @@ import org.springframework.stereotype.Component;
 import com.netflix.conductor.annotations.Trace;
 import com.netflix.conductor.annotations.VisibleForTesting;
 import com.netflix.conductor.common.metadata.tasks.*;
-import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
-import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
-import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
-import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
+import com.netflix.conductor.common.metadata.workflow.*;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.common.utils.TaskUtils;
 import com.netflix.conductor.core.WorkflowContext;
@@ -2155,4 +2152,7 @@ public class WorkflowExecutor {
             String workflowId, String taskReferenceName, Map<String, Object> input) {
         return executionDAOFacade.getWorkflowModel(workflowId, true);
     }
+
+    public void upgradeRunningWorkflowToVersion(
+            String workflowId, UpgradeWorkflowRequest upgradeWorkflowRequest) {}
 }
