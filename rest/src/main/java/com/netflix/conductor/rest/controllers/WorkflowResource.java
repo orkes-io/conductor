@@ -285,18 +285,15 @@ public class WorkflowResource {
         return workflowTestService.testWorkflow(request);
     }
 
-    @PostMapping("/{workflowId}/upgrade/{version}")
+    @PostMapping("/{workflowId}/upgrade")
     @Operation(
             summary = "Upgrade running workflow to newer version",
             description = "Upgrade running workflow to newer version")
     public void upgradeRunningWorkflowToVersion(
             @PathVariable("workflowId") String workflowId,
-            @RequestParam(value = "version") Integer version,
             @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
         workflowService.upgradeRunningWorkflowToVersion(
                 workflowId,
-                version,
-                upgradeWorkflowRequest.getTaskOutput(),
-                upgradeWorkflowRequest.getWorkflowInput());
+                upgradeWorkflowRequest);
     }
 }

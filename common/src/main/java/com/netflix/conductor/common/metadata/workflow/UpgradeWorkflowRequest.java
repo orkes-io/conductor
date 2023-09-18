@@ -35,4 +35,25 @@ public class UpgradeWorkflowRequest {
     private Map<String, Map<String, Object>> taskOutput;
 
     private Map<String, Object> workflowInput;
+
+    private Integer version;
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
 }
