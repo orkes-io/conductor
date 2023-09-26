@@ -151,6 +151,12 @@ public class WorkflowTask {
     @ProtoField(id = 29)
     private String joinStatus;
 
+    @ProtoField(id = 30)
+    private Map<String, Object> cacheKey = new HashMap<>();
+
+    @ProtoField(id = 31)
+    private long cacheTTL;
+
     /*
     Map of events to be emitted when the task status changed.
     key can be comma separated values of the status changes prefixed with "on"<STATUS>
@@ -390,6 +396,22 @@ public class WorkflowTask {
 
     public void setScriptExpression(String expression) {
         this.scriptExpression = expression;
+    }
+
+    public Map<String, Object> getCacheKey() {
+        return cacheKey;
+    }
+
+    public void setCacheKey(Map<String, Object> cacheKey) {
+        this.cacheKey = cacheKey;
+    }
+
+    public long getCacheTTL() {
+        return cacheTTL;
+    }
+
+    public void setCacheTTL(long cacheTTL) {
+        this.cacheTTL = cacheTTL;
     }
 
     /**
