@@ -151,11 +151,29 @@ public class WorkflowTask {
     @ProtoField(id = 29)
     private String joinStatus;
 
-    @ProtoField(id = 30)
-    private Map<String, Object> cacheKey = new HashMap<>();
+    public static class CacheConfig {
 
-    @ProtoField(id = 31)
-    private long cacheTTL;
+        private String key;
+        private int ttlInSecond;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public int getTtlInSecond() {
+            return ttlInSecond;
+        }
+
+        public void setTtlInSecond(int ttlInSecond) {
+            this.ttlInSecond = ttlInSecond;
+        }
+    }
+
+    private CacheConfig cacheConfig;
 
     /*
     Map of events to be emitted when the task status changed.
@@ -398,20 +416,12 @@ public class WorkflowTask {
         this.scriptExpression = expression;
     }
 
-    public Map<String, Object> getCacheKey() {
-        return cacheKey;
+    public CacheConfig getCacheConfig() {
+        return cacheConfig;
     }
 
-    public void setCacheKey(Map<String, Object> cacheKey) {
-        this.cacheKey = cacheKey;
-    }
-
-    public long getCacheTTL() {
-        return cacheTTL;
-    }
-
-    public void setCacheTTL(long cacheTTL) {
-        this.cacheTTL = cacheTTL;
+    public void setCacheConfig(CacheConfig cacheConfig) {
+        this.cacheConfig = cacheConfig;
     }
 
     /**
@@ -781,6 +791,7 @@ public class WorkflowTask {
                 && Objects.equals(isAsyncComplete(), that.isAsyncComplete())
                 && Objects.equals(getDefaultExclusiveJoinTask(), that.getDefaultExclusiveJoinTask())
                 && Objects.equals(getRetryCount(), that.getRetryCount())
+                && Objects.equals(getCacheConfig(), that.getCacheConfig())
                 && Objects.equals(getOnStateChange(), that.getOnStateChange());
     }
 
@@ -813,6 +824,7 @@ public class WorkflowTask {
                 isOptional(),
                 getDefaultExclusiveJoinTask(),
                 getOnStateChange(),
+                getCacheConfig(),
                 getRetryCount());
     }
 }
