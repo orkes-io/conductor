@@ -11,10 +11,12 @@ import com.netflix.conductor.common.metadata.tasks.TaskExecLog;
 import com.netflix.conductor.common.metadata.tasks.TaskResult;
 import com.netflix.conductor.common.metadata.workflow.DynamicForkJoinTask;
 import com.netflix.conductor.common.metadata.workflow.DynamicForkJoinTaskList;
+import com.netflix.conductor.common.metadata.workflow.JumpWorkflowExecutionRequest;
 import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
+import com.netflix.conductor.common.metadata.workflow.UpgradeWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.common.run.TaskSummary;
@@ -24,6 +26,7 @@ import com.netflix.conductor.proto.DynamicForkJoinTaskListPb;
 import com.netflix.conductor.proto.DynamicForkJoinTaskPb;
 import com.netflix.conductor.proto.EventExecutionPb;
 import com.netflix.conductor.proto.EventHandlerPb;
+import com.netflix.conductor.proto.JumpWorkflowExecutionRequestPb;
 import com.netflix.conductor.proto.PollDataPb;
 import com.netflix.conductor.proto.RerunWorkflowRequestPb;
 import com.netflix.conductor.proto.SkipTaskRequestPb;
@@ -34,6 +37,7 @@ import com.netflix.conductor.proto.TaskExecLogPb;
 import com.netflix.conductor.proto.TaskPb;
 import com.netflix.conductor.proto.TaskResultPb;
 import com.netflix.conductor.proto.TaskSummaryPb;
+import com.netflix.conductor.proto.UpgradeWorkflowRequestPb;
 import com.netflix.conductor.proto.WorkflowDefPb;
 import com.netflix.conductor.proto.WorkflowPb;
 import com.netflix.conductor.proto.WorkflowSummaryPb;
@@ -391,6 +395,38 @@ public abstract class AbstractProtoMapper {
             case UPDATE_WORKFLOW_VARIABLES: to = EventHandler.Action.Type.update_workflow_variables; break;
             default: throw new IllegalArgumentException("Unexpected enum constant: " + from);
         }
+        return to;
+    }
+
+    public JumpWorkflowExecutionRequestPb.JumpWorkflowExecutionRequest toProto(
+            JumpWorkflowExecutionRequest from) {
+        JumpWorkflowExecutionRequestPb.JumpWorkflowExecutionRequest.Builder to = JumpWorkflowExecutionRequestPb.JumpWorkflowExecutionRequest.newBuilder();
+        for (Map.Entry<String, Object> pair : from.getSkippedTasksOutput().entrySet()) {
+            to.putSkippedTasksOutput( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        for (Map.Entry<String, Object> pair : from.getJumpTaskInput().entrySet()) {
+            to.putJumpTaskInput( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        if (from.getTaskReferenceName() != null) {
+            to.setTaskReferenceName( from.getTaskReferenceName() );
+        }
+        return to.build();
+    }
+
+    public JumpWorkflowExecutionRequest fromProto(
+            JumpWorkflowExecutionRequestPb.JumpWorkflowExecutionRequest from) {
+        JumpWorkflowExecutionRequest to = new JumpWorkflowExecutionRequest();
+        Map<String, Object> skippedTasksOutputMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getSkippedTasksOutputMap().entrySet()) {
+            skippedTasksOutputMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setSkippedTasksOutput(skippedTasksOutputMap);
+        Map<String, Object> jumpTaskInputMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getJumpTaskInputMap().entrySet()) {
+            jumpTaskInputMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setJumpTaskInput(jumpTaskInputMap);
+        to.setTaskReferenceName( from.getTaskReferenceName() );
         return to;
     }
 
@@ -782,6 +818,9 @@ public abstract class AbstractProtoMapper {
         if (from.getBackoffScaleFactor() != null) {
             to.setBackoffScaleFactor( from.getBackoffScaleFactor() );
         }
+        if (from.getBaseType() != null) {
+            to.setBaseType( from.getBaseType() );
+        }
         return to.build();
     }
 
@@ -810,6 +849,7 @@ public abstract class AbstractProtoMapper {
         to.setOwnerEmail( from.getOwnerEmail() );
         to.setPollTimeoutSeconds( from.getPollTimeoutSeconds() );
         to.setBackoffScaleFactor( from.getBackoffScaleFactor() );
+        to.setBaseType( from.getBaseType() );
         return to;
     }
 
@@ -1024,6 +1064,40 @@ public abstract class AbstractProtoMapper {
         to.setExternalInputPayloadStoragePath( from.getExternalInputPayloadStoragePath() );
         to.setExternalOutputPayloadStoragePath( from.getExternalOutputPayloadStoragePath() );
         to.setWorkflowPriority( from.getWorkflowPriority() );
+        return to;
+    }
+
+    public UpgradeWorkflowRequestPb.UpgradeWorkflowRequest toProto(UpgradeWorkflowRequest from) {
+        UpgradeWorkflowRequestPb.UpgradeWorkflowRequest.Builder to = UpgradeWorkflowRequestPb.UpgradeWorkflowRequest.newBuilder();
+        for (Map.Entry<String, Object> pair : from.getTaskOutput().entrySet()) {
+            to.putTaskOutput( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        for (Map.Entry<String, Object> pair : from.getWorkflowInput().entrySet()) {
+            to.putWorkflowInput( pair.getKey(), toProto( pair.getValue() ) );
+        }
+        if (from.getVersion() != null) {
+            to.setVersion( from.getVersion() );
+        }
+        if (from.getName() != null) {
+            to.setName( from.getName() );
+        }
+        return to.build();
+    }
+
+    public UpgradeWorkflowRequest fromProto(UpgradeWorkflowRequestPb.UpgradeWorkflowRequest from) {
+        UpgradeWorkflowRequest to = new UpgradeWorkflowRequest();
+        Map<String, Object> taskOutputMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getTaskOutputMap().entrySet()) {
+            taskOutputMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setTaskOutput(taskOutputMap);
+        Map<String, Object> workflowInputMap = new HashMap<String, Object>();
+        for (Map.Entry<String, Value> pair : from.getWorkflowInputMap().entrySet()) {
+            workflowInputMap.put( pair.getKey(), fromProto( pair.getValue() ) );
+        }
+        to.setWorkflowInput(workflowInputMap);
+        to.setVersion( from.getVersion() );
+        to.setName( from.getName() );
         return to;
     }
 

@@ -2149,8 +2149,9 @@ public class WorkflowExecutor {
     }
 
     public WorkflowModel jumpWorkflowExecutionToTask(
-            String workflowId, String taskReferenceName, Map<String, Object> input) {
-        return executionDAOFacade.getWorkflowModel(workflowId, true);
+            String workflowId, JumpWorkflowExecutionRequest jumpWorkflowExecutionRequest) {
+        return executionDAOFacade.getWorkflowModel(workflowId
+                , true);
     }
 
     public void upgradeRunningWorkflowToVersion(
