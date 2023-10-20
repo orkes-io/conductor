@@ -41,14 +41,6 @@ public class SubWorkflowParamsTest {
 
     @Autowired private ObjectMapper objectMapper;
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testWorkflowTaskName() {
-        WorkflowTask t = new WorkflowTask();
-        SubWorkflowParams subWorkflowParams =
-                new SubWorkflowParams(); // name is null, definition is null
-        t.setSubWorkflowParam(subWorkflowParams);
-    }
-
     @Test
     public void testWorkflowSetTaskToDomain() {
         SubWorkflowParams subWorkflowParams = new SubWorkflowParams();

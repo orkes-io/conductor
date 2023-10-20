@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.netflix.conductor.common.metadata.workflow.RerunWorkflowRequest;
 import com.netflix.conductor.common.metadata.workflow.SkipTaskRequest;
 import com.netflix.conductor.common.metadata.workflow.StartWorkflowRequest;
+import com.netflix.conductor.common.metadata.workflow.UpgradeWorkflowRequest;
 import com.netflix.conductor.common.run.*;
 import com.netflix.conductor.service.WorkflowService;
 import com.netflix.conductor.service.WorkflowTestService;
@@ -282,5 +283,15 @@ public class WorkflowResource {
     @Operation(summary = "Test workflow execution using mock data")
     public Workflow testWorkflow(@RequestBody WorkflowTestRequest request) {
         return workflowTestService.testWorkflow(request);
+    }
+
+    @PostMapping("/{workflowId}/upgrade")
+    @Operation(
+            summary = "Upgrade running workflow to newer version",
+            description = "Upgrade running workflow to newer version")
+    public void upgradeRunningWorkflowToVersion(
+            @PathVariable("workflowId") String workflowId,
+            @RequestBody UpgradeWorkflowRequest upgradeWorkflowRequest) {
+        workflowService.upgradeRunningWorkflowToVersion(workflowId, upgradeWorkflowRequest);
     }
 }

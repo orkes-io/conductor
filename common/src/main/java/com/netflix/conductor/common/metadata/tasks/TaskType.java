@@ -40,8 +40,9 @@ public enum TaskType {
     TERMINATE,
     KAFKA_PUBLISH,
     JSON_JQ_TRANSFORM,
-    SET_VARIABLE,
-    NOOP;
+    UPDATE_SECRET,
+    JUMP,
+    SET_VARIABLE;
 
     /**
      * TaskType constants representing each of the possible enumeration values. Motivation: to not
@@ -56,6 +57,7 @@ public enum TaskType {
     public static final String TASK_TYPE_FORK_JOIN_DYNAMIC = "FORK_JOIN_DYNAMIC";
     public static final String TASK_TYPE_EVENT = "EVENT";
     public static final String TASK_TYPE_WAIT = "WAIT";
+    public static final String TASK_TYPE_JUMP = "JUMP";
     public static final String TASK_TYPE_HUMAN = "HUMAN";
     public static final String TASK_TYPE_SUB_WORKFLOW = "SUB_WORKFLOW";
     public static final String TASK_TYPE_START_WORKFLOW = "START_WORKFLOW";
@@ -69,8 +71,9 @@ public enum TaskType {
     public static final String TASK_TYPE_KAFKA_PUBLISH = "KAFKA_PUBLISH";
     public static final String TASK_TYPE_JSON_JQ_TRANSFORM = "JSON_JQ_TRANSFORM";
     public static final String TASK_TYPE_SET_VARIABLE = "SET_VARIABLE";
+    public static final String TASK_TYPE_UPDATE_SECRET = "UPDATE_SECRET";
+
     public static final String TASK_TYPE_FORK = "FORK";
-    public static final String TASK_TYPE_NOOP = "NOOP";
 
     private static final Set<String> BUILT_IN_TASKS = new HashSet<>();
 

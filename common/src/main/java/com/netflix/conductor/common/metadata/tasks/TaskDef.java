@@ -125,6 +125,9 @@ public class TaskDef extends Auditable {
     @Min(value = 1, message = "Backoff scale factor. Applicable for LINEAR_BACKOFF")
     private Integer backoffScaleFactor = 1;
 
+    @ProtoField(id = 21)
+    private String baseType;
+
     public TaskDef() {}
 
     public TaskDef(String name) {
@@ -426,6 +429,14 @@ public class TaskDef extends Auditable {
         return backoffScaleFactor;
     }
 
+    public String getBaseType() {
+        return baseType;
+    }
+
+    public void setBaseType(String baseType) {
+        this.baseType = baseType;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -456,7 +467,8 @@ public class TaskDef extends Auditable {
                 && Objects.equals(getInputTemplate(), taskDef.getInputTemplate())
                 && Objects.equals(getIsolationGroupId(), taskDef.getIsolationGroupId())
                 && Objects.equals(getExecutionNameSpace(), taskDef.getExecutionNameSpace())
-                && Objects.equals(getOwnerEmail(), taskDef.getOwnerEmail());
+                && Objects.equals(getOwnerEmail(), taskDef.getOwnerEmail())
+                && Objects.equals(getBaseType(), taskDef.getBaseType());
     }
 
     @Override
@@ -479,6 +491,7 @@ public class TaskDef extends Auditable {
                 getInputTemplate(),
                 getIsolationGroupId(),
                 getExecutionNameSpace(),
-                getOwnerEmail());
+                getOwnerEmail(),
+                getBaseType());
     }
 }

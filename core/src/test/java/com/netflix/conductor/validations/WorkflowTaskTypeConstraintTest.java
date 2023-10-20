@@ -36,7 +36,6 @@ import org.mockito.Mockito;
 
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
-import com.netflix.conductor.common.metadata.workflow.SubWorkflowParams;
 import com.netflix.conductor.common.metadata.workflow.WorkflowTask;
 import com.netflix.conductor.core.execution.tasks.Terminate;
 import com.netflix.conductor.dao.MetadataDAO;
@@ -411,15 +410,6 @@ public class WorkflowTaskTypeConstraintTest {
         assertTrue(
                 validationErrors.contains(
                         "subWorkflowParam field is required for taskType: SUB_WORKFLOW taskName: encode"));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testWorkflowTaskTypeSubworkflow() {
-        WorkflowTask workflowTask = createSampleWorkflowTask();
-        workflowTask.setType("SUB_WORKFLOW");
-
-        SubWorkflowParams subWorkflowTask = new SubWorkflowParams();
-        workflowTask.setSubWorkflowParam(subWorkflowTask);
     }
 
     @Test

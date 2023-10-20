@@ -25,8 +25,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.PositiveOrZero;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.netflix.conductor.annotations.protogen.ProtoField;
 import com.netflix.conductor.annotations.protogen.ProtoMessage;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
@@ -152,6 +150,30 @@ public class WorkflowTask {
 
     @ProtoField(id = 29)
     private String joinStatus;
+
+    public static class CacheConfig {
+
+        private String key;
+        private int ttlInSecond;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public int getTtlInSecond() {
+            return ttlInSecond;
+        }
+
+        public void setTtlInSecond(int ttlInSecond) {
+            this.ttlInSecond = ttlInSecond;
+        }
+    }
+
+    private CacheConfig cacheConfig;
 
     /*
     Map of events to be emitted when the task status changed.
@@ -394,6 +416,14 @@ public class WorkflowTask {
         this.scriptExpression = expression;
     }
 
+    public CacheConfig getCacheConfig() {
+        return cacheConfig;
+    }
+
+    public void setCacheConfig(CacheConfig cacheConfig) {
+        this.cacheConfig = cacheConfig;
+    }
+
     /**
      * @return the subWorkflow
      */
@@ -407,11 +437,6 @@ public class WorkflowTask {
      */
     @JsonSetter
     public void setSubWorkflowParam(SubWorkflowParams subWorkflow) {
-        if (subWorkflow != null
-                && subWorkflow.getWorkflowDefinition() == null
-                && (StringUtils.isBlank(subWorkflow.getName()))) {
-            throw new IllegalArgumentException("SubWorkflowParams name cannot be null or empty");
-        }
         this.subWorkflowParam = subWorkflow;
     }
 
@@ -766,6 +791,7 @@ public class WorkflowTask {
                 && Objects.equals(isAsyncComplete(), that.isAsyncComplete())
                 && Objects.equals(getDefaultExclusiveJoinTask(), that.getDefaultExclusiveJoinTask())
                 && Objects.equals(getRetryCount(), that.getRetryCount())
+                && Objects.equals(getCacheConfig(), that.getCacheConfig())
                 && Objects.equals(getOnStateChange(), that.getOnStateChange());
     }
 
@@ -798,6 +824,7 @@ public class WorkflowTask {
                 isOptional(),
                 getDefaultExclusiveJoinTask(),
                 getOnStateChange(),
+                getCacheConfig(),
                 getRetryCount());
     }
 }
