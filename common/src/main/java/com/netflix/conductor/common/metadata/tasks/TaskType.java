@@ -42,6 +42,7 @@ public enum TaskType {
     JSON_JQ_TRANSFORM,
     UPDATE_SECRET,
     JUMP,
+    NOOP,
     SET_VARIABLE;
 
     /**
@@ -72,6 +73,7 @@ public enum TaskType {
     public static final String TASK_TYPE_JSON_JQ_TRANSFORM = "JSON_JQ_TRANSFORM";
     public static final String TASK_TYPE_SET_VARIABLE = "SET_VARIABLE";
     public static final String TASK_TYPE_UPDATE_SECRET = "UPDATE_SECRET";
+    public static final String TASK_TYPE_NOOP = "NOOP";
 
     public static final String TASK_TYPE_FORK = "FORK";
 
