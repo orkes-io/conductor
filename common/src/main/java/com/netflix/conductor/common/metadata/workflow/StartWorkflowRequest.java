@@ -57,6 +57,26 @@ public class StartWorkflowRequest {
     @ProtoField(id = 9)
     private String createdBy;
 
+    private String idempotencyKey;
+
+    private IdempotencyStrategy idempotencyStrategy;
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public IdempotencyStrategy getIdempotencyStrategy() {
+        return idempotencyStrategy;
+    }
+
+    public void setIdempotencyStrategy(IdempotencyStrategy idempotencyStrategy) {
+        this.idempotencyStrategy = idempotencyStrategy;
+    }
+
     public String getName() {
         return name;
     }

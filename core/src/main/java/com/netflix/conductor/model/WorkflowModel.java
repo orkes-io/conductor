@@ -102,6 +102,7 @@ public class WorkflowModel {
     private String failedTaskId;
 
     private Status previousStatus;
+    private String idempotencyKey;
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -449,6 +450,14 @@ public class WorkflowModel {
         return found.getLast();
     }
 
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
     public void externalizeInput(String path) {
         this.inputPayload = this.input;
         this.input = new HashMap<>();
@@ -511,6 +520,7 @@ public class WorkflowModel {
                 && Objects.equals(getCreateTime(), that.getCreateTime())
                 && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
                 && Objects.equals(getCreatedBy(), that.getCreatedBy())
+                && getIdempotencyKey() == that.getIdempotencyKey()
                 && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
     }
 
@@ -538,6 +548,7 @@ public class WorkflowModel {
                 getVariables(),
                 getLastRetriedTime(),
                 getOwnerApp(),
+                getIdempotencyKey(),
                 getCreateTime(),
                 getUpdatedTime(),
                 getCreatedBy(),

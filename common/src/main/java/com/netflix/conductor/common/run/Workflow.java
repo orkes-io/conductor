@@ -126,6 +126,17 @@ public class Workflow extends Auditable {
     @ProtoField(id = 25)
     private List<Workflow> history = new LinkedList<>();
 
+    @ProtoField(id = 26)
+    private String idempotencyKey;
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
     public List<Workflow> getHistory() {
         return history;
     }
