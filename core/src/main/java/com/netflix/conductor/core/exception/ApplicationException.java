@@ -39,6 +39,16 @@ public class ApplicationException extends RuntimeException {
         }
     }
 
+    public Map<String, Object> getMetadata() {
+        return metadata;
+    }
+
+    public void setMetadata(Map<String, Object> metadata) {
+        this.metadata = metadata;
+    }
+
+    private Map<String, Object> metadata;
+
     private final Code code;
 
     public boolean isRetryable() {
@@ -62,6 +72,12 @@ public class ApplicationException extends RuntimeException {
     public ApplicationException(Code code, String message) {
         super(message);
         this.code = code;
+    }
+
+    public ApplicationException(Code code, String message, Map<String, Object> metadata) {
+        super(message);
+        this.code = code;
+        this.metadata = metadata;
     }
 
     public int getHttpStatusCode() {
