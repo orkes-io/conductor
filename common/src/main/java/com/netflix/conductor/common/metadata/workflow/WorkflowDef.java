@@ -99,7 +99,7 @@ public class WorkflowDef extends Auditable {
     @ProtoField(id = 16)
     private String workflowStatusListenerSink;
 
-    private @Valid Map<String, List<StateChangeEvent>> onStateChange = new LinkedHashMap<>();
+    private RateLimitConfig rateLimitConfig;
 
     /**
      * @return the name
@@ -321,10 +321,6 @@ public class WorkflowDef extends Auditable {
         return name + "." + version;
     }
 
-    public Map<String, List<StateChangeEvent>> getOnStateChange() {
-        return onStateChange;
-    }
-
     public String getWorkflowStatusListenerSink() {
         return workflowStatusListenerSink;
     }
@@ -333,8 +329,12 @@ public class WorkflowDef extends Auditable {
         this.workflowStatusListenerSink = workflowStatusListenerSink;
     }
 
-    public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
-        this.onStateChange = onStateChange;
+    public RateLimitConfig getRateLimitConfig() {
+        return rateLimitConfig;
+    }
+
+    public void setRateLimitConfig(RateLimitConfig rateLimitConfig) {
+        this.rateLimitConfig = rateLimitConfig;
     }
 
     public boolean containsType(String taskType) {
