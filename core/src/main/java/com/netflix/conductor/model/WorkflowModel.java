@@ -15,6 +15,7 @@ package com.netflix.conductor.model;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.netflix.conductor.common.metadata.workflow.IdempotencyStrategy;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
@@ -103,6 +104,8 @@ public class WorkflowModel {
 
     private Status previousStatus;
     private String idempotencyKey;
+
+    private String idempotencyStrategy;
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -458,6 +461,15 @@ public class WorkflowModel {
         this.idempotencyKey = idempotencyKey;
     }
 
+
+    public String getIdempotencyStrategy() {
+        return idempotencyStrategy;
+    }
+
+    public void setIdempotencyStrategy(String idempotencyStrategy) {
+        this.idempotencyStrategy = idempotencyStrategy;
+    }
+
     public void externalizeInput(String path) {
         this.inputPayload = this.input;
         this.input = new HashMap<>();
@@ -521,6 +533,7 @@ public class WorkflowModel {
                 && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
                 && Objects.equals(getCreatedBy(), that.getCreatedBy())
                 && getIdempotencyKey() == that.getIdempotencyKey()
+                && getIdempotencyStrategy() == that.getIdempotencyStrategy()
                 && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
     }
 
@@ -549,6 +562,7 @@ public class WorkflowModel {
                 getLastRetriedTime(),
                 getOwnerApp(),
                 getIdempotencyKey(),
+                getIdempotencyStrategy(),
                 getCreateTime(),
                 getUpdatedTime(),
                 getCreatedBy(),
