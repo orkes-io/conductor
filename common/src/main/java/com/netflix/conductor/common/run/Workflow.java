@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
-import com.netflix.conductor.common.metadata.workflow.IdempotencyStrategy;
 import org.apache.commons.lang3.StringUtils;
 
 import com.netflix.conductor.annotations.protogen.ProtoEnum;
@@ -127,11 +126,7 @@ public class Workflow extends Auditable {
     @ProtoField(id = 25)
     private List<Workflow> history = new LinkedList<>();
 
-    @ProtoField(id = 26)
     private String idempotencyKey;
-
-    @ProtoField(id = 27)
-    private String idempotencyStrategy;
 
     public String getIdempotencyKey() {
         return idempotencyKey;
@@ -139,14 +134,6 @@ public class Workflow extends Auditable {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
-    }
-
-    public String getIdempotencyStrategy() {
-        return idempotencyStrategy;
-    }
-
-    public void setIdempotencyStrategy(String idempotencyStrategy) {
-        this.idempotencyStrategy = idempotencyStrategy;
     }
 
     public List<Workflow> getHistory() {

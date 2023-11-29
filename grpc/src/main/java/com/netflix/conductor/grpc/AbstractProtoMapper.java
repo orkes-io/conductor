@@ -1082,9 +1082,6 @@ public abstract class AbstractProtoMapper {
         for (Workflow elem : from.getHistory()) {
             to.addHistory( toProto(elem) );
         }
-        if (from.getIdempotencyKey() != null) {
-            to.setIdempotencyKey( from.getIdempotencyKey() );
-        }
         return to.build();
     }
 
@@ -1125,7 +1122,6 @@ public abstract class AbstractProtoMapper {
         to.setVariables(variablesMap);
         to.setLastRetriedTime( from.getLastRetriedTime() );
         to.setHistory( from.getHistoryList().stream().map(this::fromProto).collect(Collectors.toCollection(ArrayList::new)) );
-        to.setIdempotencyKey( from.getIdempotencyKey() );
         return to;
     }
 
