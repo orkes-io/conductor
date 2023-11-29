@@ -492,67 +492,12 @@ public class WorkflowModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         WorkflowModel that = (WorkflowModel) o;
-        return getEndTime() == that.getEndTime()
-                && getPriority() == that.getPriority()
-                && getLastRetriedTime() == that.getLastRetriedTime()
-                && getStatus() == that.getStatus()
-                && Objects.equals(getWorkflowId(), that.getWorkflowId())
-                && Objects.equals(getParentWorkflowId(), that.getParentWorkflowId())
-                && Objects.equals(getParentWorkflowTaskId(), that.getParentWorkflowTaskId())
-                && Objects.equals(getTasks(), that.getTasks())
-                && Objects.equals(getInput(), that.getInput())
-                && Objects.equals(getOutput(), that.getOutput())
-                && Objects.equals(getCorrelationId(), that.getCorrelationId())
-                && Objects.equals(getReRunFromWorkflowId(), that.getReRunFromWorkflowId())
-                && Objects.equals(getReasonForIncompletion(), that.getReasonForIncompletion())
-                && Objects.equals(getEvent(), that.getEvent())
-                && Objects.equals(getTaskToDomain(), that.getTaskToDomain())
-                && Objects.equals(getFailedReferenceTaskNames(), that.getFailedReferenceTaskNames())
-                && Objects.equals(getWorkflowDefinition(), that.getWorkflowDefinition())
-                && Objects.equals(
-                        getExternalInputPayloadStoragePath(),
-                        that.getExternalInputPayloadStoragePath())
-                && Objects.equals(
-                        getExternalOutputPayloadStoragePath(),
-                        that.getExternalOutputPayloadStoragePath())
-                && Objects.equals(getVariables(), that.getVariables())
-                && Objects.equals(getOwnerApp(), that.getOwnerApp())
-                && Objects.equals(getCreateTime(), that.getCreateTime())
-                && Objects.equals(getUpdatedTime(), that.getUpdatedTime())
-                && Objects.equals(getCreatedBy(), that.getCreatedBy())
-                && getIdempotencyKey() == that.getIdempotencyKey()
-                && Objects.equals(getUpdatedBy(), that.getUpdatedBy());
+        return Objects.equals(getWorkflowId(), that.getWorkflowId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                getStatus(),
-                getEndTime(),
-                getWorkflowId(),
-                getParentWorkflowId(),
-                getParentWorkflowTaskId(),
-                getTasks(),
-                getInput(),
-                getOutput(),
-                getCorrelationId(),
-                getReRunFromWorkflowId(),
-                getReasonForIncompletion(),
-                getEvent(),
-                getTaskToDomain(),
-                getFailedReferenceTaskNames(),
-                getWorkflowDefinition(),
-                getExternalInputPayloadStoragePath(),
-                getExternalOutputPayloadStoragePath(),
-                getPriority(),
-                getVariables(),
-                getLastRetriedTime(),
-                getOwnerApp(),
-                getIdempotencyKey(),
-                getCreateTime(),
-                getUpdatedTime(),
-                getCreatedBy(),
-                getUpdatedBy());
+        return Objects.hash(getWorkflowId());
     }
 
     public Workflow toWorkflow() {
