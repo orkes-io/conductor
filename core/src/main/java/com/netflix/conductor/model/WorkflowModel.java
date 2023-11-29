@@ -102,6 +102,7 @@ public class WorkflowModel {
     private String failedTaskId;
 
     private Status previousStatus;
+    private String idempotencyKey;
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -447,6 +448,14 @@ public class WorkflowModel {
             return null;
         }
         return found.getLast();
+    }
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
     }
 
     public void externalizeInput(String path) {
