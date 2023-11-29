@@ -39,6 +39,4 @@ message Workflow {
     map<string, google.protobuf.Value> variables = 23;
     int64 last_retried_time = 24;
     repeated Workflow history = 25;
-    string idempotency_key = 26;
-    string idempotency_strategy = 27;
 }
