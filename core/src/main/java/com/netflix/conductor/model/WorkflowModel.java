@@ -103,6 +103,8 @@ public class WorkflowModel {
 
     private Status previousStatus;
     private String idempotencyKey;
+    private String rateLimitKey;
+    private boolean rateLimited;
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -456,6 +458,22 @@ public class WorkflowModel {
 
     public void setIdempotencyKey(String idempotencyKey) {
         this.idempotencyKey = idempotencyKey;
+    }
+
+    public String getRateLimitKey() {
+        return rateLimitKey;
+    }
+
+    public void setRateLimitKey(String rateLimitKey) {
+        this.rateLimitKey = rateLimitKey;
+    }
+
+    public boolean isRateLimited() {
+        return rateLimited;
+    }
+
+    public void setRateLimited(boolean rateLimited) {
+        this.rateLimited = rateLimited;
     }
 
     public void externalizeInput(String path) {
