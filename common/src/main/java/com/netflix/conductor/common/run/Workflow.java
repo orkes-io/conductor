@@ -127,6 +127,10 @@ public class Workflow extends Auditable {
     private List<Workflow> history = new LinkedList<>();
 
     private String idempotencyKey;
+    private String rateLimitKey;
+    private boolean rateLimited;
+
+    public Workflow() {}
 
     public String getIdempotencyKey() {
         return idempotencyKey;
@@ -136,6 +140,22 @@ public class Workflow extends Auditable {
         this.idempotencyKey = idempotencyKey;
     }
 
+    public String getRateLimitKey() {
+        return rateLimitKey;
+    }
+
+    public void setRateLimitKey(String rateLimitKey) {
+        this.rateLimitKey = rateLimitKey;
+    }
+
+    public boolean isRateLimited() {
+        return rateLimited;
+    }
+
+    public void setRateLimited(boolean rateLimited) {
+        this.rateLimited = rateLimited;
+    }
+
     public List<Workflow> getHistory() {
         return history;
     }
@@ -143,8 +163,6 @@ public class Workflow extends Auditable {
     public void setHistory(List<Workflow> history) {
         this.history = history;
     }
-
-    public Workflow() {}
 
     /**
      * @return the status
