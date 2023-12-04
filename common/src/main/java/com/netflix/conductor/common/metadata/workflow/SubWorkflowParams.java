@@ -41,6 +41,26 @@ public class SubWorkflowParams {
     @ProtoField(id = 4)
     private Object workflowDefinition;
 
+    private String idempotencyKey;
+
+    private IdempotencyStrategy idempotencyStrategy;
+
+    public String getIdempotencyKey() {
+        return idempotencyKey;
+    }
+
+    public void setIdempotencyKey(String idempotencyKey) {
+        this.idempotencyKey = idempotencyKey;
+    }
+
+    public IdempotencyStrategy getIdempotencyStrategy() {
+        return idempotencyStrategy;
+    }
+
+    public void setIdempotencyStrategy(IdempotencyStrategy idempotencyStrategy) {
+        this.idempotencyStrategy = idempotencyStrategy;
+    }
+
     /**
      * @return the name
      */
