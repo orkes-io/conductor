@@ -41,6 +41,7 @@ public enum TaskType {
     KAFKA_PUBLISH,
     JSON_JQ_TRANSFORM,
     UPDATE_SECRET,
+    UPDATE_TASK,
     JUMP,
     SET_VARIABLE;
 
@@ -72,6 +73,7 @@ public enum TaskType {
     public static final String TASK_TYPE_JSON_JQ_TRANSFORM = "JSON_JQ_TRANSFORM";
     public static final String TASK_TYPE_SET_VARIABLE = "SET_VARIABLE";
     public static final String TASK_TYPE_UPDATE_SECRET = "UPDATE_SECRET";
+    public static final String TASK_TYPE_UPDATE_TASK = "UPDATE_TASK";
 
     public static final String TASK_TYPE_FORK = "FORK";
 
