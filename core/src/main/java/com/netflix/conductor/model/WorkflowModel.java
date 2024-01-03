@@ -105,6 +105,7 @@ public class WorkflowModel {
     private String idempotencyKey;
     private String rateLimitKey;
     private boolean rateLimited;
+    private Map<String, Object> systemMetadata = new HashMap<>();
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -474,6 +475,14 @@ public class WorkflowModel {
 
     public void setRateLimited(boolean rateLimited) {
         this.rateLimited = rateLimited;
+    }
+
+    public Map<String, Object> getSystemMetadata() {
+        return systemMetadata;
+    }
+
+    public void setSystemMetadata(Map<String, Object> systemMetadata) {
+        this.systemMetadata = systemMetadata;
     }
 
     public void externalizeInput(String path) {
