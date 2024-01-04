@@ -100,15 +100,17 @@ public class Terminate extends WorkflowSystemTask {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> getInputFromParam(Map<String, Object> taskInput) {
-        HashMap<String, Object> output = new HashMap<>();
-        if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) == null) {
-            return output;
-        }
+        Map<String, Object> output = new HashMap<>();
+        output.put("terminationReason", taskInput.get(TERMINATION_REASON_PARAMETER));
+
+        // This doesn't really make sense, but it's what the original code does and not breaking backwards compatibility
         if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) instanceof HashMap) {
-            output.putAll((HashMap<String, Object>) taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
+            output.putAll((Map<String, Object>) taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
             return output;
+        } else if (taskInput.get(TERMINATION_WORKFLOW_OUTPUT) != null) {
+            output.put("output", taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
         }
-        output.put("output", taskInput.get(TERMINATION_WORKFLOW_OUTPUT));
+
         return output;
     }
 }
