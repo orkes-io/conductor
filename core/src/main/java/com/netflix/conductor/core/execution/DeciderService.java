@@ -544,7 +544,12 @@ public class DeciderService {
             }
             updateWorkflowOutput(workflow, task);
             if (StringUtils.isEmpty(task.getReasonForIncompletion())) {
-                task.setReasonForIncompletion("Terminated");
+                task.setReasonForIncompletion(
+                        String.format(
+                                "Terminated because %s.%s is %s",
+                                workflow.getWorkflowId(),
+                                task.getReferenceTaskName(),
+                                task.getStatus().name()));
             }
             throw new TerminateWorkflowException(task.getReasonForIncompletion(), status, task);
         }
