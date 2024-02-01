@@ -30,6 +30,7 @@ import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
 import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskTimeoutConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
+import com.netflix.conductor.common.metadata.ValidationSchema;
 
 @ProtoMessage
 @TaskTimeoutConstraint
@@ -127,6 +128,8 @@ public class TaskDef extends Auditable {
 
     @ProtoField(id = 21)
     private String baseType;
+
+    private ValidationSchema validations;
 
     public TaskDef() {}
 
@@ -435,6 +438,14 @@ public class TaskDef extends Auditable {
 
     public void setBaseType(String baseType) {
         this.baseType = baseType;
+    }
+
+    public ValidationSchema getValidations() {
+        return validations;
+    }
+
+    public void setValidations(ValidationSchema validations) {
+        this.validations = validations;
     }
 
     @Override

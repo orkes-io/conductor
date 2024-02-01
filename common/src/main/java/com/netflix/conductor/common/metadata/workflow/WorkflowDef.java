@@ -28,6 +28,7 @@ import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
 import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskReferenceNameUniqueConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
+import com.netflix.conductor.common.metadata.ValidationSchema;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 
 @ProtoMessage
@@ -100,6 +101,8 @@ public class WorkflowDef extends Auditable {
     private String workflowStatusListenerSink;
 
     private RateLimitConfig rateLimitConfig;
+
+    private ValidationSchema validations;
 
     /**
      * @return the name
@@ -335,6 +338,14 @@ public class WorkflowDef extends Auditable {
 
     public void setRateLimitConfig(RateLimitConfig rateLimitConfig) {
         this.rateLimitConfig = rateLimitConfig;
+    }
+
+    public ValidationSchema getValidations() {
+        return validations;
+    }
+
+    public void setValidations(ValidationSchema validations) {
+        this.validations = validations;
     }
 
     public boolean containsType(String taskType) {
