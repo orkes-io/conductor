@@ -28,6 +28,7 @@ import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
 import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskReferenceNameUniqueConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
+import com.netflix.conductor.common.metadata.common.Schema;
 import com.netflix.conductor.common.metadata.tasks.TaskType;
 
 @ProtoMessage
@@ -100,6 +101,8 @@ public class WorkflowDef extends Auditable {
     private String workflowStatusListenerSink;
 
     private RateLimitConfig rateLimitConfig;
+
+    private Schema inputSchema;
 
     /**
      * @return the name
@@ -337,6 +340,14 @@ public class WorkflowDef extends Auditable {
         this.rateLimitConfig = rateLimitConfig;
     }
 
+    public Schema getInputSchema() {
+        return inputSchema;
+    }
+
+    public void setInputSchema(Schema inputSchema) {
+        this.inputSchema = inputSchema;
+    }
+
     public boolean containsType(String taskType) {
         return collectTasks().stream().anyMatch(t -> t.getType().equals(taskType));
     }
@@ -409,7 +420,8 @@ public class WorkflowDef extends Auditable {
                 && Objects.equals(getOutputParameters(), that.getOutputParameters())
                 && Objects.equals(getFailureWorkflow(), that.getFailureWorkflow())
                 && Objects.equals(getOwnerEmail(), that.getOwnerEmail())
-                && Objects.equals(getTimeoutSeconds(), that.getTimeoutSeconds());
+                && Objects.equals(getTimeoutSeconds(), that.getTimeoutSeconds())
+                && Objects.equals(getInputSchema(), that.getInputSchema());
     }
 
     @Override
@@ -424,7 +436,8 @@ public class WorkflowDef extends Auditable {
                 getFailureWorkflow(),
                 getSchemaVersion(),
                 getOwnerEmail(),
-                getTimeoutSeconds());
+                getTimeoutSeconds(),
+                getInputSchema());
     }
 
     @Override

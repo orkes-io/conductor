@@ -30,6 +30,7 @@ import com.netflix.conductor.common.constraints.OwnerEmailMandatoryConstraint;
 import com.netflix.conductor.common.constraints.OwnerEmailValidConstraint;
 import com.netflix.conductor.common.constraints.TaskTimeoutConstraint;
 import com.netflix.conductor.common.metadata.Auditable;
+import com.netflix.conductor.common.metadata.common.Schema;
 
 @ProtoMessage
 @TaskTimeoutConstraint
@@ -127,6 +128,8 @@ public class TaskDef extends Auditable {
 
     @ProtoField(id = 21)
     private String baseType;
+
+    private Schema inputSchema;
 
     public TaskDef() {}
 
@@ -437,6 +440,14 @@ public class TaskDef extends Auditable {
         this.baseType = baseType;
     }
 
+    public Schema getInputSchema() {
+        return inputSchema;
+    }
+
+    public void setInputSchema(Schema inputSchema) {
+        this.inputSchema = inputSchema;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -468,7 +479,8 @@ public class TaskDef extends Auditable {
                 && Objects.equals(getIsolationGroupId(), taskDef.getIsolationGroupId())
                 && Objects.equals(getExecutionNameSpace(), taskDef.getExecutionNameSpace())
                 && Objects.equals(getOwnerEmail(), taskDef.getOwnerEmail())
-                && Objects.equals(getBaseType(), taskDef.getBaseType());
+                && Objects.equals(getBaseType(), taskDef.getBaseType())
+                && Objects.equals(getInputSchema(), taskDef.getInputSchema());
     }
 
     @Override
@@ -492,6 +504,7 @@ public class TaskDef extends Auditable {
                 getIsolationGroupId(),
                 getExecutionNameSpace(),
                 getOwnerEmail(),
-                getBaseType());
+                getBaseType(),
+                getInputSchema());
     }
 }
