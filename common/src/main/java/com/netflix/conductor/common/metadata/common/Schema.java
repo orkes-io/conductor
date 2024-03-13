@@ -19,7 +19,7 @@ import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 public class Schema {
 
     private String name;
-    private String version;
+    private int version;
 
     public String getName() {
         return name;
@@ -29,11 +29,11 @@ public class Schema {
         this.name = name;
     }
 
-    public String getVersion() {
+    public int getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(int version) {
         this.version = version;
     }
 }
