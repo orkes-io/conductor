@@ -130,6 +130,7 @@ public class TaskDef extends Auditable {
     private String baseType;
 
     private Schema inputSchema;
+    private Schema outputSchema;
 
     public TaskDef() {}
 
@@ -448,6 +449,14 @@ public class TaskDef extends Auditable {
         this.inputSchema = inputSchema;
     }
 
+    public Schema getOutputSchema() {
+        return outputSchema;
+    }
+
+    public void setOutputSchema(Schema outputSchema) {
+        this.outputSchema = outputSchema;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -480,7 +489,8 @@ public class TaskDef extends Auditable {
                 && Objects.equals(getExecutionNameSpace(), taskDef.getExecutionNameSpace())
                 && Objects.equals(getOwnerEmail(), taskDef.getOwnerEmail())
                 && Objects.equals(getBaseType(), taskDef.getBaseType())
-                && Objects.equals(getInputSchema(), taskDef.getInputSchema());
+                && Objects.equals(getInputSchema(), taskDef.getInputSchema())
+                && Objects.equals(getOutputSchema(), taskDef.getOutputSchema());
     }
 
     @Override
@@ -505,6 +515,7 @@ public class TaskDef extends Auditable {
                 getExecutionNameSpace(),
                 getOwnerEmail(),
                 getBaseType(),
-                getInputSchema());
+                getInputSchema(),
+                getOutputSchema());
     }
 }
