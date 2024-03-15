@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
+import com.netflix.conductor.common.metadata.common.Schema;
 import com.netflix.conductor.common.metadata.workflow.WorkflowDef;
 import com.netflix.conductor.common.run.Workflow;
 import com.netflix.conductor.core.utils.Utils;
@@ -106,6 +107,7 @@ public class WorkflowModel {
     private String rateLimitKey;
     private boolean rateLimited;
     private Map<String, Object> systemMetadata = new HashMap<>();
+    private Schema outputSchema;
 
     private List<WorkflowModel> history = new LinkedList<>();
 
@@ -483,6 +485,14 @@ public class WorkflowModel {
 
     public void setSystemMetadata(Map<String, Object> systemMetadata) {
         this.systemMetadata = systemMetadata;
+    }
+
+    public Schema getOutputSchema() {
+        return outputSchema;
+    }
+
+    public void setOutputSchema(Schema outputSchema) {
+        this.outputSchema = outputSchema;
     }
 
     public void externalizeInput(String path) {

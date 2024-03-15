@@ -104,6 +104,8 @@ public class WorkflowDef extends Auditable {
 
     private Schema inputSchema;
 
+    private Schema outputSchema;
+
     /**
      * @return the name
      */
@@ -348,6 +350,14 @@ public class WorkflowDef extends Auditable {
         this.inputSchema = inputSchema;
     }
 
+    public Schema getOutputSchema() {
+        return outputSchema;
+    }
+
+    public void setOutputSchema(Schema outputSchema) {
+        this.outputSchema = outputSchema;
+    }
+
     public boolean containsType(String taskType) {
         return collectTasks().stream().anyMatch(t -> t.getType().equals(taskType));
     }
@@ -421,7 +431,8 @@ public class WorkflowDef extends Auditable {
                 && Objects.equals(getFailureWorkflow(), that.getFailureWorkflow())
                 && Objects.equals(getOwnerEmail(), that.getOwnerEmail())
                 && Objects.equals(getTimeoutSeconds(), that.getTimeoutSeconds())
-                && Objects.equals(getInputSchema(), that.getInputSchema());
+                && Objects.equals(getInputSchema(), that.getInputSchema())
+                && Objects.equals(getOutputSchema(), that.getOutputSchema());
     }
 
     @Override
@@ -437,7 +448,8 @@ public class WorkflowDef extends Auditable {
                 getSchemaVersion(),
                 getOwnerEmail(),
                 getTimeoutSeconds(),
-                getInputSchema());
+                getInputSchema(),
+                getOutputSchema());
     }
 
     @Override

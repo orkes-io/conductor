@@ -19,6 +19,7 @@ import javax.validation.Valid;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 
+import com.netflix.conductor.common.metadata.common.Schema;
 import com.netflix.conductor.common.metadata.tasks.Task;
 import com.netflix.conductor.common.metadata.tasks.TaskDef;
 import com.netflix.conductor.common.metadata.workflow.StateChangeEvent;
@@ -158,6 +159,7 @@ public class TaskModel {
     /** Id of the parent task when *this* task is an event associated with the task */
     private String parentTaskId;
 
+    private Schema outputSchema;
     private @Valid Map<String, List<StateChangeEvent>> onStateChange;
 
     @JsonIgnore private Map<String, Object> inputPayload = new HashMap<>();
@@ -694,5 +696,13 @@ public class TaskModel {
 
     public void setParentTaskId(String parentTaskId) {
         this.parentTaskId = parentTaskId;
+    }
+
+    public Schema getOutputSchema() {
+        return outputSchema;
+    }
+
+    public void setOutputSchema(Schema outputSchema) {
+        this.outputSchema = outputSchema;
     }
 }
