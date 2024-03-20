@@ -12,6 +12,7 @@
  */
 package com.netflix.conductor.common.metadata.workflow;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -150,6 +151,12 @@ public class WorkflowTask {
 
     @ProtoField(id = 29)
     private String joinStatus;
+
+    private List<WorkflowTask> tryWith = new ArrayList<>();
+
+    private List<WorkflowTask> onException = new ArrayList<>();
+
+    private List<WorkflowTask> onFinally = new ArrayList<>();
 
     public static class CacheConfig {
 
@@ -609,6 +616,11 @@ public class WorkflowTask {
             case DO_WHILE:
                 workflowTaskLists.add(loopOver);
                 break;
+            case TRY:
+                workflowTaskLists.add(tryWith);
+                workflowTaskLists.add(onException);
+                workflowTaskLists.add(onFinally);
+                break;
             default:
                 break;
         }
@@ -691,6 +703,31 @@ public class WorkflowTask {
                     }
                 }
                 break;
+            case TRY:
+                for (List<WorkflowTask> workflowTasks : children()) {
+                    Iterator<WorkflowTask> iterator = workflowTasks.iterator();
+                    while (iterator.hasNext()) {
+                        WorkflowTask task = iterator.next();
+                        if (task.getTaskReferenceName().equals(taskReferenceName)) {
+                            break;
+                        }
+                        WorkflowTask nextTask = task.next(taskReferenceName, this);
+                        if (nextTask != null) {
+                            return nextTask;
+                        }
+                        if (task.has(taskReferenceName)) {
+                            break;
+                        }
+                    }//end of while
+
+                    if (iterator.hasNext()) {
+                        return iterator.next();
+                    }
+                    if (parent != null) {
+                        return parent.next(this.taskReferenceName, parent);
+                    }
+                }
+                break;
             case DYNAMIC:
             case TERMINATE:
             case SIMPLE:
@@ -711,6 +748,7 @@ public class WorkflowTask {
             case SWITCH:
             case DO_WHILE:
             case FORK_JOIN:
+            case TRY:
                 for (List<WorkflowTask> childx : children()) {
                     for (WorkflowTask child : childx) {
                         if (child.has(taskReferenceName)) {
@@ -747,6 +785,30 @@ public class WorkflowTask {
 
     public void setOnStateChange(Map<String, List<StateChangeEvent>> onStateChange) {
         this.onStateChange = onStateChange;
+    }
+
+    public List<WorkflowTask> getTryWith() {
+        return tryWith;
+    }
+
+    public void setTryWith(List<WorkflowTask> tryWith) {
+        this.tryWith = tryWith;
+    }
+
+    public List<WorkflowTask> getOnException() {
+        return onException;
+    }
+
+    public void setOnException(List<WorkflowTask> onException) {
+        this.onException = onException;
+    }
+
+    public List<WorkflowTask> getOnFinally() {
+        return onFinally;
+    }
+
+    public void setOnFinally(List<WorkflowTask> onFinally) {
+        this.onFinally = onFinally;
     }
 
     @Override
