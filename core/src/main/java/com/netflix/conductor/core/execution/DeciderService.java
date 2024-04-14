@@ -602,15 +602,6 @@ public class DeciderService {
         } else {
             rescheduled.addInput(task.getInputData());
         }
-        if (workflowTask != null && workflow.getWorkflowDefinition().getSchemaVersion() > 1) {
-            Map<String, Object> taskInput =
-                    parametersUtils.getTaskInputV2(
-                            workflowTask.getInputParameters(),
-                            workflow,
-                            rescheduled.getTaskId(),
-                            taskDefinition);
-            rescheduled.addInput(taskInput);
-        }
         // for the schema version 1, we do not have to recompute the inputs
         return Optional.of(rescheduled);
     }
@@ -829,9 +820,14 @@ public class DeciderService {
             WorkflowTask taskToSchedule,
             int retryCount,
             String retriedTaskId) {
+        String taskId = idGenerator.generate();
+
         Map<String, Object> input =
                 parametersUtils.getTaskInput(
-                        taskToSchedule.getInputParameters(), workflow, null, null);
+                        taskToSchedule.getInputParameters(),
+                        workflow,
+                        taskToSchedule.getTaskDefinition(),
+                        taskId);
 
         String type = taskToSchedule.getType();
 
@@ -845,7 +841,6 @@ public class DeciderService {
                         .map(TaskModel::getReferenceTaskName)
                         .collect(Collectors.toList());
 
-        String taskId = idGenerator.generate();
         TaskMapperContext taskMapperContext =
                 TaskMapperContext.newBuilder()
                         .withWorkflowModel(workflow)
