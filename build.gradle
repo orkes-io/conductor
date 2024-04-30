@@ -57,7 +57,7 @@ allprojects {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 
-    group = 'com.netflix.conductor'
+    group = 'io.orkes.conductor'
 
     configurations.all {
         exclude group: 'ch.qos.logback', module: 'logback-classic'
@@ -146,7 +146,7 @@ allprojects {
 }
 
 // all client and their related modules are published with Java 11 compatibility
-["annotations", "common", "client", "client-spring", "grpc", "grpc-client"].each {
+["annotations", "common", "client", "client-spring"].each {
     project(":conductor-$it") {
         compileJava {
             options.release = 11
@@ -166,34 +166,5 @@ task server {
     dependsOn ':conductor-server:bootRun'
 }
 
-sonarqube {
-    properties {
-        property "sonar.projectKey", "com.netflix.conductor:conductor"
-        property "sonar.organization", "netflix"
-        property "sonar.host.url", "https://sonarcloud.io"
-    }
-}
 
-configure(allprojects - project(':conductor-grpc')) {
-    apply plugin: 'com.diffplug.spotless'
 
-    spotless {
-        java {
-            googleJavaFormat().aosp()
-            removeUnusedImports()
-            importOrder('java', 'javax', 'org', 'com.netflix', '', '\\#com.netflix', '\\#')
-            licenseHeaderFile("$rootDir/licenseheader.txt")
-        }
-    }
-}
-
-['cassandra-persistence', 'core', 'redis-concurrency-limit', 'test-harness', 'client'].each {
-    configure(project(":conductor-$it")) {
-        spotless {
-            groovy {
-                importOrder('java', 'javax', 'org', 'com.netflix', '', '\\#com.netflix', '\\#')
-                licenseHeaderFile("$rootDir/licenseheader.txt")
-            }
-        }
-    }
-}

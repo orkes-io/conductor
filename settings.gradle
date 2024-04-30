@@ -29,37 +29,16 @@ gradleEnterprise {
 
 rootProject.name = 'conductor'
 
+// server stuff
 include 'annotations'
 include 'annotations-processor'
-
-include 'server'
 include 'common'
 include 'core'
+
+// client stuff
 include 'client'
 include 'client-spring'
-
-include 'cassandra-persistence'
-include 'redis-persistence'
-
-include 'es6-persistence'
-
-include 'redis-lock'
-
-include 'awss3-storage'
-include 'awssqs-event-queue'
-
-include 'redis-concurrency-limit'
-
-include 'json-jq-task'
-include 'http-task'
-
-include 'rest'
-include 'grpc'
-include 'grpc-server'
-include 'grpc-client'
-
 include 'java-sdk'
 
-include 'test-harness'
 
 rootProject.children.each {it.name="conductor-${it.name}"}
