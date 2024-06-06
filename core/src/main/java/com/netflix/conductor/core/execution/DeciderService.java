@@ -437,7 +437,7 @@ public class DeciderService {
             }
             // if we reach here, the task has been completed.
             // Was the task successful in completion?
-            if (!status.isSuccessful()) {
+            if (!status.isSuccessful() && !wftask.isOptional()) {
                 return false;
             }
         }
