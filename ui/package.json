@@ -78,7 +78,7 @@
     "cypress": "^10.0.3",
     "eslint-plugin-cypress": "^2.12.1",
     "http-server": "^14.1.1",
-    "js-yaml": "4.1.0",
+    "js-yaml": "4.1.1",
     "prettier": "^2.2.1",
     "sass": "^1.49.9",
     "start-server-and-test": "^1.14.0",
